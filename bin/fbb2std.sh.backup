@@ -1,0 +1,14 @@
+#!/bin/sh
+
+id=$1
+shift
+
+wdir=$1
+shift
+
+echo "I need the FBB image at MNI space"                                                                                                                                               
+rm -rf ${wdir}/${id}_movingToFixed_*
+${ANTS_PATH}/antsRegistrationSyNQuick.sh -d 3 -f ${FSLDIR}/data/standard/MNI152_T1_2mm.nii.gz -m ${wdir}/${id}_struc.nii.gz -o ${wdir}/${id}_movingToFixed_ -t s
+sleep 1 #hacking de los cojones porque el nas es una puta mierda
+${ANTS_PATH}/antsApplyTransforms -d 3 -i ${wdir}/${id}_fbb.nii.gz -r ${FSLDIR}/data/standard/MNI152_T1_2mm.nii.gz -t ${wdir}/${id}_movingToFixed_1Warp.nii.gz -t ${wdir}/${id}_movingToFixed_0GenericAffine.mat -o ${wdir}/${id}_fbb_mni.nii.gz
+echo "Done!"
