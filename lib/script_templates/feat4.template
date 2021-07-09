@@ -1,0 +1,9 @@
+#!/bin/bash
+#SBATCH -J feat-<study>
+#SBATCH --time=08:00:00
+#SBATCH --mem-per-cpu=4G
+#SBATCH --mail-type=FAIL,STAGE_OUT
+#SBATCH --mail-user=<mailto>
+#SBATCH -o <out_dir>/feat4-slurm-%j
+${FSLDIR}/bin/melodic -i <data_dir>/filtered_func_data -o <data_dir>/filtered_func_data.ica -v --nobet --bgthreshold=3 --tr=<TR> --report -d 0 --mmthresh=0.5 --Ostats
+

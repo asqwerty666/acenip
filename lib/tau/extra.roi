@@ -1,0 +1,13 @@
+31,Left-choroid-plexus
+63,Right-choroid-plexus
+28,Left-VentralDC
+30,Left-vessel
+60,Right-VentralDC
+62,Right-vessel
+77,WM-hypointensities
+80,non-WM-hypointensities
+85,Optic-Chiasm
+1000,ctx-lh-unknown
+1004,ctx-lh-corpuscallosum
+2000,ctx-rh-unknown
+2004,ctx-rh-corpuscallosum

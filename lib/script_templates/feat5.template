@@ -1,0 +1,8 @@
+#!/bin/bash
+#SBATCH -J feat-<study>
+#SBATCH --time=00:01:00
+#SBATCH --mem-per-cpu=4G
+#SBATCH --mail-type=FAIL,STAGE_OUT
+#SBATCH --mail-user=<mailto>
+#SBATCH -o <out_dir>/feat5-slurm-%j
+${FSLDIR}/bin/feat <design_file> -D <data_dir> -stop

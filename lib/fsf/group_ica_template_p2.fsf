@@ -1,0 +1,54 @@
+
+# Add confound EVs text file
+set fmri(confoundevs) 0
+
+# Resampling resolution
+set fmri(regstandard_res) 4
+
+# Variance-normalise timecourses
+set fmri(varnorm) 1
+
+# Automatic dimensionality estimation
+set fmri(dim_yn) 1
+
+# Output components
+set fmri(dim) 1
+
+# 1 : Single-session ICA
+# 2 : Multi-session temporal concatenation
+# 3 : Multi-session tensor TICA
+set fmri(icaopt) 2
+
+# Threshold IC maps
+set fmri(thresh_yn) 1
+
+# Mixture model threshold
+set fmri(mmthresh) 0.5
+
+# Output full stats folder
+set fmri(ostats) 1
+
+# Timeseries and subject models
+set fmri(ts_model_mat) ""
+set fmri(ts_model_con) ""
+set fmri(subject_model_mat) ""
+set fmri(subject_model_con) ""
+
+
+##########################################################
+# Now options that don't appear in the GUI
+
+# Alternative (to BETting) mask image
+set fmri(alternative_mask) ""
+
+# Initial structural space registration initialisation transform
+set fmri(init_initial_highres) ""
+
+# Structural space registration initialisation transform
+set fmri(init_highres) ""
+
+# Standard space registration initialisation transform
+set fmri(init_standard) ""
+
+# For full FEAT analysis: overwrite existing .feat output dir?
+set fmri(overwrite_yn) 0

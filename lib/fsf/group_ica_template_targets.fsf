@@ -1,0 +1,3 @@
+# 4D AVW data or FEAT directory (<number_of_sample>)
+set feat_files(<number_of_sample>) <data>
+
