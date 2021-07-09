@@ -1,0 +1,11 @@
+usage: dti_track.pl [-t1] [-time <xx:xx:xx> [-uofm <net>] [-cut <text_file>] <project>
+
+Launch DTI tractography
+
+Options:
+
+-t1: Do alt coregister to T1 images, do it for DTI bad acquisitions.Not good at all but better than nothing
+-time <xx:xx:xx>: change the time limit for tractography process
+-uofm <net>: make tractography following a given network for UofM Atlas. The default is to use FS recostruction (see manual)
+-cut <text_file>: Process only the subjects includedin this file
+<project>: Name of the project (mandatory)

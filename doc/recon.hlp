@@ -1,0 +1,9 @@
+usage: precon.pl [-cut <text file>] <project>
+
+Launch FS reconstruction
+
+Options:
+-cut <text file>: Process only the subject included in text file
+-h: print this help
+<project>: Name of the project (mandatory)
+

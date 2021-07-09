@@ -1,0 +1,7 @@
+usage: fs_metrics.pl <project>
+
+Extract the metrics from FS reconstruction
+
+Options
+<project>: Name of the project (mandatory)
+-h: print this help

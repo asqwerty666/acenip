@@ -1,0 +1,9 @@
+usage: bulk2bids.pl -c <config_file> <project>
+
+Create BIDS structure following config_file
+
+Options:
+-c <config_file>: specify the config file for BIDS structure, default is bids/conversion.json
+<project>: name of the project (mandatory)
+-h: print this help
+

@@ -1,0 +1,10 @@
+usage: dfmri.pl [-cut <text_file>] [-fs] [-st] <project>
+
+Launch fmriprep for the subjects of <project>
+
+Options:
+-cut <text_file>: Process only the subjects included in this file
+-fs: preprocess with Freesurfer 
+-st: do slice timing correction
+<project>: name of the project (mandatory)
+-h: print this help

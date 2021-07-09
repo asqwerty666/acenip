@@ -1,0 +1,6 @@
+usage: update_(mri|pet)_db.pl <project>
+
+Create or update project DB from source files
+
+<project> Name of the project (mandatory)
+

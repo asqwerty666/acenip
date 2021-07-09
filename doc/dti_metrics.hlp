@@ -1,0 +1,11 @@
+usage: dti_metrics.pl [-a1|-a2] [-cut <txt file>] [-sd] <project>
+
+
+Export DTI FA and MD using JHU atlas
+
+Options:
+-a1, -a2: Choose JHU Atlas (a1: labels, a2: tracts)
+-cut <text file>: Just for the subjects listed in file
+-sd: export also standard deviations
+-h: print this help
+<project>: name of the project (mandatory)

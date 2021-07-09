@@ -1,0 +1,11 @@
+usage: dti_metrics_tracks.pl [-thr <x>] -path <netpath> [-sd] [-cut <text_file>] <project>
+
+Get FA and MD metrics in given tracks
+
+Options:
+
+-thr <x>: make a threshold of <x> to the original probtrackx image. default = 0.25
+-path <netpath>: look for individual tractography at probtrack_netpath directory (see manual)
+-sd: export results with standard deviation
+-cut <text_file>: Process only the subjects includedin this file
+<project>: Name of the project (mandatory)

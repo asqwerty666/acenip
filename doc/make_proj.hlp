@@ -1,0 +1,8 @@
+usage: make_proj.pl <project> <path>
+
+Create project's structure and configuration file
+
+<project> Name of the project (mandatory)
+<path> Path for source DICOMs of this project (mandatory)
+
+

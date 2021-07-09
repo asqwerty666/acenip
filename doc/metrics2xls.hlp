@@ -1,0 +1,17 @@
+usage: metrics2xls.pl -i <input_dir> -o <output_file> -g <data_file> -s <info_file> <project>
+
+Converts metrics output file to a single MS Excel file
+
+Options:
+-i <input_dir>: directory containing results files (mandatory)
+-o <output_file>: output file
+-g <data_file>: guidance file name (mandatory)
+-s <info_file>: file with data for cover page
+<project>: name of the project (mandatory)
+-h: print this help
+
+see also: 
+https://detritus.fundacioace.com/wiki/doku.php/neuroimagen:pipe04_user?&#formato_de_entrega
+https://detritus.fundacioace.com/wiki/doku.php/neuroimagen:pipe04?&#formato_de_resultados
+https://detritus.fundacioace.com/wiki/doku.php/neuroimagen:dando_formato_a_las_resultados
+

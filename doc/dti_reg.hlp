@@ -1,0 +1,11 @@
+usage: dti_reg.pl [-cut <text_file>] [-old] [-chop] <project>
+
+Makes DTI preproc and MNI and T1 registration to DTI space 
+
+Options:
+-cut <text_file>: Process only the subjects included in this file
+-old: use eddy_correct (deprecated version)
+-chop: use alt method for bad DTI scans
+-h: print this help
+<project>: Name of the project
+

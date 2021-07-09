@@ -1,0 +1,9 @@
+usage: fbb_correct.pl [-cut <text_file>] <project>
+
+Register PET images to native T1 space
+
+Options:
+-cut <text_file>: Process only the subjects included in this file
+-h: print this help
+<project>: Name of the project
+

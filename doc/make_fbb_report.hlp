@@ -1,0 +1,7 @@
+usage: make_fbb_report.pl <project>
+
+Create FBB registration report in working/fbbs/index.html for visual QC inspection
+
+Options
+<project>: Name of the project (mandatory)
+-h: print this help

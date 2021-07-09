@@ -1,0 +1,7 @@
+usage: make_dti_report.pl <project>
+
+Create DTI registration report in working/dtis/index.html for visual QC inspection
+
+Options
+<project>: Name of the project (mandatory)
+-h: print this help

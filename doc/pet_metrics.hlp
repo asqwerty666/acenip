@@ -1,0 +1,9 @@
+usage: fbb_(cl|rois)_metrics.pl [-cut <text_file>] <project>
+
+Get SUVR and Centiloid metrics. 
+
+Options:
+-cut <text_file>: Process only the subjects included in this file
+-h: print this help
+<project>: Name of the project
+

@@ -1,0 +1,9 @@
+usage: rs_ica_(one|group).pl [-cut <text_file>] <project>
+
+Do Individual Component Analisis for fMRI acquisitions in (single|group of) individuals
+
+Options:
+-cut <text_file>: Process only the subjects included in this file
+-h: print this help
+<project>: Name of the project
+
