@@ -11,98 +11,100 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-#
+
+# Aqui se bajan los resultados del analisis de FS de XNAT con el objetivo, no de
+# tener una estructura local sino de extraer directamente un grupos de datos
+# de la segmentacion
+
+# v0.1 - extraer aseg
+# v0.2 - extraer aparc
+
 use strict; use warnings;
 use NEURO4 qw(populate get_subjects check_fs_subj load_project print_help check_or_make cut_shit);
 use FSMetrics qw(fs_file_metrics);
 use File::Basename qw(basename);
 use File::Slurp qw(read_file);
 
-my $stats = "all";
+my $stats = "aseg";
 my $all = 0;
-my $prj_alias = "";
+my $prj;
+my $xprj;
+my $tmpdir; 
+chomp($tmpdir = `mktemp -d /tmp/fstar.XXXXXX`);
+my $guide = $tmpdir."/xnat_guys.list";
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
-    if (/^-a/) { $all = 1;}
     if (/^-s/) { $stats = shift;}
-    if (/^-p/) { $prj_alias = shift;}
+    if (/^-p/) { $prj = shift; chomp($prj);} #nombre local del proyecto
+    if (/^-x/) { $xprj = shift; chomp($xprj);} #nombre del proyecto en XNAT
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/xnat_get.hlp'; exit;}
 }
-
-my $study = shift;
-unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/xnat_get.hlp'; exit;}
-unless ($prj_alias) {$prj_alias = $study;}
-my %std = load_project($study);
-my $db = $std{DATA}.'/'.$study.'_mri.csv';
-my $src_dir = $std{'SRC'};
-my $subj_dir = $ENV{'SUBJECTS_DIR'};
-#my @subjects = cut_shit($db, $std{DATA}."/".$cfile);
-my %subj_alias = populate('^(\d{4});(.*)$', $db);
+unless ($prj) { print_help $ENV{'PIPEDIR'}.'/doc/xnat_get.hlp'; exit;}
+$xprj = $prj unless $xprj;
+my %std = load_project($prj);
+# La parte inicial es comun con xnat_pullfs.pl (a lo mejor meterlo en una funcion?)
+# Saco los sujetos del proyecto 
+my $order = "xnatapic list_subjects --project_id ".$xprj." --label > ".$std{'DATA'}."/xnat_subjects.list";
+print "Getting XNAT subject list\n";
+system($order);
+# Para cada sujeto saco el ID de experimento de la MRI
+$order = "for x in `awk -F\",\" {'print \$1'} xnat_subjects.list`; do e=\$(xnatapic list_experiments --project_id ".$xprj." --subject_id \${x} --modality MRI); if [[ \${e} ]]; then echo \"\${x},\${e}\"; fi; done > ".$std{'DATA'}."/xnat_subject_mri.list";
+print "Getting experiments\n";
+system($order);
+# Ya teniendo los experimentos emparejo los sujetos segun codigo de proyecto local, codigo de XNAT y experimento de XNAT
+my $proj_file = $std{'DATA'}.'/'.$prj.'_mri.csv';
+$order = "sed 's/;/,/g' ".$proj_file." > ".$tmpdir."/all_mri.list;"; 
+$order.= "sort -t, -k 2 ".$tmpdir."/all_mri.list > ".$tmpdir."/all_mri_sorted.list;";
+$order.= "join -t, xnat_subjects.list xnat_subject_mri.list > ".$tmpdir."/tmp_mri.list;";
+$order.= "sort -t, -k 2 ".$tmpdir."/tmp_mri.list > ".$tmpdir."/xnat_tmp_mri_sorted.list;";
+$order.= "join -t, -j 2 ".$tmpdir."/all_mri_sorted.list ".$tmpdir."/xnat_tmp_mri_sorted.list  > ".$tmpdir."/xnat_guys.list";
+print "Sorting, joining, keeping shit together\n";
+system($order);
+# Ahora voy a bajar el archivo de stats para cada imagen y dentro de un directorio
+# para cada sujeto, con la convencion IDSUJETOXNAT. 
+# De aqui he de extraer las estadisticas que se han pedido
+# y dejarlas en un archivo.
 my @fsnames;
-my $fsout = $std{DATA}.'/fsrecon';
-mkdir $fsout;
-unless($all){
-	foreach my $subject (sort keys %subj_alias){
-		my $fsubj = 'fake_'.$subject;
-		push @fsnames, $fsubj;
-		my $order = 'mkdir -p '.$subj_dir.'/fake_'.$subject.'/stats';
-		system($order);
-		$order = 'find '.$src_dir.'/'.$subj_alias{$subject}.'/ -type f | head -1';
-		my $one = qx/$order/;
-		chomp($one);
-		$order = 'dckey -k "PatientID" '.$one.' 2>&1';
-		my $expid = qx/$order/;
-		$order = 'xnatapic list_experiments --project_id '.$prj_alias.' --label | grep '.$expid;
-		my $xpid =qx/$order/;
-		my @xepid = split /,/, $xpid;
-		$order = 'xnatapic get_fsresults --experiment_id '.$xepid[0].(($stats eq "all")?' --all-stats':' --stats '.$stats).' '.$subj_dir.'/fake_'.$subject.'/stats';
-		print "$order\n";
-		system($order);
-	}
-	my %gstats = fs_file_metrics();
-	my $fslist = join ' ', @fsnames;
-
-	foreach my $gstat (sort keys %gstats) {
-	        if(exists($gstats{$gstat}{'active'}) && $gstats{$gstat}{'active'}){
-	                (my $order = $gstats{$gstat}{'order'}) =~ s/<list>/$fslist/;
-	                 $order =~ s/<fs_output>/$fsout/;
-			if ( -f $subj_dir.'/'.$gstats{$gstat}{'file'}){
-	                	system("$order");
-	                	(my $opatt = $gstat) =~ s/_/./g;
-	                	$opatt =~ s/(.*)\.rh$/rh\.$1/;
-	                	$opatt =~ s/(.*)\.lh$/lh\.$1/;
-		                $order = 'sed \'s/\t/,/g; s/'.$study.'_//;s/^Measure:volume\|^'.$opatt.'/Subject/\' '.$fsout.'/'.$gstat.'.txt > '.$fsout.'/'.$gstat.'.csv'."\n";
-	        	        system($order);
+my $fsout = $std{DATA}.'/fsresults';
+mkdir $fsout unless -d $fsout;
+open IDF, "<$guide" or die "No such file or directory\n";
+my $okheader = 0;
+while(<IDF>){
+	my $ofile = $std{DATA}.'/'.$prj.'_'.$stat.'.csv';
+	open ODF, ">ofile";
+	# Primero voy a ir sacando los IDs de sujeto y experimentos que he capturado
+	my ($pid, $imgid, $xsubj, $xexp) = /(.*),(.*),(.*),(.*)/;
+	# Hago un directorio para cada uno
+	my $order = 'mkdir -p '.$fsout.'/'.$xsubj.'/stats';
+	system($order);
+	# y guardo el archivo de stats
+	$order = 'xnatapic get_fsresults --experiment_id '.$xexp.' --stats '.$stats.' '.$fsout.'/'.$xsubj.'/';
+	print "$order\n";
+	system($order);
+	# ahora voy a intentar sacar las estadisticas
+	if($stat == "aseg"){
+		# Aqui voy a sacar los volumenes porque son distintos a los demas
+		my @tdata = `grep -v "^#" $fsout/$xsubj/$stat.stats | awk '{print \$5","\$4}'`;
+		chomp @tdata;
+		my %udata = map { my ($key, $value) = split ","; $key => $value } @tdata;
+		my $etiv = `grep  EstimatedTotalIntraCranialVol $fsout/$xsubj/$stat.stats | awk -F", " '{print $4}'`;
+		#$udata{'eTIV'} = $etiv;
+		unless($okheader) {
+			print ODF "Subject_ID";
+			foreach my $dhead (sort keys %udata){
+				print ODF ", $dhead";
 			}
-	       	}
+			$okheader = 1;
+			print ODF ", eTIV\n";
+		}
+		print ODF "$pid";
+		foreach my $roi sort keys %udata){
+			print ", $udata{$roi}";
+		}
+		print ", $eitv\n";
 	}
-	foreach my $subject (sort keys %subj_alias){
-		my $order = 'rm -rf '.$subj_dir.'/fake_'.$subject;
-		system($order);
-	}
-}else{
-	foreach my $subject (sort keys %subj_alias){
-		my $fsubj = $study.'_'.$subject;
-		my $order = 'mkdir -p '.$fsubj;
-		system($order);
-                $order = 'find '.$src_dir.'/'.$subj_alias{$subject}.'/ -type f | head -1';
-                my $one = qx/$order/;
-                chomp($one);
-                $order = 'dckey -k "PatientID" '.$one.' 2>&1';
-                my $expid = qx/$order/;
-                $order = 'xnatapic list_experiments --project_id '.$prj_alias.' --label | grep '.$expid;
-                my $xpid =qx/$order/;
-                my @xepid = split /,/, $xpid;
-                $order = 'xnatapic get_fsresults --experiment_id '.$xepid[0].' --all-tgz '.$std{DATA}.'/'.$fsubj;
-                print "$order\n";
-                system($order);
-		$order = 'mkdir '.$subj_dir.'/'.$study.'_'.$subject;
-		system($order);
-                chomp $xepid[1];
-		$order= 'tar xzvf '.$std{DATA}.'/'.$study.'_'.$subject.'/'.$xepid[1].'.tar.gz --strip-components=1 -C '.$subj_dir.'/'.$study.'_'.$subject.' XNAT*';
-		#print "$order\n";
-                system($order);
-	}	
 }
+my $order = 'rm -rf '.$fsout;
+system($order);
