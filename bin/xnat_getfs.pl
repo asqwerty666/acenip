@@ -24,6 +24,7 @@ use NEURO4 qw(populate get_subjects check_fs_subj load_project print_help check_
 use FSMetrics qw(fs_file_metrics);
 use File::Basename qw(basename);
 use File::Slurp qw(read_file);
+use Data::Dump qw(dump);
 
 my $stats = "aseg";
 my $all = 0;
@@ -48,7 +49,7 @@ my %std = load_project($prj);
 # Saco los sujetos del proyecto 
 my $order = "xnatapic list_subjects --project_id ".$xprj." --label > ".$std{'DATA'}."/xnat_subjects.list";
 print "Getting XNAT subject list\n";
-system($order);
+system($order) unless -f $std{'DATA'}.'/xnat_subjects.list';
 # Para cada sujeto saco el ID de experimento de la MRI
 $order = "for x in `awk -F\",\" {'print \$1'} xnat_subjects.list`; do e=\$(xnatapic list_experiments --project_id ".$xprj." --subject_id \${x} --modality MRI); if [[ \${e} ]]; then echo \"\${x},\${e}\"; fi; done > ".$std{'DATA'}."/xnat_subject_mri.list";
 print "Getting experiments\n";
@@ -67,13 +68,13 @@ system($order);
 # De aqui he de extraer las estadisticas que se han pedido
 # y dejarlas en un archivo.
 my @fsnames;
-my $fsout = $std{DATA}.'/fsresults';
+my $fsout = $std{'DATA'}.'/fsresults';
 mkdir $fsout unless -d $fsout;
 open IDF, "<$guide" or die "No such file or directory\n";
 my $okheader = 0;
+my $ofile = $std{'DATA'}.'/'.$prj.'_'.$stats.'.csv';
+open ODF, ">$ofile";
 while(<IDF>){
-	my $ofile = $std{DATA}.'/'.$prj.'_'.$stat.'.csv';
-	open ODF, ">ofile";
 	# Primero voy a ir sacando los IDs de sujeto y experimentos que he capturado
 	my ($pid, $imgid, $xsubj, $xexp) = /(.*),(.*),(.*),(.*)/;
 	# Hago un directorio para cada uno
@@ -81,30 +82,42 @@ while(<IDF>){
 	system($order);
 	# y guardo el archivo de stats
 	$order = 'xnatapic get_fsresults --experiment_id '.$xexp.' --stats '.$stats.' '.$fsout.'/'.$xsubj.'/';
-	print "$order\n";
+	#print "$order\n";
 	system($order);
 	# ahora voy a intentar sacar las estadisticas
-	if($stat == "aseg"){
+	if($stats eq "aseg"){
 		# Aqui voy a sacar los volumenes porque son distintos a los demas
-		my @tdata = `grep -v "^#" $fsout/$xsubj/$stat.stats | awk '{print \$5","\$4}'`;
-		chomp @tdata;
+		my @tdata = `grep -v "^#" $fsout/$xsubj/$stats.stats | awk '{print \$5","\$4}'`;
+		chomp @tdata; 
 		my %udata = map { my ($key, $value) = split ","; $key => $value } @tdata;
-		my $etiv = `grep  EstimatedTotalIntraCranialVol $fsout/$xsubj/$stat.stats | awk -F", " '{print $4}'`;
+		my $etiv = `grep  EstimatedTotalIntraCranialVol $fsout/$xsubj/$stats.stats | awk -F", " '{print \$4}'`;
+		chomp $etiv;
 		#$udata{'eTIV'} = $etiv;
 		unless($okheader) {
 			print ODF "Subject_ID";
 			foreach my $dhead (sort keys %udata){
-				print ODF ", $dhead";
+				print ODF ",$dhead";
 			}
 			$okheader = 1;
-			print ODF ", eTIV\n";
+			print ODF ",eTIV\n";
 		}
 		print ODF "$pid";
-		foreach my $roi sort keys %udata){
-			print ", $udata{$roi}";
+		foreach my $roi (sort keys %udata){
+			print ODF ",$udata{$roi}";
 		}
-		print ", $eitv\n";
+		print ODF ",$etiv\n";
+	}elsif($stats eq "aparc"){
+		# Aqui voy a sacar las aparc. Esto es la parcelacion del cortex
+		# y hay dos archivos distintos lh.aparc.stats y rh.aparc.stats
+		# asi que tengo que sacar los hemisferios por separados
+		my @hemis = ('lh', 'rh');
+		my $suffix = '.aparc.stats';
+		my @meassures = ('SurfArea', 'GrayVol', 'ThickAvg');
+		foreach $hemi (@hemis){
+			my @tdata = `grep -v "^#" $fsout/$xsubj/$hemi.$suffix | awk '{print \$1","\$3","\$4","\$5}'`;
+		}
 	}
 }
-my $order = 'rm -rf '.$fsout;
-system($order);
+close ODF;
+$order = 'rm -rf '.$fsout;
+#system($order);
