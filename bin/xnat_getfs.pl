@@ -16,8 +16,8 @@
 # tener una estructura local sino de extraer directamente un grupos de datos
 # de la segmentacion
 
-# v0.1 - extraer aseg
-# v0.2 - extraer aparc
+# v0.1 - extraer aseg -> done
+# v0.2 - extraer aparc -> done
 
 use strict; use warnings;
 use NEURO4 qw(populate get_subjects check_fs_subj load_project print_help check_or_make cut_shit);
@@ -80,12 +80,11 @@ while(<IDF>){
 	# Hago un directorio para cada uno
 	my $order = 'mkdir -p '.$fsout.'/'.$xsubj.'/stats';
 	system($order);
-	# y guardo el archivo de stats
-	$order = 'xnatapic get_fsresults --experiment_id '.$xexp.' --stats '.$stats.' '.$fsout.'/'.$xsubj.'/';
-	#print "$order\n";
-	system($order);
 	# ahora voy a intentar sacar las estadisticas
 	if($stats eq "aseg"){
+		# y guardo el archivo de stats
+		$order = 'xnatapic get_fsresults --experiment_id '.$xexp.' --stats '.$stats.' '.$fsout.'/'.$xsubj.'/';
+		system($order);
 		# Aqui voy a sacar los volumenes porque son distintos a los demas
 		my @tdata = `grep -v "^#" $fsout/$xsubj/$stats.stats | awk '{print \$5","\$4}'`;
 		chomp @tdata; 
@@ -111,11 +110,45 @@ while(<IDF>){
 		# y hay dos archivos distintos lh.aparc.stats y rh.aparc.stats
 		# asi que tengo que sacar los hemisferios por separados
 		my @hemis = ('lh', 'rh');
-		my $suffix = '.aparc.stats';
 		my @meassures = ('SurfArea', 'GrayVol', 'ThickAvg');
-		foreach $hemi (@hemis){
-			my @tdata = `grep -v "^#" $fsout/$xsubj/$hemi.$suffix | awk '{print \$1","\$3","\$4","\$5}'`;
+		my $etiv;
+		my %udata;
+		foreach my $hemi (@hemis){
+			$order = 'xnatapic get_fsresults --experiment_id '.$xexp.' --stats '.$hemi.'.'.$stats.' '.$fsout.'/'.$xsubj.'/';
+			system($order);
+			my @tdata = `grep -v "^#" $fsout/$xsubj/$hemi.$stats.stats | awk '{print \$1","\$3","\$4","\$5}'`;
+			chomp @tdata;
+			#dump @tdata;
+			foreach my $chunk (@tdata) {
+				my ($key, $sa, $gv, $tv) = split /,/, $chunk; 
+				$udata{$hemi}{$key}{'SurfArea'} = $sa;
+				$udata{$hemi}{$key}{'GrayVol'} = $gv;
+				$udata{$hemi}{$key}{'ThickAvg'} = $tv;
+			}
+			$etiv = `grep  EstimatedTotalIntraCranialVol $fsout/$xsubj/$hemi.$stats.stats | awk -F", " '{print \$4}'`;
+			chomp $etiv;
 		}
+		unless($okheader) {
+			print ODF "Subject_ID";
+			foreach my $hemi (@hemis){
+				foreach my $dhead (sort keys %{$udata{$hemi}}){
+					foreach my $measure (@meassures){
+						print ODF ",$hemi.$dhead.$measure";
+					}
+				}
+			}
+			$okheader = 1;
+			print ODF ",eTIV\n";
+		}
+		print ODF "$pid";
+		foreach my $hemi (@hemis){
+			foreach my $dhead (sort keys %{$udata{$hemi}}){
+				foreach my $measure (@meassures){
+					print ODF ",$udata{$hemi}{$dhead}{$measure}";
+				}
+			}
+		}
+		print ODF ",$etiv\n";
 	}
 }
 close ODF;
