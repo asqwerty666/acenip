@@ -153,4 +153,4 @@ while(<IDF>){
 }
 close ODF;
 $order = 'rm -rf '.$fsout;
-#system($order);
+system($order);
