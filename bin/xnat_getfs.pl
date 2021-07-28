@@ -49,7 +49,7 @@ my %std = load_project($prj);
 # Saco los sujetos del proyecto 
 my $order = "xnatapic list_subjects --project_id ".$xprj." --label > ".$std{'DATA'}."/xnat_subjects.list";
 print "Getting XNAT subject list\n";
-system($order) unless -f $std{'DATA'}.'/xnat_subjects.list';
+system($order);
 # Para cada sujeto saco el ID de experimento de la MRI
 $order = "for x in `awk -F\",\" {'print \$1'} xnat_subjects.list`; do e=\$(xnatapic list_experiments --project_id ".$xprj." --subject_id \${x} --modality MRI); if [[ \${e} ]]; then echo \"\${x},\${e}\"; fi; done > ".$std{'DATA'}."/xnat_subject_mri.list";
 print "Getting experiments\n";
