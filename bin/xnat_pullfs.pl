@@ -53,7 +53,7 @@ my $order = "xnatapic list_subjects --project_id ".$xprj." --label > ".$tmpdir."
 #print "Getting XNAT subject list\n";
 system($order);
 # Para cada sujeto saco el ID de experimento de la MRI
-$order = "for x in `awk -F\",\" {'print \$1'} xnat_subjects.list`; do e=\$(xnatapic list_experiments --project_id ".$xprj." --subject_id \${x} --modality MRI); if [[ \${e} ]]; then echo \"\${x},\${e}\"; fi; done > ".$tmpdir."/xnat_subject_mri.list";
+$order = "for x in `awk -F\",\" {'print \$1'} ".$tmpdir."/xnat_subjects.list`; do e=\$(xnatapic list_experiments --project_id ".$xprj." --subject_id \${x} --modality MRI); if [[ \${e} ]]; then echo \"\${x},\${e}\"; fi; done > ".$tmpdir."/xnat_subject_mri.list";
 
 #print "Getting experiments\n";
 system($order);
