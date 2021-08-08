@@ -21,6 +21,9 @@
 # Yep, is a mess but I should allow to people to revise the QC 
 # without work across an entire project
 #
+# Also, this script depends on xnatapic tool that is a private ACE tool.
+# So this is difficult to add to another pipelines. \(_ _)/ 
+#
 
 use strict; use warnings;
 use Cwd qw(cwd);
@@ -31,6 +34,7 @@ my $xprj;
 my $ifile; my $efile;
 my $wdir = cwd;
 my $odir;
+my $continue = 0; 
 
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
@@ -38,6 +42,7 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
 	last if /^--$/;
 	if (/^-i/) { $ifile = shift; chomp($ifile);}
 	if (/^-d/) { $odir = shift; chomp($odir);}
+	if (/^-c/) { $continue = 1;}
 	if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/reviewqc.hlp'; exit;}
 	if (/^-x/) { $xprj = shift; chomp($xprj);} #nombre del proyecto en XNAT
 	if (/^-p/) { $prj = shift; chomp($prj);} #nombre local del proyecto
@@ -70,42 +75,52 @@ if ($ifile and -f $ifile){
 	}
 	close TDF;
 }
-if ($odir and -d $odir) {
-	my $bckdir = $odir.'_'.getLoggingTime();
-	my $mvorder = "mv $odir $bckdir";
-	system($mvorder);
-}else{
-	#Si no me das el dir que tengo que leer entonces lo creo
+unless ($odir and -d $odir) {
+	# si me das un directorio de input y este existe entonces no tengo que 
+	# bajarme nada sino hacer el analisis a partir de este directorio
+	# Si no me das el dir que tengo que leer pero el default ya existe entonces 
+	# creo uno nuevo con el timestamp y ese es el que voy a usar
 	$odir=$wdir.'/'.$xprj.'_fsresults';
 	if ( -d $odir ){
 		# a no ser que exista, entonces muevo este a otro sitio
-		# y creo uno nuevo con el nombre por default
-		my $bckdir = $odir.'_'.getLoggingTime();
-		my $mvorder = "mv $odir $bckdir";
-		system($mvorder);
+		# y creo uno nuevo con el timestamp
+		$odir = $odir.'_'.getLoggingTime();
 	}
 	mkdir $odir;
-}
-#y ejecuto la preparacion
-if ($ifile and -f $ifile){
-	foreach my $pollo (@pollos){
-		my $pre = "xnatapic prepare_fsqc --project_id $xprj --outdir $odir --subject_id $pollo";
+	#y ejecuto la preparacion
+	if ($ifile and -f $ifile){
+		# si me has dado una lista de los que quieres procesar
+		# me limito a preparar esos
+		foreach my $pollo (@pollos){
+			my $pre = "xnatapic prepare_fsqc --project_id $xprj --outdir $odir --subject_id $pollo";
+			system($pre);
+		}
+	}else{	
+		#pero si no hay lista los bajo todos
+		my $pre = "xnatapic prepare_fsqc --project_id $xprj --outdir $odir";
 		system($pre);
 	}
-}else{	
-	my $pre = "xnatapic prepare_fsqc --project_id $xprj --outdir $odir";
-	system($pre);
 }
 
 my $vqcd = $wdir.'/visualqc_output';
 if ( -d $vqcd ){
-	my $bckdir = $vqcd.'_'.getLoggingTime();
-	my $mvorder = "mv $vqcd $bckdir";
-	system($mvorder);
+	#aqui igual, si existe el directorio de output 
+	#no lo sobreescribo sino que le añado el timestamp al nuevo
+	unless ($continue) {
+		$vqcd = $vqcd.'_'.getLoggingTime();
+		mkdir $vqcd;
+	}
+}else{
+	mkdir $vqcd;
 }
-mkdir $vqcd;
-my $order = "vqcfs -i $efile -f $odir -o $vqcd";
-system($order);
-
+# y ahora es que lanzamos el visualQC con las opciones que hemos leido o creado
+if ($ifile and -f $ifile){
+	my $order = "vqcfs -i $efile -f $odir -o $vqcd";
+	system($order);
+}else{
+	my $order = "vqcfs -f $odir -o $vqcd";
+	system($order);
+}
+#por ultimo subimos los resultados que haya
 my $post = "xnatapic upload_fsqc --qcdir $vqcd";
 system($post);
