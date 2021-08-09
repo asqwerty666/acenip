@@ -14,7 +14,7 @@
 
 use strict; use warnings;
 use NEURO4 qw(load_project print_help populate check_or_make);
-
+use SLURM qw(send2slurm);
 my $cfile = 'bids/conversion.json';
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
@@ -24,6 +24,7 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/bulk2bids.hlp'; exit;}
 }
 my $proj  = shift;
+# leo la configuacion del proyecto
 unless ($proj) { print_help $ENV{'PIPEDIR'}.'/doc/bulk2bids.hlp'; exit;}
 my %std = load_project($proj);
 my $src_dir = $std{'SRC'};
@@ -31,33 +32,23 @@ my $proj_file = $std{'DATA'}.'/'.$proj.'_mri.csv';
 my %guys = populate('^(\d{4});(.*)$', $proj_file);
 my $outdir = "$std{'DATA'}/slurm";
 check_or_make($outdir);
+# defino las propiedas generales de la tarea en el schedule manager
+my %ptask;
+$ptask{'cpus'} = 8;
+$ptask{'job_name'} = 'dcm2bids_'.$proj;
+$ptask{'time'} = '3:0:0';
+$ptask{'mem_per_cpu'} = '4G';
 foreach my $subject (sort keys %guys) {
-	my $order = "mkdir -p $std{'DATA'}/bids/tmp_dcm2bids/sub-$subject; dcm2niix -b y -ba y -z y -f '%3s_%f_%p_%t' -o $std{'DATA'}/bids/tmp_dcm2bids/sub-$subject $std{'SRC'}/$guys{$subject}/; dcm2bids -d $std{'SRC'}/$guys{$subject}/ -p $subject -c $std{'DATA'}/$cfile -o $std{'DATA'}/bids/";
-	#print "$order\n";
-	my $orderfile = $outdir.'/'.$subject.'dcm2bids.sh';
-	open ORD, ">$orderfile";
-	print ORD '#!/bin/bash'."\n";
-	print ORD '#SBATCH -J dcm2bids_'.$proj."\n";
-	print ORD '#SBATCH --time=3:0:0'."\n"; #si no ha terminado en X horas matalo
-	print ORD '#SBATCH --mail-type=FAIL,TIME_LIMIT,STAGE_OUT'."\n"; #no quieres que te mande email de todo
-	print ORD '#SBATCH --mail-user='."$ENV{'USER'}\n";
-	print ORD '#SBATCH -p fast'."\n";
-        print ORD '#SBATCH -c 8'."\n";
-	print ORD '#SBATCH --mem-per-cpu=4G'."\n";
-	print ORD '#SBATCH -o '.$outdir.'/dcm2bids'.$subject.'-%j'."\n";
-	print ORD "srun $order\n";
-	close ORD;
-	system("sbatch $orderfile");
+	$ptask{'command'} = "mkdir -p $std{'DATA'}/bids/tmp_dcm2bids/sub-$subject; dcm2niix -b y -ba y -z y -f '%3s_%f_%p_%t' -o $std{'DATA'}/bids/tmp_dcm2bids/sub-$subject $std{'SRC'}/$guys{$subject}/; dcm2bids -d $std{'SRC'}/$guys{$subject}/ -p $subject -c $std{'DATA'}/$cfile -o $std{'DATA'}/bids/";
+	$ptask{'filename'} = $outdir.'/'.$subject.'dcm2bids.sh';
+	$ptask{'output'} = $outdir.'/dcm2bids'.$subject.'-%j';
+	send2slurm(\%ptask);
 }
-my $orderfile = $outdir.'/dcm2bids_end.sh';
-open ORD, ">$orderfile";
-print ORD '#!/bin/bash'."\n";
-print ORD '#SBATCH -J dcm2bids_'.$proj."\n";
-print ORD '#SBATCH --mail-type=END'."\n"; #email cuando termine o falle
-print ORD '#SBATCH --mail-user='."$ENV{'USER'}\n";
-print ORD '#SBATCH -o '.$outdir.'/dmc2bids_end-%j'."\n";
-print ORD ":\n";
-close ORD;
-my $xorder = 'sbatch --dependency=singleton'.' '.$orderfile;
-exec($xorder);
+my %warn;
+$warn{'filename'} = $outdir.'/dcm2bids_end.sh';
+$warn{'job_name'} = 'dcm2bids_'.$proj;
+$warn{'mailtype'} = 'END'; #email cuando termine
+$warn{'output'} = $outdir.'/dmc2bids_end-%j';
+$warn{'dependency'} = 'singleton';
+send2slurm(\%warn);
 
