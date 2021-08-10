@@ -12,9 +12,11 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+# Este script toma los DCM de imagen PET y los lleva a NIfTI,
+# almacenados en formato BIDS
 use strict; use warnings;
 use NEURO4 qw(load_project print_help populate check_or_make);
-
+use SLURM qw(send2slurm);
 my $cfile = 'bids/conversion.json';
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
@@ -32,31 +34,19 @@ die "There is'nt pet list file!\n" unless -f $proj_file;
 my %guys = populate('^(\d{4});(.*)$', $proj_file);
 my $outdir = "$std{'DATA'}/slurm";
 check_or_make($outdir);
+my %ptask;
+$ptask{'job_name'} = 'dcm2bids_'.$proj;
+$ptask{'time'} = '2:0:0';
+$ptask{'partition'} = 'fast';
 foreach my $subject (sort keys %guys) {
-	my $order = 'dcm2bids -d '.$std{'PET'}.'/'.$guys{$subject}.'/ -p '.$subject.' -c '.$std{'DATA'}.'/'.$cfile.' -o '.$std{'DATA'}.'/bids/ --forceDcm2niix';
-	#print "$order\n";
-	my $orderfile = $outdir.'/'.$subject.'dcm2bids.sh';
-	open ORD, ">$orderfile";
-	print ORD '#!/bin/bash'."\n";
-	print ORD '#SBATCH -J dcm2bids_'.$proj."\n";
-	print ORD '#SBATCH --time=2:0:0'."\n"; #si no ha terminado en X horas matalo
-	print ORD '#SBATCH --mail-type=FAIL,TIME_LIMIT,STAGE_OUT'."\n"; #no quieres que te mande email de todo
-	print ORD '#SBATCH --mail-user='."$ENV{'USER'}\n";
-	print ORD '#SBATCH -p fast'."\n";
-	print ORD '#SBATCH -o '.$outdir.'/dcm2bids'.$subject.'-%j'."\n";
-	print ORD "srun $order\n";
-	close ORD;
-	system("sbatch $orderfile");
+	$ptask{'command'} = 'dcm2bids -d '.$std{'PET'}.'/'.$guys{$subject}.'/ -p '.$subject.' -c '.$std{'DATA'}.'/'.$cfile.' -o '.$std{'DATA'}.'/bids/ --forceDcm2niix';
+	$ptask{'filename'} = $outdir.'/'.$subject.'dcm2bids.sh';
+	$ptask{'output'} = $outdir.'/dcm2bids'.$subject.'-%j';
+	send2slurm(\%ptask);
 }
-my $orderfile = $outdir.'/dcm2bids_end.sh';
-open ORD, ">$orderfile";
-print ORD '#!/bin/bash'."\n";
-print ORD '#SBATCH -J dcm2bids_'.$proj."\n";
-print ORD '#SBATCH --mail-type=END'."\n"; #email cuando termine o falle
-print ORD '#SBATCH --mail-user='."$ENV{'USER'}\n";
-print ORD '#SBATCH -o '.$outdir.'/dmc2bids_end-%j'."\n";
-print ORD ":\n";
-close ORD;
-my $xorder = 'sbatch --dependency=singleton'.' '.$orderfile;
-exec($xorder);
-
+my %final;
+$final{'filename'} = $outdir.'/dcm2bids_end.sh';
+$final{'job_name'} = 'dcm2bids_'.$proj;
+$final{'output'} = $outdir.'/dmc2bids_end-%j';
+$final{'dependency'} = 'singleton';
+send2slurm(\%final);

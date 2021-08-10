@@ -87,7 +87,7 @@ unless (-e $dmrirc && -r $dmrirc){
 	print CIF "$subjlist\n$dmclist\n$bveclist\n$bavllist\n";
 	close CIF;
 }
-#Ahora ya tengo todo el input que necesito y lo que hago es generar las ordenes
+# Ahora ya tengo todo el input que necesito y lo que hago es generar las ordenes
 my $pre_order = 'trac-all -prep -c '.$dmrirc.' -jobs '.$tmp_orders;
 system($pre_order);
 # Y ya tengo la lista de ordenes a ejecutar,

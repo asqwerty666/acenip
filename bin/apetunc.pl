@@ -12,6 +12,12 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+# Este script toma las mascaras guardadas en una imagen 4D
+# y calcula el uptake en cada una de las regiones. Escribe estos valores
+# en un archivo y divide la imagen inicial entre el valor medio
+# de la ultima de las mascaras. Se hace asi porque  se supone que
+# antes he guardado la region de referencia como la ultima mascara
+
 use strict; use warnings;
 use File::Temp qw(tempdir);
 use Data::Dump qw(dump);
@@ -28,7 +34,7 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     if (/^-o/) {$ofile = shift; chomp($ofile);}
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/petunc.hlp'; exit;}
 }
-
+# Primero tomo el 4D con las mascaras y lo separo en archivos 3D
 my $tdir = tempdir( CLEANUP => 1);
 my $splord = "$ENV{'FSLDIR'}/bin/fslsplit $mask $tdir/masks -t";
 system($splord);
@@ -39,6 +45,8 @@ my $mean;
 open OF, ">$ofile" or die "Could not open output file\n";
 print OF "REGION\tMEAN\n";
 foreach my $imask (@files){
+	# Para cada mascara, saco el valor medio en la region
+	# y lo escribo a un archivo
 	(my $tag)= $imask =~ /masks(\d+)\.nii\.gz/;
 	$tag += 1;
 	my $ord = "fslstats ".$ifile. " -k ".$tdir.'/'.$imask." -M";
@@ -47,6 +55,7 @@ foreach my $imask (@files){
 	print OF "$tag\t$mean\n";
 }
 close OF;
+# Y divido el PET por el ultimo valor medio (ROR)
 (my $suvr = $ifile) =~ s/_pet.nii.gz/_suvr.nii.gz/;
 my $ord = "fslmaths $ifile -div $mean $suvr";
 system($ord);

@@ -12,11 +12,24 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
+# Este es el tercer paso (pathway reconstruction) en la ejecucion de TRACULA
+# (Ver: https://detritus.fundacioace.com/wiki/doku.php?id=neuroimagen:tracula
+# y https://surfer.nmr.mgh.harvard.edu/fswiki/trac-all#Processingstepoptions)
+# En total son cuatro pasos,
+# - ctrac_prep.pl
+# - ctrac_bedp.pl
+# - ctrac_path.pl
+# - ctrac_stat.pl
+#
+# Aqui se ejecuta trac-all -path, configurado apra que escriba las ordenes a ejecutar 
+# en un archivo y no haga nada mas. Luego tomamos estas ordenes y las paralelizamos en
+# el cluster.
 use strict; use warnings;
 
 use File::Find::Rule;
 use NEURO4 qw(print_help load_project cut_shit check_subj check_or_make);
 use Data::Dump qw(dump);
+use SLURM qw(send2slurm);
 use File::Remove 'remove';
 use File::Basename qw(basename);
 use File::Copy::Recursive qw(dircopy);
@@ -32,6 +45,7 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     if (/^-h$/) { print_help $ENV{'PIPEDIR'}.'/doc/ctrac_prep.hlp'; exit;}
 }
 my $study = shift;
+# Se lee el proyecto (as usual)
 unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/ctrac_prep.hlp'; exit;}
 my %std = load_project($study);
 my $w_dir = $std{'WORKING'};
@@ -45,6 +59,8 @@ check_or_make($outdir);
 my @subjects = cut_shit($db, $data_dir."/".$cfile);
 my $dmrirc = $data_dir.'/dmri.rc';
 my $tmp_orders = 'trac_step3.txt';
+# si no existe el archivo dmri.rc lo creo a partir de
+# los datos del proyecto
 unless (-e $dmrirc && -r $dmrirc){
 	my $subjlist = 'set subjlist = (  ';
 	my $dmclist = 'set dcmlist = ( ';
@@ -70,37 +86,31 @@ unless (-e $dmrirc && -r $dmrirc){
 	print CIF "$subjlist\n$dmclist\n$bveclist\n$bavllist\n";
 	close CIF;
 }
+# Y genero las ordenes a ejecutar
 my $pre_order = 'trac-all -path -c '.$dmrirc.' -jobs '.$tmp_orders;
 system($pre_order);
 open CORD, "<$tmp_orders" or die "Could find orders file";
+# Opciones comunes del call
+my %ptask; 
+$ptask{'job_name'} = 'trac_path_'.$study;
+$ptask{'cpus'} = 8;
+$ptask{'time'} = '72:0:0';
+$ptask{'mem_per_cpu'} = '4G';
+$ptask{'partition'} = 'fast';
 while (<CORD>){
+	#genero una orden por cada linea
 	(my $subj) = /subjects\/$study\_(.*)\/scripts\/dmrirc/;
-	#my $cpath = $fsdir.'/'.$study.'_'.$subj.'/dmri.bedpostX/xfms';
-        #system('mkdir -p '.$cpath);
-	my $orderfile = $outdir.'/'.$subj.'_trac_path.sh';
-	open ORD, ">$orderfile";
-	print ORD '#!/bin/bash'."\n";
-	print ORD '#SBATCH -J trac_path_'.$study."\n";
-	print ORD '#SBATCH --time=72:0:0'."\n";
-	print ORD '#SBATCH --mail-type=FAIL,TIME_LIMIT,STAGE_OUT'."\n";
-	print ORD '#SBATCH -o '.$outdir.'/trac_path-%j'."\n";
-	print ORD '#SBATCH -c 8'."\n";
-	print ORD '#SBATCH --mem-per-cpu=4G'."\n";
-	print ORD '#SBATCH -p fast'."\n";
-	print ORD '#SBATCH --mail-user='."$ENV{'USER'}\n";
-	print ORD;
-	close ORD;
-	system("sbatch $orderfile");
+	$ptask{'filename'} = $outdir.'/'.$subj.'_trac_path.sh';
+	$ptask{'output'} = $outdir.'/trac_path-%j';
+	$ptask{'command'} = $_;
+	send2slurm(\%ptask);
 }
-my $orderfile = $outdir.'/trac_path_end.sh';
-open ORD, ">$orderfile";
-print ORD '#!/bin/bash'."\n";
-print ORD '#SBATCH -J trac_path_'.$study."\n";
-print ORD '#SBATCH --mail-type=END'."\n"; #email cuando termine
-print ORD '#SBATCH --mail-user='."$ENV{'USER'}\n";
-print ORD '#SBATCH -p fast'."\n";
-print ORD '#SBATCH -o '.$outdir.'/trac_path_end-%j'."\n";
-print ORD ":\n";
-close ORD;
-my $order = 'sbatch --dependency=singleton '.$orderfile;
-exec($order);
+close CORD;
+# email de aviso de finalizacion
+my %final;
+$final{'filename'} = $outdir.'/trac_path_end.sh';
+$final{'job_name'} = 'trac_path_'.$study;
+$final{'output'} = $outdir.'/trac_path_end-%j';
+$final{'mailtype'} = 'END';
+$final{'dependency'} = 'singleton';
+send2slurm(\%final);
