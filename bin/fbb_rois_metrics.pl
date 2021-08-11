@@ -16,6 +16,7 @@ use strict; use warnings;
 use File::Find::Rule;
 use NEURO4 qw(print_help load_project check_or_make cut_shit);
 use FSMetrics qw(fs_fbb_rois);
+use SLURM qw(send2slurm);
 use Data::Dump qw(dump);
 use File::Remove 'remove';
 use File::Basename qw(basename);
@@ -57,37 +58,27 @@ if ($wcb) {
 }
 
 our @subjects = cut_shit($db, $data_dir."/".$cfile);
-
+my %ptask = ('job_name' => 'fbb_mroi_'.$study,
+	'time' => '4:0:0',
+	'cpus' => 4,
+	'mem_per_cpu' => '4G',
+	'mailtype' => 'FAIL,TIME_LIMIT,STAGE_OUT',
+);
 foreach my $subject (@subjects){
 	my $reg_fbb = $w_dir.'/'.$subject.'_fbb.nii.gz';
 	if(-e $reg_fbb && -f $reg_fbb){
-		my $order = $ENV{'PIPEDIR'}."/bin/fbb_make_roi_masks.pl ".$study." ".$subject." ".$w_dir." ".$wcb;
-		my $orderfile = $outdir.'/'.$subject.'_fbb_roi.sh';
-		open ORD, ">$orderfile";
-		print ORD '#!/bin/bash'."\n";
-		print ORD '#SBATCH -J fbb_mroi_'.$study."\n";
-		print ORD '#SBATCH --time=4:0:0'."\n"; #si no ha terminado en X horas matalo
-		print ORD '#SBATCH -c 4'."\n"; # para limitar el numero de launches
-		print ORD '#SBATCH --mem-per-cpu=4G'."\n";
-		print ORD '#SBATCH --mail-type=FAIL,TIME_LIMIT,STAGE_OUT'."\n"; #no quieres que te mande email de todo
-		print ORD '#SBATCH --mail-user='."$ENV{'USER'}\n";
-		print ORD '#SBATCH -o '.$outdir.'/fbb_mroi-'.$subject.'-%j'."\n";
-		print ORD "srun $order\n";
-		close ORD;
-		system("sbatch $orderfile");
+		$ptask{'command'} = $ENV{'PIPEDIR'}."/bin/fbb_make_roi_masks.pl ".$study." ".$subject." ".$w_dir." ".$wcb;
+		$ptask{'filename'} = $outdir.'/'.$subject.'_fbb_roi.sh';
+		$ptask{'output'} = $outdir.'/fbb_mroi-'.$subject.'-%j';
+		send2slurm(\%ptask);
 	}
 }
-my $order = $ENV{'PIPEDIR'}."/bin/fbb_roi_masks.pl ".$study." ".$wcb." ".($wcut?"-cut $cfile":"");
-my $orderfile = $outdir.'/fbb_masks.sh';
-open ORD, ">$orderfile";
-print ORD '#!/bin/bash'."\n";
-print ORD '#SBATCH -J fbb_mroi_'.$study."\n";
-print ORD '#SBATCH --time=4:0:0'."\n"; #si no ha terminado en X horas matalo
-print ORD '#SBATCH --mail-type=FAIL,END'."\n"; #email cuando termine o falle
-print ORD '#SBATCH --mail-user='."$ENV{'USER'}\n";
-print ORD '#SBATCH -o '.$outdir.'/fbb_roi_masks-%j'."\n";
-print ORD "srun $order\n";
-close ORD;
-my $xorder = 'sbatch --dependency=singleton'.' '.$orderfile;
-exec($xorder);
-
+my %final = ('command' => $ENV{'PIPEDIR'}."/bin/fbb_roi_masks.pl ".$study." ".$wcb." ".($wcut?"-cut $cfile":""),
+	'filename' => $outdir.'/fbb_masks.sh',
+	'job_name' => 'fbb_mroi_'.$study,
+	'time' => '4:0:0',
+	'mailtype' => 'FAIL,END',
+	'output' => $outdir.'/fbb_roi_masks-%j',
+	'dependency' => 'singleton',
+);
+send2slurm(\%final);
