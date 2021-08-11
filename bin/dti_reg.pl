@@ -17,6 +17,7 @@ use File::Slurp qw(read_file);
 use File::Find::Rule;
 use File::Basename qw(basename);
 use Data::Dump qw(dump);
+use SLURM qw(send2slurm);
 use File::Copy::Recursive qw(dirmove);
 
 use NEURO4 qw(get_subjects check_subj load_project print_help get_list check_or_make cut_shit);
@@ -64,7 +65,13 @@ check_or_make($outdir);
 print "Collecting needed files\n";
 
 my @dtis = cut_shit($db, $data_dir."/".$cfile);
-
+my %ptask = ('time' => $timeout, 
+	'partition' => 'fast', 
+	'cpus' => 4, 
+	'mem_per_cpu' => '4G', 
+	'mailtype' => 'FAIL,STAGE_OUT',
+	'job_name' => 'dti_reg_'.$study,
+); 
 foreach my $subject (sort @dtis){
 	if($subject){
 		my %nifti = check_subj($std{'DATA'},$subject);
@@ -83,35 +90,24 @@ foreach my $subject (sort @dtis){
                                 	$order = $pipe_dir."/bin/dti_proc_uncorr.sh ".$study." ".$subject." ".$nifti{'dwi'}." ".$nifti{'T1w'}." ".$w_dir;
                         	}
 			}
-			my $orderfile = $outdir.'/'.$subject.'dti_orders.sh';
-			open ORD, ">$orderfile";
-			print ORD '#!/bin/bash'."\n";
-			print ORD '#SBATCH -J dti_reg_'.$study."\n";
-			print ORD '#SBATCH --time='.$timeout."\n"; #si no ha terminado en X horas matalo
-			print ORD '#SBATCH -c 4'."\n";
-			print ORD '#SBATCH --mem-per-cpu=4G'."\n";
-			print ORD '#SBATCH --mail-type=FAIL,STAGE_OUT'."\n"; #no quieres que te mande email de todo
-			print ORD '#SBATCH -o '.$outdir.'/dti_reg-slurm-%j'."\n";
-			unless($old){ print ORD '#SBATCH --gres=gpu:1'."\n"; }
-			print ORD '#SBATCH --mail-user='."$ENV{'USER'}\n";
-			unless($old){ print ORD '#SBATCH -p cuda'."\n"; }else{print ORD '#SBATCH -p fast'."\n";}
-			print ORD "srun $order\n";
-			close ORD;
-			system("sbatch $orderfile");
+			$ptask{'filename'} = $outdir.'/'.$subject.'dti_orders.sh';
+			$ptask{'command'} = $order;
+			$ptask{'output'} = $outdir.'/dti_reg-slurm-%j';
+			unless($old){
+				$ptask{'gres'} = 'gpu:1';
+				$ptask{'partition'} = 'cuda';
+			}
+			send2slurm(\%ptask);
 			$debug ? print DBG "$order\n" :0;
 		}
 	}
 }
 $debug ? close DBG:0;  
-my $orderfile = $outdir.'/dti_reg_end.sh';
-open ORD, ">$orderfile";
-print ORD '#!/bin/bash'."\n";
-print ORD '#SBATCH -J dti_reg_'.$study."\n";
-print ORD '#SBATCH --mail-type=END'."\n"; #email cuando termine
-print ORD '#SBATCH --mail-user='."$ENV{'USER'}\n";
-print ORD '#SBATCH -o '.$outdir.'/dti_reg_end-%j'."\n";
-print ORD "srun $ENV{'PIPEDIR'}/bin/make_dti_report.pl $study\n"; 
-close ORD;
-my $order = 'sbatch --dependency=singleton '.$orderfile;
-exec($order);
-
+my %final = ( 'filename' => $outdir.'/dti_reg_end.sh',
+	'job_name' => 'dti_reg_'.$study,
+	'mailtype' => 'END',
+	'output' => $outdir.'/dti_reg_end-%j',
+	'command' => "$ENV{'PIPEDIR'}/bin/make_dti_report.pl $study",
+	'dependency' => 'singleton',
+);
+send2slurm(\%final);

@@ -23,8 +23,8 @@ use File::Basename qw(basename);
 
 our @ISA                = qw(Exporter);
 our @EXPORT             = qw(print_help load_project cut_shit);
-our @EXPORT_OK  = qw(print_help escape_name trim check_or_make load_project populate get_subjects check_subj check_fs_subj get_list shit_done get_pair cut_shit check_pet centiloid_fbb inplace);
-our %EXPORT_TAGS        = (all => [qw(print_help escape_name trim check_or_make load_project check_subj check_fs_subj get_lut run_dckey dclokey centiloid_fbb populate get_subjects get_list shit_done get_pair cut_shit check_pet centiloid_fbb inplace)],
+our @EXPORT_OK  = qw(print_help escape_name trim check_or_make load_project populate get_subjects check_subj check_fs_subj get_list shit_done get_pair cut_shit check_pet centiloid_fbb inplace getLoggingTime);
+our %EXPORT_TAGS        = (all => [qw(print_help escape_name trim check_or_make load_project check_subj check_fs_subj get_lut run_dckey dclokey centiloid_fbb populate get_subjects get_list shit_done get_pair cut_shit check_pet centiloid_fbb inplace getLoggingTime)],
                                         usual => [qw(print_help load_project check_or_make cut_shit)],);
 our $VERSION    = 1.0;
 
@@ -253,4 +253,11 @@ sub cut_shit {
         	@oklist = @plist;
 	}
 return @oklist;
+}
+
+sub getLoggingTime {
+	#shit from stackoverflow. whatelse.
+	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst)=localtime(time);
+	my $nice_timestamp = sprintf ( "%04d%02d%02d_%02d%02d%02d",$year+1900,$mon+1,$mday,$hour,$min,$sec);
+return $nice_timestamp;
 }

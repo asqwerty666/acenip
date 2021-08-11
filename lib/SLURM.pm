@@ -76,6 +76,9 @@ sub send2slurm{
 	if(exists($task{'partition'}) && $task{'partition'}){
 		print ESS '#SBATCH -p '.$task{'partition'}."\n";
 	}
+	if(exists($task{'gres'}) && $task{'gres'}){
+		print ESS '#SBATCH --gres='.$task{'gres'}."\n";
+	}
 	if(exists($task{'command'}) && $task{'command'}){
 		if(exists($task{'mailtype'}) && $task{'mailtype'}){
 			print ESS '#SBATCH --mail-type='.$task{'mailtype'}."\n";
