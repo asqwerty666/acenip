@@ -57,6 +57,12 @@ check_or_make($outdir);
 #my $jobname = "track_$study";
 
 my @dtis = cut_shit($db, $data_dir.'/'.$cfile);
+my %ptask = ('job_name' => 'dti_track_'.$study,
+	'time' => $time,
+	'mailtype' => 'FAIL,TIME_LIMIT,STAGE_OUT',
+	'gres' => 'gpu:1',
+	'partition' => 'cuda',
+);
 foreach my $subject (@dtis){
 	#Compulsory: el DTI debe haber pasado el preproc
 	my $dti_fa = $w_dir.'/'.$subject.'_dti_FA.nii.gz';
@@ -79,33 +85,18 @@ foreach my $subject (@dtis){
 		}
 		#$count++;
 		#print CNF "$order\n";
-		my $orderfile = $outdir.'/'.$subject.'dti_orders.sh';
-		open ORD, ">$orderfile";
-		print ORD '#!/bin/bash'."\n";
-		print ORD '#SBATCH -J dti_track_'.$study."\n";
-		print ORD '#SBATCH --time='.$time."\n"; #si no ha terminado en X horas matalo
-		print ORD '#SBATCH --mail-type=FAIL,TIME_LIMIT,STAGE_OUT'."\n"; #no quieres que te mande email de todo
-		print ORD '#SBATCH --mail-user='."$ENV{'USER'}\n";
-		print ORD '#SBATCH --gres=gpu:1'."\n";
-		print ORD '#SBATCH -o '.$outdir.'/dti_track-'.$subject.'-'.$study.'-%j'."\n";
-		print ORD '#SBATCH -p cuda'."\n";
-		print ORD "srun $order\n";
-        	close ORD;
-		system("sbatch $orderfile");
+		$ptask{'filename'} = $outdir.'/'.$subject.'dti_orders.sh';
+		$ptask{'output'} = $outdir.'/dti_track-'.$subject.'-'.$study.'-%j';
+		$ptask{'command'} = $order;
+		send2slurm(\%ptask);
 		$debug ? print DBG "$order\n" :0;
 	}
 }
-
-my $orderfile = $outdir.'/dti_track_end.sh';
-open ORD, ">$orderfile";
-print ORD '#!/bin/bash'."\n";
-print ORD '#SBATCH -J dti_track_'.$study."\n";
-print ORD '#SBATCH --mail-type=END'."\n"; #email cuando termine
-print ORD '#SBATCH --mail-user='."$ENV{'USER'}\n";
-print ORD '#SBATCH -p devel'."\n";
-print ORD '#SBATCH -o '.$outdir.'/dti_track_end-%j'."\n";
-print ORD ":\n";
-close ORD;
-my $order = 'sbatch --dependency=singleton '.$orderfile;
-exec($order);
+my %final = ('filename' => $outdir.'/dti_track_end.sh',
+	'job_name' => 'dti_track_'.$study,
+	'mailtype' => 'END',
+	'output' => $outdir.'/dti_track_end-%j',
+	'dependency' => 'singleton',
+);
+send2slurm(\%final);
 
