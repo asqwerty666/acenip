@@ -1,0 +1,29 @@
+usage: ctrac_metrics.pl [-cut text_file] <project>
+
+Extract selected metrics from TRACULA results. FA and MD mean values
+are stored for tracks,
+
+	fmajor, fmajor_PP_avg33_mni_bbr
+        lh.cab, lh.cab_PP_avg33_mni_bbr
+        lh.ilf, lh.ilf_AS_avg33_mni_bbr
+        lh.unc, lh.unc_AS_avg33_mni_bbr
+        rh.cab, rh.cab_PP_avg33_mni_bbr
+        rh.ilf, rh.ilf_AS_avg33_mni_bbr
+        rh.unc, rh.unc_AS_avg33_mni_bbr
+        fminor, fminor_PP_avg33_mni_bbr
+        lh.ccg, lh.ccg_PP_avg33_mni_bbr
+        lh.slfp, lh.slfp_PP_avg33_mni_bbr
+        rh.ccg, rh.ccg_PP_avg33_mni_bbr
+        rh.slfp, rh.slfp_PP_avg33_mni_bbr
+        lh.atr, lh.atr_PP_avg33_mni_bbr
+        lh.cst, lh.cst_AS_avg33_mni_bbr
+        lh.slft, lh.slft_PP_avg33_mni_bbr
+        rh.atr, rh.atr_PP_avg33_mni_bbr
+        rh.cst, rh.cst_AS_avg33_mni_bbr
+        rh.slft, rh.slft_PP_avg33_mni_bbr
+
+Options:
+-cut <text_file>: Just for the subjects listed in file
+<project>: name of the project (mandatory)
+-h: print this help
+

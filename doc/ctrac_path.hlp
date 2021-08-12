@@ -1,0 +1,9 @@
+usage: ctrac_path.pl [-cut text_file] <project>
+
+Generate the probability distributions of WM pathways at Freesurfer TRACULA procedure
+
+Options:
+-cut <text_file>: Just for the subjects listed in file
+<project>: name of the project (mandatory)
+-h: print this help
+

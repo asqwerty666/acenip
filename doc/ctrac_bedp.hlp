@@ -1,0 +1,9 @@
+usage: ctrac_bedp.pl [-cut text_file] <project>
+
+Run bedpostx FSL processes for Freesurfer TRACULA procedure
+
+Options:
+-cut <text_file>: Just for the subjects listed in file
+<project>: name of the project (mandatory)
+-h: print this help
+
