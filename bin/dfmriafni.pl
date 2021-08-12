@@ -16,6 +16,7 @@ use strict; use warnings;
  
 use File::Find::Rule;
 use NEURO4 qw(print_help load_project cut_shit check_subj check_or_make);
+use SLURM qw(send2slurm);
 use Data::Dump qw(dump);
 use File::Remove 'remove';
 use File::Basename qw(basename);
@@ -48,7 +49,13 @@ my $outdir = "$std{'DATA'}/slurm";
 check_or_make($outdir);
 
 my @subjects = cut_shit($db, $data_dir."/".$cfile);
-
+my %ptask = ('job_name' => 'fmriafni_'.$study,
+	'time' => '72:0:0',
+	'mailtype' => 'FAIL,TIME_LIMIT,STAGE_OUT',
+	'cpus' => 16,
+	'mem_per_cpu' => '4G',
+	'partition' => 'fast',
+);
 foreach my $subject (@subjects) {
 	my %nifti = check_subj($std{'DATA'},$subject);
 	if($nifti{'func'}){
@@ -69,32 +76,17 @@ foreach my $subject (@subjects) {
 		close TPF;
 		chmod 0755, $creator; 
 		system($creator);
-		my $orderfile = $outdir.'/'.$subject.'_fmriafni.sh';
-		open ORD, ">$orderfile";
-		print ORD '#!/bin/bash'."\n";
-		print ORD '#SBATCH -J fmriafni_'.$study."\n";
-		print ORD '#SBATCH --time=72:0:0'."\n"; #si no ha terminado en X horas matalo
-		print ORD '#SBATCH --mail-type=FAIL,TIME_LIMIT,STAGE_OUT'."\n"; #no quieres que te mande email de todo
-		print ORD '#SBATCH -o '.$outdir.'/fmriafni-%j'."\n";
-		print ORD '#SBATCH -c 16'."\n";
-		print ORD '#SBATCH --mem-per-cpu=4G'."\n";
-		print ORD '#SBATCH -p fast'."\n";
-		print ORD '#SBATCH --mail-user='."$ENV{'USER'}\n";
-		print ORD 'srun '.$outdir.'/proc.sub_'.$subject;
-		close ORD;
+		$ptask{'filename'} = $outdir.'/'.$subject.'_fmriafni.sh';
+		$ptask{'job_name'} = 'fmriafni_'.$study;
+		$ptask{'output'} = $outdir.'/fmriafni-%j';
+		$ptask{'command'} = $outdir.'/proc.sub_'.$subject;
 		chdir($fmriout_dir);
-		system("sbatch $orderfile");
+		send2slurm(\%ptask);
 	}
 }
-my $orderfile = $outdir.'/fmriafni_end.sh';
-open ORD, ">$orderfile";
-print ORD '#!/bin/bash'."\n";
-print ORD '#SBATCH -J fmriafni_'.$study."\n";
-print ORD '#SBATCH --mail-type=END'."\n"; #email cuando termine
-print ORD '#SBATCH --mail-user='."$ENV{'USER'}\n";
-print ORD '#SBATCH -p fast'."\n";
-print ORD '#SBATCH -o '.$outdir.'/fmriprep_end-%j'."\n";
-print ORD ":\n";
-close ORD;
-my $order = 'sbatch --dependency=singleton '.$orderfile;
-exec($order);
+my %final = ( 'filename' => $outdir.'/fmriafni_end.sh',
+	'job_name' => 'fmriafni_'.$study,
+	'output' => $outdir.'/fmriprep_end-%j',
+	'dependency' => 'singleton',
+);
+send2slurm(\%final);
