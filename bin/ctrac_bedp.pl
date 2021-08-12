@@ -43,11 +43,11 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
     if (/^-cut/) { $cfile = shift; chomp($cfile);}
-    if (/^-h$/) { print_help $ENV{'PIPEDIR'}.'/doc/ctrac_prep.hlp'; exit;}
+    if (/^-h$/) { print_help $ENV{'PIPEDIR'}.'/doc/ctrac_bedp.hlp'; exit;}
 }
 my $study = shift;
 #Leo el input y config del proyecto
-unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/ctrac_prep.hlp'; exit;}
+unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/ctrac_bedp.hlp'; exit;}
 my %std = load_project($study);
 my $w_dir = $std{'WORKING'};
 my $data_dir = $std{'DATA'};
