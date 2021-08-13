@@ -29,7 +29,7 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
 }
 
 my $study = shift;
-unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/fs_metrics.hlp'; exit;}
+unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/hsf_metrics.hlp'; exit;}
 my %std = load_project($study);
 my $db = $std{DATA}.'/'.$study.'_mri.csv';
 my $fsout = $std{DATA}.'/'.$study.'_hsf_metrics.csv';

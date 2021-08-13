@@ -1,0 +1,7 @@
+usage: hsf_metrics.pl <project>
+
+Extract the hippocampal subfields metrics from FS reconstruction
+
+Options
+<project>: Name of the project (mandatory)
+-h: print this help

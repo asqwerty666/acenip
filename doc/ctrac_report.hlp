@@ -1,0 +1,10 @@
+usage: ctrac_report.pl [-cut text_file] <project>
+
+Build a registration report of DTI images on MNI space. 
+Part of the implementation of Freesurfer TRACULA procedure.
+
+Options:
+-cut <text_file>: Just for the subjects listed in file
+<project>: name of the project (mandatory)
+-h: print this help
+

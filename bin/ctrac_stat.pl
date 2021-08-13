@@ -43,11 +43,11 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
     if (/^-cut/) { $cfile = shift; chomp($cfile);}
-    if (/^-h$/) { print_help $ENV{'PIPEDIR'}.'/doc/ctrac_prep.hlp'; exit;}
+    if (/^-h$/) { print_help $ENV{'PIPEDIR'}.'/doc/ctrac_stat.hlp'; exit;}
 }
 # Leo y preparo la configuracion del proyecto
 my $study = shift;
-unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/ctrac_prep.hlp'; exit;}
+unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/ctrac_stat.hlp'; exit;}
 my %std = load_project($study);
 my $w_dir = $std{'WORKING'};
 my $data_dir = $std{'DATA'};
@@ -94,11 +94,12 @@ system($pre_order);
 # vamos alla!
 my $count = 0;
 open CORD, "<$tmp_orders" or die "Could find orders file";
-$ptask{'job_name'} = 'trac_stat_'.$study;
-$ptask{'cpus'} = $cpus;
-$ptask{'time'} = '72:0:0';
-$ptask{'mem_per_cpu'} = '4G';
-$ptask{'partition'} = 'fast';
+my  %ptask = ('job_name' => 'trac_stat_'.$study,
+	'cpus' => $cpus,
+	'time' => '72:0:0',
+	'mem_per_cpu' => '4G',
+	'partition' => 'fast',
+);
 while (<CORD>){
 	$ptask{'filename'} = $outdir.'/group_trac_stat_'.$count.'.sh';
 	$ptask{'output'} = $outdir.'/trac_stat-%j';

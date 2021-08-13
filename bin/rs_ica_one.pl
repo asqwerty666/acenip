@@ -29,7 +29,7 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
     if (/^-cut/) { $cfile = shift; chomp($cfile);}
-    if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/dti_ica_one.hlp'; exit;}
+    if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/rs_ica_one.hlp'; exit;}
 }
 $study = shift;
 unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/rs_ica_one.hlp'; exit;}
