@@ -12,7 +12,10 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
-#
+# This script is where we manage to launch fmriprep singularity image
+# for each fMRI image in a project. The FS segmentation should be done
+# prior to do this or you will get a lot of errors.
+
 use strict; use warnings;
  
 use File::Find::Rule;

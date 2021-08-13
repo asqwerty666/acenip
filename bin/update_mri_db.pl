@@ -16,7 +16,7 @@ use strict; use warnings;
 use NEURO4 qw(load_project print_help);
 
 my $proj = shift;
-unless ($proj) { print_help $ENV{'PIPEDIR'}.'/doc/update_db.hlp'; exit;}
+die "Should supply project name\n" unless $proj;
 my %std = load_project($proj);
 my $src_dir = $std{'SRC'};
 my $ids_file = $std{'DATA'}.'/ids.csv'; # Este es solo para funcionamiento interno

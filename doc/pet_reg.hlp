@@ -1,0 +1,11 @@
+usage: pet_proc.pl [-cut <text_file>] [-time <timeout>] [-r <rois>] <project>
+
+Register PET images to native T1 space. Then takes the FS segmentation and calculates SUVR for desired ROIs. 
+
+Options:
+-cut <text_file>: Process only the subjects included in this file
+-time <timeout>: Timeout for individual subjects processing. Default: 2h
+-r <rois>: Subset of ROIs to analyze. Choices are global (default), parietal, frontal or pieces. This last one is an experiment where the usual ROI for PET analysis is took apart into the cortex segmentation and each ROI is reported separately. Not recomended at all.
+-h: print this help
+<project>: Name of the project
+

@@ -1,10 +1,11 @@
-usage: dfmri.pl [-cut <text_file>] [-fs] [-st] <project>
+usage: sfmriprep.pl [-cut <text_file>] [-st] [-fs] <project>
 
-Launch fmriprep for the subjects of <project>
+Run fmriprep image over a set of fMRI images
 
 Options:
--cut <text_file>: Process only the subjects included in this file
--fs: preprocess with Freesurfer 
--st: do slice timing correction
+-cut <text_file>: run only over those subjects
+-st: do slicetiming
+-fs: reuse FS directory (ignored, this is the default behavior)
 <project>: name of the project (mandatory)
 -h: print this help
+

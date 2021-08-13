@@ -19,17 +19,9 @@ use File::Basename qw(basename);
 use Data::Dump qw(dump);
 use File::Copy::Recursive qw(dirmove);
 
-use NEURO4 qw(load_project print_help);
-my $full = 0;
-@ARGV = ("-h") unless @ARGV;
-while (@ARGV and $ARGV[0] =~ /^-/) {
-    $_ = shift;
-    last if /^--$/;
-    if (/^-f/) {$full = 1}
-    if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/make_pet_report.hlp'; exit;}
-}
+use NEURO4 qw(load_project);
 my $study = shift;
-unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/make_pet_report.hlp'; exit;}
+die "Should provide project name\n" unless $study;
 
 my %std = load_project($study);
 

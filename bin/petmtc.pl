@@ -11,11 +11,16 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+# 
+# This script run the partial volumen correction method of MTC
+# over a PET image using a supplied set of masks. The masks file
+# is a 4D image where the last 3D should be the reference region.
+# The outputs are a txt file with mean values for each mask and a SUVR
+# PET image
 
 use strict; use warnings;
 use File::Temp qw(tempdir);
 use Data::Dump qw(dump);
-use NEURO4 qw(print_help);
 my $ifile;
 my $ofile;
 my $mask;
@@ -26,7 +31,6 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     if (/^-i/) {$ifile = shift; chomp($ifile);}
     if (/^-m/) {$mask = shift; chomp($mask);}
     if (/^-o/) {$ofile = shift; chomp($ofile);}
-    if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/petunc.hlp'; exit;}
 }
 
 my $tdir = tempdir( CLEANUP => 1);
