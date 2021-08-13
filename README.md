@@ -1,6 +1,6 @@
 
 
-# Yet Another NeuroImaging Pipeline, FACE imaging pipeline 
+# ACE imaging pipeline 
 
 La versión 0.4 del pipeline incluye algunas ventajas,
 
@@ -9,3 +9,5 @@ La versión 0.4 del pipeline incluye algunas ventajas,
 - Completamente integrado en el cluster
 
 Importante: Para manejar el cluster se usa slurm. Usando squeue y scancel se puede encontrar y eliminar cualquier tarea que se haya lanzado.
+
+See: https://detritus.fundacioace.com/wiki/doku.php?id=neuroimagen:pipe04_user_en 
