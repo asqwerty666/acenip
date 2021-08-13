@@ -1,0 +1,9 @@
+usage: xnat_getfs.pl -p <local_project> -x <xnat_project>
+
+Download all the FS directories from XNAT to a local project
+
+Options:
+-p <local_project>: local project name (mandatory)
+-x <xnat_project>: XNAT project name. should be supplied unless the local and XNAT names are identical.
+-h: print this help
+

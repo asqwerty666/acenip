@@ -42,10 +42,11 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     if (/^-o/) { $ofile = shift; chomp($ofile);}
     if (/^-p/) { $prj = shift; chomp($prj);} #nombre local del proyecto
     if (/^-x/) { $xprj = shift; chomp($xprj);} #nombre del proyecto en XNAT
-    if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/xnat_get.hlp'; exit;}
+    if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/xnat_pullfs.hlp'; exit;}
 }
 #unless ($prj) { print_help $ENV{'PIPEDIR'}.'/doc/xnat_get.hlp'; exit;}
 $xprj = $prj unless $xprj;
+die "Should supply the XNAT project name\n" unless $xprj;
 #my %std = load_project($prj);
 # La parte inicial es comun con xnat_pullfs.pl (a lo mejor meterlo en una funcion?)
 # Saco los sujetos del proyecto 

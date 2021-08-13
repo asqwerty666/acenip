@@ -19,9 +19,10 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     if (/^-p/) { $prj = shift; chomp($prj);}
     if (/^-x/) { $xprj = shift; chomp($xprj);}
     if (/^-o/) { $ofile = shift; chomp($ofile);}
-    if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/xnat_pull.hlp'; exit;}
+    if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/xnat_pullcl.hlp'; exit;}
 }
 $xprj = $prj unless $xprj;
+die "Should supply XNAT project name\n" unless $xprj;
 #my %std = load_project($prj);
 #my $proj_file = $std{'DATA'}.'/'.$prj.'_mri.csv';
 #print "Wait a minute, getting XNAT subject list\n";

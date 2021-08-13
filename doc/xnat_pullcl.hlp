@@ -1,0 +1,10 @@
+usage: xnat_pullcl.pl -p <local_project> -x <xnat_project> [-o <output_file>]
+
+Download SUVR and Centiloid results from a given XNAT project
+
+Options:
+-p <local_project>: Useless, equal to -x, maintained for compatibility.
+-x <xnat_project>: XNAT project name (mandatory).
+-o <output_file>: file where the output data will be written. Defaults to STDOUT.
+-h: print this help.
+

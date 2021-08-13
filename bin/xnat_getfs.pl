@@ -12,7 +12,7 @@
 # GNU General Public License for more details
 
 # Este script captura los resultados de Freesurfer obtenidos en XNAT 
-# y los copia localmente en una nativa ed Freesurfer.
+# y los copia localmente en una nativa de Freesurfer.
 # Esto es util para realizar procedimientos posteriores 
 # como los analisis FSGA o longitudinales, o simplemente un QC
 
@@ -31,12 +31,12 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     last if /^--$/;
     if (/^-p/) { $prj = shift; chomp($prj);} #nombre local del proyecto
     if (/^-x/) { $xprj = shift; chomp($xprj);} #nombre del proyecto en XNAT
-    if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/xnat_pull.hlp'; exit;}
+    if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/xnat_getfs.hlp'; exit;}
 }
 $xprj = $prj unless $xprj;
+die "Should supply project name\n" unless $xprj;
 my %std = load_project($prj);
 # Saco los sujetos del proyecto 
-# Nota: Esto demora mucho, habria que revisarlo y ver si se puede cambiar la metodologia en xnatapic
 my $order = "xnatapic list_subjects --project_id ".$xprj." --label > ".$std{'DATA'}."/xnat_subjects.list";
 print "Getting XNAT subject list\n";
 system($order);

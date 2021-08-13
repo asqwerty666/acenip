@@ -1,0 +1,11 @@
+usage: xnat_pullfs.pl -s <stats> -p <local_project> -x <xnat_project> [-o <output_file>]
+
+Download FS statistics for segmentation (aseg) or parcellation (aparc) from a given XNAT project 
+
+Options:
+-s <stats>: FS Statistics that shoul be downloaded. Possible values: aseg and aparc. Defaults to aseg
+-p <local_project>: Useless, equal to -x, maintained for compatibility.
+-x <xnat_project>: XNAT project name (mandatory).
+-o <output_file>: file where the output data will be written. Defaults to STDOUT.
+-h: print this help.
+
