@@ -92,7 +92,7 @@ foreach my $subject (sort @dtis){
 			}
 			$ptask{'filename'} = $outdir.'/'.$subject.'dti_orders.sh';
 			$ptask{'command'} = $order;
-			$ptask{'output'} = $outdir.'/dti_reg-slurm-%j';
+			$ptask{'output'} = $outdir.'/dti_reg-slurm';
 			unless($old){
 				$ptask{'gres'} = 'gpu:1';
 				$ptask{'partition'} = 'cuda';
@@ -106,7 +106,7 @@ $debug ? close DBG:0;
 my %final = ( 'filename' => $outdir.'/dti_reg_end.sh',
 	'job_name' => 'dti_reg_'.$study,
 	'mailtype' => 'END',
-	'output' => $outdir.'/dti_reg_end-%j',
+	'output' => $outdir.'/dti_reg_end',
 	'command' => "$ENV{'PIPEDIR'}/bin/make_dti_report.pl $study",
 	'dependency' => 'singleton',
 );

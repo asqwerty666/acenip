@@ -79,7 +79,7 @@ foreach my $pkey (sort @plist){
 		#$ptask{'command'} = "recon-all ".$stage." -i ".$nifti{'T1w'}." -subjid ".$subj;
 #		}
 		$ptask{'filename'} = $outdir.'/'.$subj.'fs_orders.sh';
-		$ptask{'output'} = $outdir.'/fs_recon-slurm-'.$subj.'-%j';
+		$ptask{'output'} = $outdir.'/fs_recon-slurm-'.$subj;
 		send2slurm(\%ptask);
 		sleep(10);
 	}
@@ -90,7 +90,7 @@ my %warn;
 $warn{'filename'} = $outdir.'/fs_recon_end.sh';
 $warn{'job_name'} = 'recon_'.$study;
 $warn{'mailtype'} = 'END'; #email cuando termine
-$warn{'output'} =  $outdir.'/fs_recon_end-%j';
+$warn{'output'} =  $outdir.'/fs_recon_end';
 $warn{'dependency'} = 'singleton';
 send2slurm(\%warn);
 

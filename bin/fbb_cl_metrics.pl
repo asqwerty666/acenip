@@ -60,7 +60,7 @@ foreach my $subj (sort @subjects){
 	if (-e $fbb && -e $struct){
 		$ptask{'command'} = $ENV{'PIPEDIR'}."/bin/fbb2std.sh ".$subj." ".$w_dir;
 		$ptask{'filename'} = $outdir.'/'.$subj.'_fbb_reg.sh';
-		$ptask{'output'} = $outdir.'/fbb2std-'.$subj.'-%j';
+		$ptask{'output'} = $outdir.'/fbb2std-'.$subj;
 		send2slurm(\%ptask);
 		sleep 1;
 	}
@@ -70,7 +70,7 @@ my %final = ('command' => $ENV{'PIPEDIR'}."/bin/fbb_cl_masks.pl ".$study." ".($w
 	'job_name' => 'fbb_metrics_'.$study,
 	'time' => '24:0:0',
 	'mailtype' => 'FAIL,END',
-	'output' => $outdir.'/fbbmasks-%j',
+	'output' => $outdir.'/fbbmasks',
 	'dependency' => 'singleton',
 );
 send2slurm(\%final);

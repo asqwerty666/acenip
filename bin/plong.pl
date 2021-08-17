@@ -88,14 +88,14 @@ foreach my $lsubject (sort keys %lsubjects){
 		chomp $subol;
 		$ptask{'command'} = "recon-all -base ".$lsubject." -tp ".$subol." -all";
 		$ptask{'filename'} = $outdir.'/'.$lsubject.'_fs_long_base.sh';
-		$ptask{'output'} = $outdir.'/fs_long_base-slurm-'.$lsubject.'-%j';
+		$ptask{'output'} = $outdir.'/fs_long_base-slurm-'.$lsubject;
 		$ptask{'dependency'} = '';
 		my $jobid = send2slurm(\%ptask);
 		foreach my $ind_subject (sort @{$lsubjects{$lsubject}}){
 			chomp $ind_subject;
 			$ptask{'command'} = "recon-all -long ".$ind_subject." ".$lsubject." -all";
 			$ptask{'filename'} = $outdir.'/'.$lsubject.'_'.$ind_subject.'_fs_long_base.sh';
-			$ptask{'output'} = $outdir.'/fs_long_ind-slurm-'.$lsubject.'_'.$ind_subject.'-%j';
+			$ptask{'output'} = $outdir.'/fs_long_ind-slurm-'.$lsubject.'_'.$ind_subject;
 			$ptask{'dependency'} = "afterok:$jobid";
 			send2slurm(\%ptask);
 		}
@@ -106,7 +106,7 @@ foreach my $lsubject (sort keys %lsubjects){
 $debug ? close DBG:0;	
 my %final = ('filename' => $outdir.'/fs_long_end.sh',
 	'job_name' => 'fs_long_'.$study,
-	'output' => $outdir.'/fs_long_end-%j',
+	'output' => $outdir.'/fs_long_end',
 	'dependency' => 'singleton',
 );
 send2slurm(\%final);

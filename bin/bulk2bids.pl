@@ -41,14 +41,14 @@ $ptask{'mem_per_cpu'} = '4G';
 foreach my $subject (sort keys %guys) {
 	$ptask{'command'} = "mkdir -p $std{'DATA'}/bids/tmp_dcm2bids/sub-$subject; dcm2niix -b y -ba y -z y -f '%3s_%f_%p_%t' -o $std{'DATA'}/bids/tmp_dcm2bids/sub-$subject $std{'SRC'}/$guys{$subject}/; dcm2bids -d $std{'SRC'}/$guys{$subject}/ -p $subject -c $std{'DATA'}/$cfile -o $std{'DATA'}/bids/";
 	$ptask{'filename'} = $outdir.'/'.$subject.'dcm2bids.sh';
-	$ptask{'output'} = $outdir.'/dcm2bids'.$subject.'-%j';
+	$ptask{'output'} = $outdir.'/dcm2bids'.$subject;
 	send2slurm(\%ptask);
 }
 my %warn;
 $warn{'filename'} = $outdir.'/dcm2bids_end.sh';
 $warn{'job_name'} = 'dcm2bids_'.$proj;
 $warn{'mailtype'} = 'END'; #email cuando termine
-$warn{'output'} = $outdir.'/dmc2bids_end-%j';
+$warn{'output'} = $outdir.'/dmc2bids_end';
 $warn{'dependency'} = 'singleton';
 send2slurm(\%warn);
 

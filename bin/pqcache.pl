@@ -86,7 +86,7 @@ foreach my $pkey (sort @plist){
 	if( -e $subj_dir && -d $subj_dir){
 		$ptask{'command'} = "recon-all -subjid ".$subj." -qcache";
 		$ptask{'filename'}  = $outdir.'/'.$subj.'fs_qcache.sh';
-		$ptask{'output'} = $outdir.'/fs_qcache-slurm-'.$subj.'-%j';
+		$ptask{'output'} = $outdir.'/fs_qcache-slurm-'.$subj;
 		send2slurm(\%ptask);
 		sleep(2);
 	}
@@ -95,7 +95,7 @@ foreach my $pkey (sort @plist){
 $debug ? close DBG:0;	
 my %final = ( 'filename' => $outdir.'/fs_qcache_end.sh',
 	'job_name' => 'fs_qcache_'.$study,
-	'output' => $outdir.'/fs_recon_end-%j',
+	'output' => $outdir.'/fs_recon_end',
 	'dependency' => 'singleton',
 );
 send2slurm(\%final);

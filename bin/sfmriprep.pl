@@ -84,14 +84,14 @@ foreach my $subject (@subjects) {
 		#}
 		$ptask{'filename'} = $outdir.'/'.$subject.'_fmriprep.sh';
 		$ptask{'job_name'} = 'fmriprep_'.$study;
-		$ptask{'output'} = $outdir.'/fmriprep-%j';
+		$ptask{'output'} = $outdir.'/fmriprep';
 		$ptask{'command'} = 'singularity run --cleanenv -B /nas:/nas '.$fmriprep_simg.' '.$bids_dir.' '.$fmriout_dir.' participant --participant-label '.$subject.' '.$noslicetiming.' --skip_bids_validation --fs-license-file '.$fslic.' --nthreads 16 --omp-nthreads 8 --mem-mb 30000 --output-spaces T1w MNI152Lin fsnative --use-aroma -w '.$fmriwork_dir;
 		send2slurm(\%ptask);
 	}
 }
 my %final = ( 'filename' => $outdir.'/fmriprep_end.sh',
 	'job_name' => 'fmriprep_'.$study,
-	'output' => $outdir.'/fmriprep_end-%j',
+	'output' => $outdir.'/fmriprep_end',
 	'dependency' => 'singleton',
 );
 send2slurm(\%final);

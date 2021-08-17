@@ -69,7 +69,7 @@ foreach my $subject (@subjects){
 	if(-e $reg_fbb && -f $reg_fbb){
 		$ptask{'command'} = $ENV{'PIPEDIR'}."/bin/fbb_make_roi_masks.pl ".$study." ".$subject." ".$w_dir." ".$wcb;
 		$ptask{'filename'} = $outdir.'/'.$subject.'_fbb_roi.sh';
-		$ptask{'output'} = $outdir.'/fbb_mroi-'.$subject.'-%j';
+		$ptask{'output'} = $outdir.'/fbb_mroi-'.$subject;
 		send2slurm(\%ptask);
 	}
 }
@@ -78,7 +78,7 @@ my %final = ('command' => $ENV{'PIPEDIR'}."/bin/fbb_roi_masks.pl ".$study." ".$w
 	'job_name' => 'fbb_mroi_'.$study,
 	'time' => '4:0:0',
 	'mailtype' => 'FAIL,END',
-	'output' => $outdir.'/fbb_roi_masks-%j',
+	'output' => $outdir.'/fbb_roi_masks',
 	'dependency' => 'singleton',
 );
 send2slurm(\%final);

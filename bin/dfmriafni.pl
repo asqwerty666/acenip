@@ -78,7 +78,7 @@ foreach my $subject (@subjects) {
 		system($creator);
 		$ptask{'filename'} = $outdir.'/'.$subject.'_fmriafni.sh';
 		$ptask{'job_name'} = 'fmriafni_'.$study;
-		$ptask{'output'} = $outdir.'/fmriafni-%j';
+		$ptask{'output'} = $outdir.'/fmriafni';
 		$ptask{'command'} = $outdir.'/proc.sub_'.$subject;
 		chdir($fmriout_dir);
 		send2slurm(\%ptask);
@@ -86,7 +86,7 @@ foreach my $subject (@subjects) {
 }
 my %final = ( 'filename' => $outdir.'/fmriafni_end.sh',
 	'job_name' => 'fmriafni_'.$study,
-	'output' => $outdir.'/fmriprep_end-%j',
+	'output' => $outdir.'/fmriprep_end',
 	'dependency' => 'singleton',
 );
 send2slurm(\%final);

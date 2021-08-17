@@ -41,12 +41,12 @@ $ptask{'partition'} = 'fast';
 foreach my $subject (sort keys %guys) {
 	$ptask{'command'} = 'dcm2bids -d '.$std{'PET'}.'/'.$guys{$subject}.'/ -p '.$subject.' -c '.$std{'DATA'}.'/'.$cfile.' -o '.$std{'DATA'}.'/bids/ --forceDcm2niix';
 	$ptask{'filename'} = $outdir.'/'.$subject.'dcm2bids.sh';
-	$ptask{'output'} = $outdir.'/dcm2bids'.$subject.'-%j';
+	$ptask{'output'} = $outdir.'/dcm2bids'.$subject;
 	send2slurm(\%ptask);
 }
 my %final;
 $final{'filename'} = $outdir.'/dcm2bids_end.sh';
 $final{'job_name'} = 'dcm2bids_'.$proj;
-$final{'output'} = $outdir.'/dmc2bids_end-%j';
+$final{'output'} = $outdir.'/dmc2bids_end';
 $final{'dependency'} = 'singleton';
 send2slurm(\%final);

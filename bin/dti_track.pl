@@ -86,7 +86,7 @@ foreach my $subject (@dtis){
 		#$count++;
 		#print CNF "$order\n";
 		$ptask{'filename'} = $outdir.'/'.$subject.'dti_orders.sh';
-		$ptask{'output'} = $outdir.'/dti_track-'.$subject.'-'.$study.'-%j';
+		$ptask{'output'} = $outdir.'/dti_track-'.$subject.'-'.$study;
 		$ptask{'command'} = $order;
 		send2slurm(\%ptask);
 		$debug ? print DBG "$order\n" :0;
@@ -95,7 +95,7 @@ foreach my $subject (@dtis){
 my %final = ('filename' => $outdir.'/dti_track_end.sh',
 	'job_name' => 'dti_track_'.$study,
 	'mailtype' => 'END',
-	'output' => $outdir.'/dti_track_end-%j',
+	'output' => $outdir.'/dti_track_end',
 	'dependency' => 'singleton',
 );
 send2slurm(\%final);

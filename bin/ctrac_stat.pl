@@ -63,29 +63,7 @@ my $tmp_orders = 'trac_step4.txt';
 # y ahora, si no esta el archivo dmri.rc, lo creo, 
 # a partir de los datos del proyecto
 unless (-e $dmrirc && -r $dmrirc){
-	my $subjlist = 'set subjlist = (  ';
-	my $dmclist = 'set dcmlist = ( ';
-	my $bveclist = 'set bveclist = ( ';
-	my $bavllist = 'set bvallist = ( ';
-
-	foreach my $subject (@subjects) {
-		my %nifti = check_subj($std{'DATA'},$subject);
-		if($nifti{'dwi'}){
-			$subjlist.=$study.'_'.$subject.' ';
-			$dmclist.=$nifti{'dwi'}.' ';
-			(my $bvec = $nifti{'dwi'}) =~ s/nii\.gz$/bvec/;
-			(my $bval = $nifti{'dwi'}) =~ s/nii\.gz$/bval/;
-			$bveclist.=$bvec.' ';
-			$bavllist.=$bval.' ';
-		}
-	}
-	$subjlist.=')';
-	$dmclist.=')';
-	$bveclist.=')';
-	$bavllist.=')';
-	open CIF, ">$dmrirc" or die "Couldnt open dmrirc file for writing\n";
-	print CIF "$subjlist\n$dmclist\n$bveclist\n$bavllist\n";
-	close CIF;
+        die "No dmri.rc file found\nProvide one or run ctrac_dmri.pl to generate it\n";
 }
 # Ahora ya tengo todo el input que necesito y lo que hago es generar las ordenes
 my $pre_order = 'trac-all -stat -c '.$dmrirc.' -jobs '.$tmp_orders;
@@ -102,7 +80,7 @@ my  %ptask = ('job_name' => 'trac_stat_'.$study,
 );
 while (<CORD>){
 	$ptask{'filename'} = $outdir.'/group_trac_stat_'.$count.'.sh';
-	$ptask{'output'} = $outdir.'/trac_stat-%j';
+	$ptask{'output'} = $outdir.'/trac_stat';
 	$ptask{'command'} = $_;
 	send2slurm(\%ptask);
 	$count++;
@@ -112,7 +90,7 @@ close CORD;
 my %final;
 $final{'filename'} = $outdir.'/trac_stat_end.sh';
 $final{'job_name'} = 'trac_stat_'.$study;
-$final{'output'} = $outdir.'/trac_stat_end-%j';
+$final{'output'} = $outdir.'/trac_stat_end';
 $final{'command'} = "mv $fsdir/stats $data_dir/stats";
 $final{'mailtype'} = 'END';
 $final{'dependency'} = 'singleton';

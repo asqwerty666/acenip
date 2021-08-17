@@ -63,29 +63,7 @@ my $tmp_orders = 'trac_step2.txt';
 # a partir de los datos del proyecto
 my $dmrirc = $data_dir.'/dmri.rc';
 unless (-e $dmrirc && -r $dmrirc){
-	my $subjlist = 'set subjlist = (  ';
-	my $dmclist = 'set dcmlist = ( ';
-	my $bveclist = 'set bveclist = ( ';
-	my $bavllist = 'set bvallist = ( ';
-
-	foreach my $subject (@subjects) {
-		my %nifti = check_subj($std{'DATA'},$subject);
-		if($nifti{'dwi'}){
-			$subjlist.=$study.'_'.$subject.' ';
-			$dmclist.=$nifti{'dwi'}.' ';
-			(my $bvec = $nifti{'dwi'}) =~ s/nii\.gz$/bvec/;
-			(my $bval = $nifti{'dwi'}) =~ s/nii\.gz$/bval/;
-			$bveclist.=$bvec.' ';
-			$bavllist.=$bval.' ';
-		}
-	}
-	$subjlist.=')';
-	$dmclist.=')';
-	$bveclist.=')';
-	$bavllist.=')';
-	open CIF, ">$dmrirc" or die "Couldnt open dmrirc file for writing\n";
-	print CIF "$subjlist\n$dmclist\n$bveclist\n$bavllist\n";
-	close CIF;
+	die "No dmri.rc file found\nProvide one or run ctrac_dmri.pl to generate it\n";
 }
 # Ahora se generan las ordenes
 my $pre_order = 'trac-all -bedp -c '.$dmrirc.' -jobs '.$tmp_orders;
@@ -106,7 +84,7 @@ while (<CORD>){
 	my $cpath = $fsdir.'/'.$study.'_'.$subj.'/dmri.bedpostX/logs/monitor';
 	system('mkdir -p '.$cpath);
 	$prebedp{'filename'} = $outdir.'/'.$subj.'_trac_pre_bedp.sh';
-	$prebedp{'output'} = $outdir.'/trac_prep-%j';
+	$prebedp{'output'} = $outdir.'/trac_prep';
 	$prebedp{'command'} = $_;
 	send2slurm(\%prebedp);
 }
@@ -115,7 +93,7 @@ my %preend;
 $preend{'job_name'} = 'trac_pre_bedp_'.$study;
 $preend{'filename'} = $outdir.'/trac_pre_bedp_end.sh';
 $preend{'mailtype'} = 'END';
-$preend{'output'} = $outdir.'/trac_pre_bedp_end-%j';
+$preend{'output'} = $outdir.'/trac_pre_bedp_end';
 $preend{'dependency'} = 'singleton';
 # Cuando todos los pre-bedp han terminado, envio un email y capturo
 # el id del proceso que lo envia
@@ -135,7 +113,7 @@ open CORD, "<$tmp_orders" or die "Could find orders file";
 while (<CORD>){
 	(my $subj) = /subjects\/$study\_(.*)\/dmri/;
 	$bedp{'filename'} = $outdir.'/'.$subj.'_'.$count.'_trac_bedp.sh';
-        $bedp{'output'} = $outdir.'/trac_bedp-%j';
+        $bedp{'output'} = $outdir.'/trac_bedp';
 	$bedp{'command'} = $_;
 	send2slurm(\%bedp);
 	$count++;
@@ -146,7 +124,7 @@ my %bpend;
 $bpend{'filename'} = $outdir.'/trac_bedp_end.sh';
 $bpend{'job_name'} = 'trac_bedp_'.$study;
 $bpend{'mailtype'} = 'END'; #email cuando termine
-$bpend{'output'} = $outdir.'/trac_bedp_end-%j';
+$bpend{'output'} = $outdir.'/trac_bedp_end';
 $bpend{'dependency'} = 'singleton';
 # y capturo el jobid 
 $jobid = send2slurm(\%bpend);
@@ -163,7 +141,7 @@ open CORD, "<$post_tmp_orders" or die "Could find orders file";
 while (<CORD>){
         (my $subj) = /subjects\/$study\_(.*)\/dmri/;
         $postbedp{'filename'} = $outdir.'/'.$subj.'_trac_post_bedp.sh';
-	$postbedp{'output'} = $outdir.'/trac_post-%j';
+	$postbedp{'output'} = $outdir.'/trac_post';
 	$postbedp{'command'} = $_;
 	send2slurm(\%postbedp);	
 }
@@ -172,6 +150,6 @@ my %postend;
 $postend{'filename'} = $outdir.'/trac_post_bedp_end.sh';
 $postend{'job_name'} = 'trac_post_bedp_'.$study;
 $postend{'mailtype'}='END'; #email cuando termine
-$postend{'output'} = $outdir.'/trac_post_bedp_end-%j';
+$postend{'output'} = $outdir.'/trac_post_bedp_end';
 $postend{'dependency'} = 'singleton';
 send2slurm(\%postend);

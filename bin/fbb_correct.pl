@@ -80,7 +80,7 @@ foreach my $subject (@pets){
 			$ptask{'command'} = $order;
                         $ptask{'filename'} = $outdir.'/'.$subject.'_fbb_reg.sh';
 			$ptask{'cpus'} = 8;
-			$ptask{'output'} = $outdir.'/fbb_reg_'.$subject.'-%j';
+			$ptask{'output'} = $outdir.'/fbb_reg_'.$subject;
 			send2slurm(\%ptask);
 		}
 	}else{
@@ -89,7 +89,7 @@ foreach my $subject (@pets){
 			$ptask{'command'} = $ENV{'PIPEDIR'}."/bin/fbb_reg.sh ".$study." ".$subject." ".$w_dir." ".$spet{'single'}." ".$smri{'T1w'}." 1";
 			$ptask{'filename'} = $outdir.'/'.$subject.'_fbb_reg.sh';
 			$ptask{'cpus'} = 4;
-			$ptask{'output'} = $outdir.'/fbb_reg_'.$subject.'-%j';
+			$ptask{'output'} = $outdir.'/fbb_reg_'.$subject;
 			send2slurm(\%ptask);
 		}
 	}
@@ -100,7 +100,7 @@ my %final = ( 'command' => $ENV{'PIPEDIR'}."/bin/make_fbb_report.pl ".$study,
 	'job_name' => 'fbb_reg_'.$study,
 	'time' => '2:0:0',
 	'mailtype' => 'FAIL,END',
-	'output' => $outdir.'/fbb_report-%j',
+	'output' => $outdir.'/fbb_report',
 	'dependency' => 'singleton',
 );
 send2slurm(\%final);
