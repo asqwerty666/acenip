@@ -82,8 +82,8 @@ unless (-e $dmrirc && -r $dmrirc){
 			$bavllist.=$bval.' '.$b0val.' ';
 			$pedir.=$pedir_line; 
 			unless ( -e $ENV{'SUBJECTS_DIR'}.'/'.$study.'_'.$subject.'/mri/ThalamicNuclei.v12.T1.FSvoxelSpace.mgz' ){
-				my %ptask = ( 'filename' => $outdir.'/segtahalamus_'.$subject.'.sh',
-					'job_name' => 'segtalamus_'.$study,
+				my %ptask = ( 'filename' => $outdir.'/segthalamus_'.$subject.'.sh',
+					'job_name' => 'segthalamus_'.$study,
 					'cpus' => 2,
 					'time' => '2:0:0',
 					'mem_per_cpu' => '4G',
@@ -112,8 +112,8 @@ if (scalar(@jobs)) {
 	my $ljobs = join(',',@jobs);
 	$ljobs = 'afterok:'.$ljobs;
 	my %hey = (
-		'filename' => $outdir.'/segtahalamus_end.sh',
-		'job_name' => 'segtalamus_'.$study,
+		'filename' => $outdir.'/segthalamus_end.sh',
+		'job_name' => 'segthalamus_'.$study,
 		'output' => $outdir.'/segthalamus_end',
 		'dependency' => $ljobs,
 	);
