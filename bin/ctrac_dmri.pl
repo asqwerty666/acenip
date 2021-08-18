@@ -58,15 +58,18 @@ check_or_make($outdir);
 ### En algun momento deberian poder definirse ######
 ### desde input. Pero por ahora voy a ponerlas #####
 ### fijas. #########################################
+my @jobs;
 my $dob_line = 'set dob0 = 2';
 my $pedir_line = 'AP PA ';
 my @subjects = cut_shit($db, $data_dir."/".$cfile);
 my $dmrirc = $data_dir.'/dmri.rc';
+my $b0vec = $ENV{'PIPEDIR'}.'/lib/b0.bvec';
+my $b0val = $ENV{'PIPEDIR'}.'/lib/b0.bval';
 unless (-e $dmrirc && -r $dmrirc){
 	my $subjlist = 'set subjlist = (  ';
 	my $dmclist = 'set dcmlist = ( ';
 	my $bveclist = 'set bveclist = ( ';
-	my $bavllist = 'set bvallist = ( ';
+	my $bavllist = 'set bvallist = ( ';;
 	my $pedir = 'set pedir = ( ';
 	foreach my $subject (@subjects) {
 		my %nifti = check_subj($std{'DATA'},$subject);
@@ -75,9 +78,22 @@ unless (-e $dmrirc && -r $dmrirc){
 			$dmclist.=$nifti{'dwi'}.' '.$nifti{'dwi_sbref'}.' ';
 			(my $bvec = $nifti{'dwi'}) =~ s/nii\.gz$/bvec/;
 			(my $bval = $nifti{'dwi'}) =~ s/nii\.gz$/bval/;
-			$bveclist.=$bvec.' '.$bvec.' ';
-			$bavllist.=$bval.' '.$bval.' ';
+			$bveclist.=$bvec.' '.$b0vec.' ';
+			$bavllist.=$bval.' '.$b0val.' ';
 			$pedir.=$pedir_line; 
+			unless ( -e $ENV{'SUBJECTS_DIR'}.'/'.$study.'_'.$subject.'/mri/ThalamicNuclei.v12.T1.FSvoxelSpace.mgz' ){
+				my %ptask = ( 'filename' => $outdir.'/segtahalamus_'.$subject.'.sh',
+					'job_name' => 'segtalamus_'.$study,
+					'cpus' => 2,
+					'time' => '2:0:0',
+					'mem_per_cpu' => '4G',
+					'partition' => 'fast',
+					'output' => $outdir.'/segthalamus',
+					'command' => 'segmentThalamicNuclei.sh '.$study.'_'.$subject,
+				);
+				my $jobid = send2slurm(\%ptask);
+				push @jobs, $jobid;
+			}
 		}
 	}
 	$subjlist.=')';
@@ -91,4 +107,15 @@ unless (-e $dmrirc && -r $dmrirc){
 	close CIF;
 }else{
 	die "There is a previous dmrirc file\nYou should delete it and try again\n";
+}
+if (scalar(@jobs)) {
+	my $ljobs = join(',',@jobs);
+	$ljobs = 'afterok:'.$ljobs;
+	my %hey = (
+		'filename' => $outdir.'/segtahalamus_end.sh',
+		'job_name' => 'segtalamus_'.$study,
+		'output' => $outdir.'/segthalamus_end',
+		'dependency' => $ljobs,
+	);
+	send2slurm(\%hey);
 }
