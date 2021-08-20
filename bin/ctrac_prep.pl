@@ -84,7 +84,7 @@ while (<CORD>){
 	#print "$subj\n";
 	$ptask{'filename'} = $outdir.'/'.$subj.'_trac_prep.sh';
 	$ptask{'output'} = $outdir.'/trac_prep';
-	$ptask{'command'} = $_;
+	$ptask{'command'} = 'export MY_MORPHS_DO_NOT_CONFORM_DEAL_WITH_IT=1'."\n".$_;
 	send2slurm(\%ptask);	
 }
 close CORD;
