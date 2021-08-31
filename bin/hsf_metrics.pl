@@ -19,17 +19,24 @@ use File::Basename qw(basename);
 use Data::Dump qw(dump);
 
 my $hsf_i_data = ".hippoSfVolumes-T1.v10.txt";
+my $legacy = 0;
 my @hemis = ("lh", "rh");
 # print help if called without arguments
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
+    if (/^-old/) { $legacy = 1;}
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/hsf_metrics.hlp'; exit;}
 }
 
 my $study = shift;
 unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/hsf_metrics.hlp'; exit;}
+if ($legacy) {
+	my $hsf_i_data = ".hippoSfVolumes-T1.v10.txt";
+}else{
+	my $hsf_i_data = ".hippoSfVolumes-T1.v21.txt";
+}
 my %std = load_project($study);
 my $db = $std{DATA}.'/'.$study.'_mri.csv';
 my $fsout = $std{DATA}.'/'.$study.'_hsf_metrics.csv';

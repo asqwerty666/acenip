@@ -19,12 +19,14 @@ use SLURM qw(send2slurm);
 use NEURO4 qw(populate check_fs_subj load_project print_help check_or_make get_subjects get_list);
 
 my $cfile;
+my $legacy = 0;
 
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
     if (/^-cut/) { $cfile = shift; chomp($cfile);}
+    if (/^-old/) { $legacy = 1;}
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/recon.hlp'; exit;}
 }
 
@@ -69,7 +71,11 @@ foreach my $pkey (sort @plist){
 	my $ok_subj = check_fs_subj($subj);
 	if($ok_subj){
 		my $order;
-		$ptask{'command'} = "recon-all -s ".$subj." -hippocampal-subfields-T1 -itkthreads 4";
+		if ($legacy) {
+			$ptask{'command'} = "recon-all -s ".$subj." -hippocampal-subfields-T1 -itkthreads 4";
+		} else {
+			$ptask{'command'} = "segmentHA_T1.sh ".$subj;
+		}
 		$ptask{'filename'} = $outdir.'/'.$subj.'fs_orders.sh';
 		$ptask{'output'} = $outdir.'/fs_recon-slurm-'.$subj;
 		send2slurm(\%ptask);
