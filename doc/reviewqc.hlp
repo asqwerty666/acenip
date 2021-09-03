@@ -1,0 +1,11 @@
+usage: review_vqcfs.pl [-i <experiments_list>] [-d <analysis_directory>] <xnat_project>
+
+Make Fresufer quality control using visualqc (https://github.com/raamana/visualqc). Depends on xnatapic. Should be executed on a GUI environment.
+
+Options:
+-i <experiments_list>: list of the experiments to be reviewed (optional). By default all the experiments in the project are included.
+-d <analysis_directory>: Directory where image data will be stored (optional). Provide only if you want to continue a previous analysis already stored.
+<xnat_project>: name of the project in XNAT (mandatory).
+-h: print this help.
+
+
