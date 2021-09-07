@@ -18,7 +18,7 @@ use NEURO4 qw(get_subjects check_fs_subj load_project print_help shit_done check
 use File::Basename qw(basename);
 use Data::Dump qw(dump);
 
-my $hsf_i_data = ".hippoSfVolumes-T1.v10.txt";
+my $hsf_i_data = ".hippoSfVolumes-T1.v21.txt";
 my $legacy = 0;
 my @hemis = ("lh", "rh");
 # print help if called without arguments
@@ -33,9 +33,9 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
 my $study = shift;
 unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/hsf_metrics.hlp'; exit;}
 if ($legacy) {
-	my $hsf_i_data = ".hippoSfVolumes-T1.v10.txt";
+	$hsf_i_data = ".hippoSfVolumes-T1.v10.txt";
 }else{
-	my $hsf_i_data = ".hippoSfVolumes-T1.v21.txt";
+	$hsf_i_data = ".hippoSfVolumes-T1.v21.txt";
 }
 my %std = load_project($study);
 my $db = $std{DATA}.'/'.$study.'_mri.csv';
