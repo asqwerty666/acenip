@@ -66,7 +66,7 @@ sub check_or_make {
 	}
 }
 
-sub inplace{
+sub inplace {
         my $place = shift;
         my $thing = shift;
         $thing =~ s/\/$//;
@@ -162,7 +162,7 @@ sub get_lut {
         return %aseg_data;
 }
 
-sub run_dckey{
+sub run_dckey {
         my @props = @_;
         my $order = "dckey -k $props[1] $props[0] 2\>\&1";
         print "$order\n";
@@ -172,7 +172,7 @@ sub run_dckey{
         return $dckey;
 }
 
-sub dclokey{
+sub dclokey {
         my @props = @_;
         my $order = "dcdump $props[0] 2\>\&1 \| grep \"".$props[1]."\"";
         print "$order\n";
