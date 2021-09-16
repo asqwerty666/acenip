@@ -35,6 +35,7 @@ my $ifile; my $efile;
 my $wdir = cwd;
 my $odir;
 my $continue = 0; 
+my $vqcd = $wdir.'/visualqc_output';
 
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
@@ -42,6 +43,7 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
 	last if /^--$/;
 	if (/^-i/) { $ifile = shift; chomp($ifile);}
 	if (/^-d/) { $odir = shift; chomp($odir);}
+	if (/^-o/) { $vqcd = shift; chomp($vqcd); $continue = 1;}
 	if (/^-c/) { $continue = 1;}
 	if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/reviewqc.hlp'; exit;}
 	if (/^-x/) { $xprj = shift; chomp($xprj);} #nombre del proyecto en XNAT
@@ -102,7 +104,7 @@ unless ($odir and -d $odir) {
 	}
 }
 
-my $vqcd = $wdir.'/visualqc_output';
+#my $vqcd = $wdir.'/visualqc_output';
 if ( -d $vqcd ){
 	#aqui igual, si existe el directorio de output 
 	#no lo sobreescribo sino que le añado el timestamp al nuevo

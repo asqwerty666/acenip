@@ -23,6 +23,7 @@ use Spreadsheet::Write;
 my $idir;
 my $guide;
 my $ofile;
+my $qcfile;
 my $info_page;
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
@@ -31,6 +32,7 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     if (/^-i/) { $idir = shift; chomp($idir);}
     if (/^-g/) { $guide = shift; chomp($guide);}
     if (/^-o/) { $ofile = shift; chomp($ofile);}
+    if (/^-qc/) { $qcfile = shift; chomp($qcfile);}
     if (/^-s/) { $info_page = shift; chomp($info_page);}
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/metrics2xls.hlp'; exit;}
 }
