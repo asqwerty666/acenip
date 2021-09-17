@@ -4,3 +4,17 @@ Base de datos:,O. Sotolongo-Grau,asqwerty@gmail.com
 Extracción de métricas:,O. Sotolongo-Grau,asqwerty@gmail.com
 col. Externa:,Assumpta Vivas-Larruy,assumpta.vivas@gmail.com
 ,Miguel Ángel Tejero,mtejeroc@corachan.com
+,
+Freesurfer version:,7.2
+,
+FSQC:,quality control output,Important:,Do not use measures from subjects labeled as Fail !!!!!!! 
+,
+aparc_area_lh:,mean surface area of each parcellation (mm2) - left hemisphere
+aparc_area_rh:,mean surface area of each parcellation (mm2) - right hemisphere 
+aparc_thickness_lh:,mean cortical thickness of each parcellation (mm) - left hemisphere 
+aparc_thickness_rh:,mean cortical thickness of each parcellation (mm) - right hemisphere
+aparc_volume_lh:,mean volume of each parcellation (mm3) - left hemisphere
+aparc_volume_rh:,mean volume of each parcellation (mm3) - right hemisphere
+aseg_stats:,segmentation measures 
+wmparc_stats:,white matter parcelattion measures
+
