@@ -73,9 +73,9 @@ foreach my $subject (@pets){
 				# Esto no deberia usarse a no ser que hubiera muchos problemas con el registro
 				# Pero se puede hacer un rupo aparte e intentar este metodo
 				# si no se logra registrar bien
-                        	$order = $ENV{'PIPEDIR'}."/bin/fbb_reg_alt.sh ".$study." ".$subject." ".$w_dir." ".$spet{'combined'}." ".$smri{'T1w'}." 0";
+                        	$order = $ENV{'PIPEDIR'}."/bin/fbb_reg_alt.sh ".$study." ".$subject." ".$w_dir." ".$spet{'combined'}." ".$smri{'T1w'}[0]." 0";
 			}else{
-				$order = $ENV{'PIPEDIR'}."/bin/fbb_reg.sh ".$study." ".$subject." ".$w_dir." ".$spet{'combined'}." ".$smri{'T1w'}." 0";
+				$order = $ENV{'PIPEDIR'}."/bin/fbb_reg.sh ".$study." ".$subject." ".$w_dir." ".$spet{'combined'}." ".$smri{'T1w'}[0]." 0";
 			}
 			$ptask{'command'} = $order;
                         $ptask{'filename'} = $outdir.'/'.$subject.'_fbb_reg.sh';
@@ -86,7 +86,7 @@ foreach my $subject (@pets){
 	}else{
 		# Pero si movcorr == 1 tomo el single y hago la correcion de movimiento
 		if($spet{'single'} && $smri{'T1w'}){
-			$ptask{'command'} = $ENV{'PIPEDIR'}."/bin/fbb_reg.sh ".$study." ".$subject." ".$w_dir." ".$spet{'single'}." ".$smri{'T1w'}." 1";
+			$ptask{'command'} = $ENV{'PIPEDIR'}."/bin/fbb_reg.sh ".$study." ".$subject." ".$w_dir." ".$spet{'single'}." ".$smri{'T1w'}[0]." 1";
 			$ptask{'filename'} = $outdir.'/'.$subject.'_fbb_reg.sh';
 			$ptask{'cpus'} = 4;
 			$ptask{'output'} = $outdir.'/fbb_reg_'.$subject;

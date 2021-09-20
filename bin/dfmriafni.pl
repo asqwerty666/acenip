@@ -67,7 +67,7 @@ foreach my $subject (@subjects) {
 			s/<project>/$study/;
 			s/<subject>/sub-$subject/;
 			s/<subject_mod>/sub_$subject/;
-			s/<anat>/$nifti{'T1w'}/;
+			s/<anat>/$nifti{'T1w'}[0]/;
 			s/<bold_rest>/$nifti{'func'}/;
 			print CRF;
 			print;
