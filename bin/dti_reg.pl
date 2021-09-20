@@ -76,18 +76,19 @@ foreach my $subject (sort @dtis){
 	if($subject){
 		my %nifti = check_subj($std{'DATA'},$subject);
 		if($nifti{'T1w'} && $nifti{'dwi'}){
+			my $t1w = $nifti{'T1w'}[0];
 			my $order;
 			if($old){
 				if($chop){
-					$order = $pipe_dir."/bin/dti_proc_x.sh ".$study." ".$subject." ".$nifti{'dwi'}." ".$nifti{'T1w'}." ".$w_dir;
+					$order = $pipe_dir."/bin/dti_proc_x.sh ".$study." ".$subject." ".$nifti{'dwi'}." ".$t1w." ".$w_dir;
 				}else{
 					$order = $pipe_dir."/bin/dti_proc_deprecated.sh ".$subject." ".$nifti{'dwi'}." ".$w_dir;
 				}
 			}else{
 				if($nifti{'dwi_sbref'}){
-       		                	$order = $pipe_dir."/bin/dti_proc_epi.sh ".$study." ".$subject." ".$nifti{'dwi'}." ".$nifti{'dwi_sbref'}." ".$nifti{'T1w'}." ".$w_dir;
+       		                	$order = $pipe_dir."/bin/dti_proc_epi.sh ".$study." ".$subject." ".$nifti{'dwi'}." ".$nifti{'dwi_sbref'}." ".$t1w." ".$w_dir;
        		                }else{
-                                	$order = $pipe_dir."/bin/dti_proc_uncorr.sh ".$study." ".$subject." ".$nifti{'dwi'}." ".$nifti{'T1w'}." ".$w_dir;
+                                	$order = $pipe_dir."/bin/dti_proc_uncorr.sh ".$study." ".$subject." ".$nifti{'dwi'}." ".$t1w." ".$w_dir;
                         	}
 			}
 			$ptask{'filename'} = $outdir.'/'.$subject.'dti_orders.sh';
