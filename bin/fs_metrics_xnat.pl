@@ -27,12 +27,14 @@ my $localdir = cwd;
 my $info_page = $ENV{PIPEDIR}.'/lib/info_page_mri.csv';
 my $guide;
 my $ofile;
+my $internos;
 # print help if called without arguments
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
     if (/^-g/) { $guide = shift; chomp($guide);}
+    if (/^-i/) { $internos = shift; chomp($internos);}
     if (/^-o/) { $ofile = shift; chomp($ofile);}
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/fs_metrics.hlp'; exit;}
 }
@@ -102,9 +104,24 @@ foreach my $stat (sort keys %stats) {
 unless ($guide) {
 	$guide = mktemp("guide_data.XXXXX");
 	open GDF, ">$guide";
-	print GDF "Subject,Date\n";
-	foreach my $plab (sort keys %guys){
-		print GDF "$plab,$guys{$plab}{'DATE'}\n";
+	if ($internos){
+		open IIF, "<$internos";
+		while (<IIF>){
+			if (/(.*),\d{8}$/){
+				my ($sbj, $interno) = /(.*),\d{8}$/;
+				$guys{$sbj}{'INTERNO'} = $interno;
+			}
+		}
+		close IIF;
+		print GDF "Subject,Interno,Date\n";
+		foreach my $plab (sort keys %guys){
+			print GDF "$plab,$guys{$plab}{'INTERNO'},$guys{$plab}{'DATE'}\n";
+		}
+	}else{
+		print GDF "Subject,Date\n";
+		foreach my $plab (sort keys %guys){
+			print GDF "$plab,$guys{$plab}{'DATE'}\n";
+		}
 	}
 	close GDF;
 }
