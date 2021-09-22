@@ -107,8 +107,8 @@ unless ($guide) {
 	if ($internos){
 		open IIF, "<$internos";
 		while (<IIF>){
-			if (/(.*),\d{8}$/){
-				my ($sbj, $interno) = /(.*),\d{8}$/;
+			if (/.*,\d{8}$/){
+				my ($sbj, $interno) = /(.*),(\d{8})$/;
 				$guys{$sbj}{'INTERNO'} = $interno;
 			}
 		}
