@@ -28,6 +28,7 @@ my $info_page = $ENV{PIPEDIR}.'/lib/info_page_mri.csv';
 my $guide;
 my $ofile;
 my $internos;
+my $debug = 0;
 # print help if called without arguments
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
@@ -48,6 +49,12 @@ unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/fs_metrics.hlp'; exit;}
 #check_or_make($fsout);
 #my @plist = get_subjects($db);
 #my $subj_dir = $ENV{'SUBJECTS_DIR'};
+unless ($debug) {
+	my $logfile = 'fs_metrics_xnat.log';
+	open STDOUT, ">$logfile" or die "Can't redirect stdout";
+	open STDERR, ">&STDOUT" or die "Can't dup stdout";
+	open DBG, ">$logfile";
+}
 $ofile = $study.'_fsmetrics.xls';
 my %guys;
 my $subjects_list = mktemp($tmp_dir.'/sbjsfileXXXXX');
@@ -115,7 +122,11 @@ unless ($guide) {
 		close IIF;
 		print GDF "Subject,Interno,Date\n";
 		foreach my $plab (sort keys %guys){
-			print GDF "$plab,$guys{$plab}{'INTERNO'},$guys{$plab}{'DATE'}\n";
+			if (exists($guys{$plab}{'INTERNO'}) and exists($guys{$plab}{'DATE'})){
+				print GDF "$plab,$guys{$plab}{'INTERNO'},$guys{$plab}{'DATE'}\n";
+				print "$plab,$guys{$plab}{'INTERNO'},$guys{$plab}{'DATE'}\n";
+
+			}
 		}
 	}else{
 		print GDF "Subject,Date\n";
@@ -190,4 +201,4 @@ $workbook->close();
 #my $zfile = $fsoutput.'/'.$study."_mri_results.tgz";
 #system("tar czf $zfile $fsresdir");
 #shit_done basename($ENV{_}), $study, $zfile;
-
+close DBG unless $debug;
