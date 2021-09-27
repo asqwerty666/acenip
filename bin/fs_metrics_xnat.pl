@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 #
 use strict; use warnings;
-use NEURO4 qw(get_subjects check_fs_subj load_project print_help shit_done check_or_make);
+use NEURO4 qw(get_subjects check_fs_subj load_project print_help shit_done check_or_make getLoggingTime);
 use FSMetrics qw(fs_file_metrics);
 use File::Basename qw(basename);
 use File::Temp qw( :mktemp tempdir);
@@ -55,7 +55,7 @@ unless ($debug) {
 	open STDERR, ">&STDOUT" or die "Can't dup stdout";
 	open DBG, ">$logfile";
 }
-$ofile = $study.'_fsmetrics.xls';
+$ofile = $study.'_fsmetrics_'.getLoggingTime().'.xls';
 my %guys;
 my $subjects_list = mktemp($tmp_dir.'/sbjsfileXXXXX');
 # Get subject list
@@ -109,7 +109,7 @@ foreach my $stat (sort keys %stats) {
 }
 
 unless ($guide) {
-	$guide = mktemp("guide_data.XXXXX");
+	$guide = mktemp($tmp_dir.'/guide_data.XXXXX');
 	open GDF, ">$guide";
 	if ($internos){
 		open IIF, "<$internos";
@@ -201,4 +201,5 @@ $workbook->close();
 #my $zfile = $fsoutput.'/'.$study."_mri_results.tgz";
 #system("tar czf $zfile $fsresdir");
 #shit_done basename($ENV{_}), $study, $zfile;
+unlink $guide;
 close DBG unless $debug;

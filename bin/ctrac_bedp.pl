@@ -84,8 +84,8 @@ while (<CORD>){
 	my $cpath = $fsdir.'/'.$study.'_'.$subj.'/dmri.bedpostX/logs/monitor';
 	system('mkdir -p '.$cpath);
 	$prebedp{'filename'} = $outdir.'/'.$subj.'_trac_pre_bedp.sh';
-	$prebedp{'output'} = $outdir.'/trac_prep';
-	$prebedp{'command'} = $_;
+	$prebedp{'output'} = $outdir.'/trac_prep_bedp';
+	$prebedp{'command'} = $_.' 0';
 	send2slurm(\%prebedp);
 }
 close CORD;
