@@ -2,7 +2,7 @@ library("e1071")
 library("caret")
 library("caTools")
 library("ADNIMERGE")
-input_file="bf_data.csv"
+input_file="input_data.csv"
 output_file="classifier_output.csv"
 output_png="classifier_output.png"
 pop <- adnimerge[adnimerge$VISCODE=="bl" & (adnimerge$DX=="Dementia" | adnimerge$DX=="CN"),];
