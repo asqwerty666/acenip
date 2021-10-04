@@ -62,7 +62,7 @@ while(<SLF>){
 	if($xtag){
 		my ($xnam, $xdate) = $xtag =~ /(.*),(.*)/;
 		$guys{$slab}{'XNATEXP'} = $xnam;
-		$xdate =~ s/-/./g;
+		#$xdate =~ s/-/./g;
 		$guys{$slab}{'DATE'} = $xdate;
 	}
 }
