@@ -1,0 +1,9 @@
+usage: fbb_cl_metrics_xnat.pl [-i <text_file>] <project>
+
+Get SUVR and Centiloid metrics from XNAT. 
+
+Options:
+-i <text_file>: Provide internal clinic codes from institutional DB
+-h: print this help
+<project>: Name of the project on XNAT
+

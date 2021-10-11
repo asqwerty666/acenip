@@ -57,9 +57,7 @@ my %masks = get_pair $roi_list;
 print "Collecting needed files\n";
 
 my @dtis = cut_shit($db, $data_dir."/".$cfile);
-
 my %csv;
-
 my $ofile = $data_dir."/".$study."_dti_".$roi_group.".csv";
 open OF, ">$ofile";
 
@@ -72,7 +70,6 @@ foreach my $rmask (sort keys %masks){
 	}
 }
 print OF "\n";
-
 foreach my $subject (@dtis){
         my $dti_fa = $w_dir.'/'.$subject.'_dti_FA.nii.gz';
         my $dti_md = $w_dir.'/'.$subject.'_dti_MD.nii.gz';	
