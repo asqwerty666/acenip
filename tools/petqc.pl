@@ -58,7 +58,7 @@ sub put_petqc {
 	foreach my $xpx (sort keys %qcs){
 		my $order = 'curl -X GET -u "'.$user.':'.$passwd.'" "'.$host.'/data/experiments/'.$xpx.'/resources/MRI/files/mriSessionMatch.json" 2>/dev/null';
 		my $resp = qx/$order/;
-		$resp =~ s/,"qa":\d,/"qa":$qcs{$xpx},/;
+		$resp =~ s/,"qa":\d,/,"qa":$qcs{$xpx},/;
 		open TDF, ">$tmpfile" or return 500;
 		print TDF $resp;
 		close TDF;
