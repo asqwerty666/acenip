@@ -102,7 +102,7 @@ if( $ENV{REQUEST_METHOD} eq 'POST'){
 	print $q->start_form( -method=>"POST", -action=>"/cgi-bin/petqc.pl" );
 	print $q->p("XNAT project:" , $q->textfield( -name=>"xproject"));
 	print $q->p("User:" , $q->textfield( -name=>"username"));
-	print $q->p("Password:", $q->textfield( -name=>"passwd"));
+	print $q->p("Password:", $q->password_field( -name=>"passwd"));
 	print $q->submit( -name=>"auth", -value=>"Submit");
 	print $q->end_form;
 }
