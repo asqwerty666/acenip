@@ -164,7 +164,7 @@ for my $i (0 .. $#{$info}) {
 $workbook->addsheet('FSQC');
 #for my $i (0 .. $#{$info}) {
 #	my $row = $info->[$i];
-my @qcrow = split ',', "Subject,Interno,FSQC,Notes";
+my @qcrow = split ',', "Subject,Interno,Date,FSQC,Notes";
 $workbook->addrow(\@qcrow);
 foreach my $sbj (sort keys %guys){
 	if (exists($guys{$sbj}) and exists($guys{$sbj}{'FSQC'}) and $guys{$sbj}{'FSQC'}){
