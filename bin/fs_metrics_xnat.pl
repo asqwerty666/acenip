@@ -169,9 +169,9 @@ $workbook->addrow(\@qcrow);
 foreach my $sbj (sort keys %guys){
 	if (exists($guys{$sbj}) and exists($guys{$sbj}{'FSQC'}) and $guys{$sbj}{'FSQC'}){
 		if (exists($guys{$sbj}{'Notes'}) and $guys{$sbj}{'Notes'}){
-			@qcrow = split ',', "$sbj,$guys{$sbj}{'INTERNO'},$guys{$sbj}{'FSQC'},$guys{$sbj}{'Notes'}";
+			@qcrow = split ',', "$sbj,$guys{$sbj}{'INTERNO'},$guys{$sbj}{'DATE'},$guys{$sbj}{'FSQC'},$guys{$sbj}{'Notes'}";
 		}else{
-			@qcrow = split ',', "$sbj,$guys{$sbj}{'INTERNO'},$guys{$sbj}{'FSQC'}";
+			@qcrow = split ',', "$sbj,$guys{$sbj}{'INTERNO'},$guys{$sbj}{'DATE'},$guys{$sbj}{'FSQC'}";
 		}
 		$workbook->addrow(\@qcrow);
 	}
