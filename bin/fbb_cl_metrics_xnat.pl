@@ -91,7 +91,9 @@ unless ($guide) {
 	}else{
 		print GDF "Subject,Date\n";
 		foreach my $plab (sort keys %guys){
-			print GDF "$plab,$guys{$plab}{'DATE'}\n";
+			if(exists($guys{$plab}) and exists($guys{$plab}{'DATE'}) and $guys{$plab}{'DATE'}){ 
+				print GDF "$plab,$guys{$plab}{'DATE'}\n"; 
+			}
 		}
 	}
 	close GDF;
