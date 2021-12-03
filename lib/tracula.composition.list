@@ -1,0 +1,6 @@
+Fornix:lh.fx,rh.fx
+Cingulum:lh.cbd,lh.cbv,rh.cbd,rh.cbv
+Uncinate_fasciculus:lh.uf,rh.uf
+Superior_longitudinal_fasciculus:lh.slf1,lh.slf2,lh.slf3,rh.slf1,rh.slf2,rh.slf3
+Inferior_longitudinal_fasciculus:lh.ilf,rh.ilf
+Corpus_callosum:cc.bodyc,cc.bodyp,cc.bodypf,cc.bodypm,cc.bodyt,cc.genu,cc.rostrum,cc.splenium
