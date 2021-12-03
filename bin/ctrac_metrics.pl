@@ -111,7 +111,7 @@ open OF, ">$ofile";
 
 print OF "Subject";
 foreach my $track (sort keys %trdirs){
-	print OF ";$track","_FA",";$track","_MD";
+	print OF ";$track","_FA",";$track","_MD",";$track","_Volume";
 }
 print OF "\n";
 
@@ -120,7 +120,7 @@ my %results;
 foreach my $subject (@dtis){
 	if($subject){
 		print OF "$subject";
-		my $fa; my $md;
+		my $fa; my $md; my $vol;
 		my $spath = $subjsdir.'/'.$study.'_'.$subject.'/dpath/';
 		foreach my $track (sort keys %trdirs){
 			my $ifile = $spath.$trdirs{$track}.'/'.$pathr_file;
@@ -129,13 +129,19 @@ foreach my $subject (@dtis){
 				while (<IRF>) {
 					if(/^FA_Avg\s/) {($fa) = /^FA_Avg (0\.\d+)$/;}
 					if(/^MD_Avg\s/) {($md) = /^MD_Avg (0\.\d+)$/;}
+					if(/^Volume\s/) {($vol) = /^Volume (\d+)$/;}
 				}
 				close IRF;
 			}else{
 				$fa = 'NA';
 				$md = 'NA';
+				$vol = 'NA';
 			}
-			print OF ";$fa;$md";
+			if($fa && $md){
+				print OF ";$fa;$md;$vol";
+			}else{
+				print OF ";NA;NA;NA";
+			}
 		}
 		print OF "\n";
 	}
