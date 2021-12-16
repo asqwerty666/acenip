@@ -66,7 +66,7 @@ $ head classifier_output.csv
 
 ## Como citarlo
 
-El metodo completo esta escrito en ingles y disponible formato MS Office en el archivo nplus_method.docx.
+El metodo completo esta escrito en ingles y disponible formato MS Office en el archivo *nplus_method.docx*.
 
 ## Mas info
 
