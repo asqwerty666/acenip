@@ -1,13 +1,13 @@
 # Neurodegeneration Assessment from MRI
 
-El calculo de N se hace mediante el script 'nplus.r', que depende de las bibliotecas,
+El calculo de N se hace mediante el script *nplus.r*, que depende de las bibliotecas,
 
   - e1071
   - caret
   - caTools
   - ADNIMERGE
 
-Basicamente construye un Prior bayesiano tomando los sujetos del baseline de ADNIMERGE diagnosticados como 'Dementia' y 'CN' y asumiendo que 'Dementia' => N+ y 'CN' => N-. Debe entonces construirse un archivo CSV con los datos de segmentacion y parcelacion de FS y añadirse la variable 'AGE' con la edad de los sujetos. ejemplo, para el caso del proyecto 'bioface19' primero construimos uns archivo con los datos de FS.
+Basicamente construye un Prior bayesiano tomando los sujetos del baseline de ADNIMERGE diagnosticados como *Dementia* y *CN* y asumiendo que *Dementia* => N+ y *CN* => N-. Debe entonces construirse un archivo CSV con los datos de segmentacion y parcelacion de FS y añadirse la variable *AGE* con la edad de los sujetos. ejemplo, para el caso del proyecto *bioface19* primero construimos uns archivo con los datos de FS.
 
 ```
 $ xnat_pullfs.pl -s aseg -x bioface19 -o bf_base_aseg.csv
@@ -43,5 +43,5 @@ Finalmente ejecutamos el script,
 $ Rscript nplus.r
 ```
 
-y obtenemos los resultados en el archivo 'classifier_output.csv' y un grafico de control en 'classifier_output.png'.
+y obtenemos los resultados en el archivo *classifier_output.csv* y un grafico de control en *classifier_output.png*.
 
