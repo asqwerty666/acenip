@@ -1,5 +1,7 @@
 # Neurodegeneration Assessment from MRI
 
+##Uso
+
 El calculo de N se hace mediante el script *nplus.r*, que depende de las bibliotecas,
 
   - e1071
@@ -61,4 +63,8 @@ $ head classifier_output.csv
  y un grafico de control en *classifier_output.png*,
 
 ![classifier HV vs AGE](classifier_output.png)
+
+## Como citarlo
+
+El metodo completo esta escrito en ingles y disponible formato MS Office en el archivo nplus_method.docx.
 
