@@ -114,48 +114,7 @@ foreach my $subject (sort keys %tdata){
 }
 		
 close ODF;
-#dump %sdata; exit;
-#open OF, "<$ofile";
 
-#print OF "Subject";
-#foreach my $track (sort keys %trdirs){
-#	print OF ";$track","_FA",";$track","_MD",";$track","_Volume";
-#}
-#print OF "\n";
-
-#my %results;
-
-#foreach my $subject (@dtis){
-#	if($subject){
-#		print OF "$subject";
-#		my $fa; my $md; my $vol;
-#		my $spath = $subjsdir.'/'.$study.'_'.$subject.'/dpath/';
-#		foreach my $track (sort keys %trdirs){
-#			my $ifile = $spath.$trdirs{$track}.'/'.$pathr_file;
-#			if ( -e $ifile ){
-#				open IRF, "<$ifile";
-#				while (<IRF>) {
-#					if(/^FA_Avg\s/) {($fa) = /^FA_Avg (0\.\d+)$/;}
-#					if(/^MD_Avg\s/) {($md) = /^MD_Avg (0\.\d+)$/;}
-#					if(/^Volume\s/) {($vol) = /^Volume (\d+)$/;}
-#				}
-#				close IRF;
-#			}else{
-#				$fa = 'NA';
-#				$md = 'NA';
-#				$vol = 'NA';
-#			}
-#			if($fa && $md){
-#				print OF ";$fa;$md;$vol";
-#			}else{
-#				print OF ";NA;NA;NA";
-#			}
-#		}
-#		print OF "\n";
-#	}
-#}
-
-#close OF;
-#my $zfile=$std{DATA}."/".$study."_dti_tracula_results.tgz";
-#system("tar czf $zfile $ofile");
-#shit_done basename($ENV{_}), $study, $zfile;
+my $zfile=$std{DATA}."/".$study."_dti_tracula_comp_results.tgz";
+system("tar czf $zfile $ofile");
+shit_done basename($ENV{_}), $study, $zfile;
