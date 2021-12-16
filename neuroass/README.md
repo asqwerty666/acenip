@@ -9,7 +9,9 @@ El calculo de N se hace mediante el script *nplus.r*, que depende de las bibliot
   - caTools
   - ADNIMERGE
 
-Basicamente construye un Prior bayesiano tomando los sujetos del baseline de ADNIMERGE diagnosticados como *Dementia* y *CN* y asumiendo que *Dementia* => N+ y *CN* => N-. Debe entonces construirse un archivo CSV con los datos de segmentacion y parcelacion de FS y añadirse la variable *AGE* con la edad de los sujetos. ejemplo, para el caso del proyecto *bioface19* primero construimos uns archivo con los datos de FS.
+Basicamente construye un Prior bayesiano tomando los sujetos del baseline de ADNIMERGE diagnosticados como *Dementia* y *CN* y asumiendo que *Dementia* => N+ y *CN* => N-. Debe entonces construirse un archivo CSV con los datos de segmentacion y parcelacion de FS y añadirse la variable *AGE* con la edad de los sujetos. 
+
+Eemplo, para el caso del proyecto *bioface19*, primero construimos un archivo con los datos de FS.
 
 ```
 xnat_pullfs.pl -s aseg -x bioface19 -o bf_base_aseg.csv
