@@ -53,16 +53,16 @@ y obtenemos los resultados en el archivo *classifier_output.csv*,
 
 ```
 $ head classifier_output.csv 
-"Subject_ID","ND"
-"B001","0"
-"B002","1"
-"B003","0"
-"B004","1"
-"B005","1"
-"B006","1"
-"B007","0"
-"B008","0"
-"B009","1"
+Subject_ID,ND
+B001,0
+B002,1
+B003,0
+B004,1
+B005,1
+B006,1
+B007,0
+B008,0
+B009,1
 ```
  y un grafico de control en *classifier_output.png*,
 

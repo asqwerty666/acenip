@@ -17,7 +17,7 @@ base$MidTemp = base$lh.middletemporal.GrayVol + base$rh.middletemporal.GrayVol
 base$ICV = base$eTIV
 base$ND <- predict(classifier_cl, newdata = base)
 base2e = base[, c("Subject_ID", "ND")]
-write.csv(base2e, file=output_file, row.names=FALSE)
+write.csv(base2e, file=output_file, row.names=FALSE, quote=FALSE)
 png(output_png, width=1024, height=600, bg="white")
 plot(base$AGE, base$Hippocampus, main = "Hippocampus Volume versus Age", xlab="Age", ylab="HV", pch=19, col=ifelse(base$ND==1,"red","green"))
 dev.off()
