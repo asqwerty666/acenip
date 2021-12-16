@@ -1,6 +1,6 @@
 # Neurodegeneration Assessment from MRI
 
-##Uso
+## Uso
 
 El calculo de N se hace mediante el script *nplus.r*, que depende de las bibliotecas,
 
@@ -67,4 +67,10 @@ $ head classifier_output.csv
 ## Como citarlo
 
 El metodo completo esta escrito en ingles y disponible formato MS Office en el archivo nplus_method.docx.
+
+## Mas info
+
+Toda la informacion relativa a la construccion del metodo, a pruebas varias con otros metodos y a posibles extensiones esta disponible en,
+
+https://detritus.fundacioace.com/wiki/doku.php?id=neuroimagen:bioface_atn
 
