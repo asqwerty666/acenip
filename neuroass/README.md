@@ -60,5 +60,5 @@ $ head classifier_output.csv
 ```
  y un grafico de control en *classifier_output.png*,
 
-![classifier HV vs AGE]{classifier_output.png}
+![classifier HV vs AGE](classifier_output.png)
 
