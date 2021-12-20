@@ -14,4 +14,4 @@ dcanon ${tdir} ${outdir}/${nhc}/${sdate} nomove ${nhc} ${patid}
 xnatapic upload_dicom --project_id unidad --subject_id ${nhc} --pipelines ${outdir}/${nhc}/${sdate}
 rm -rf ${tdir}
 rm -rf ${outdir}
-sqlcmd -U osotolongo -P Fundacio21 -S 172.26.2.161 -s "," -W -Q "SELECT xapellido1, xapellido2, xnombre, his_interno FROM [UNIT4_DATA].[imp].[vh_pac_gral] WHERE his_interno = '"${nhc}"';"
+sqlcmd -U osotolongo -P XXXXXXXXX -S 172.26.2.161 -s "," -W -Q "SELECT xapellido1, xapellido2, xnombre, his_interno FROM [UNIT4_DATA].[imp].[vh_pac_gral] WHERE his_interno = '"${nhc}"';"
