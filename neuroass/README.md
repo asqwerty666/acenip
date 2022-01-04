@@ -66,7 +66,7 @@ B007,0
 B008,0
 B009,1
 ```
-Also, there are three other output files with plots for hippocampus, middle temporal cortex and entorhinal cortex vs subject's age. Those are images in postscript format and are named *classifier_output_hippocampus.ps*, *classifier_output_middletemporal.ps*, *classifier_output_entorhinal.png*
+Also, there are three other output files with plots for hippocampus, middle temporal cortex and entorhinal cortex vs subject's age. Those are images in postscript format and are named *classifier_output_hippocampus.ps*, *classifier_output_middletemporal.ps*, *classifier_output_entorhinal.png* respectively.
 
 ![classifier HV vs AGE](classifier_output.png)
 
