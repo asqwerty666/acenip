@@ -1,19 +1,20 @@
 # Neurodegeneration Assessment from MRI
 
-## Uso
+## Usage
 
-El calculo de N se hace mediante el script *nplus.r*, que depende de las bibliotecas,
+N values are estimated with the script *nplus.r*. you must have installed the following libraries,
 
   - e1071
   - caret
   - caTools
   - ADNIMERGE
 
-Basicamente construye un Prior bayesiano tomando los sujetos del baseline de ADNIMERGE diagnosticados como *Dementia* y *CN* y asumiendo que *Dementia* => N+ y *CN* => N-. Debe entonces construirse un archivo CSV con los datos de segmentacion y parcelacion de Freesurfer y añadirse la variable *AGE* con la edad de los sujetos. 
+Basically, a bayes prior is built taking those baseline subjects from ADNIMERGE database diagnosed as *Dementia* and  *CN*. It is assumed that *Dementia* => N+ and  *CN* => N-. Then a CSV file, with Freesurfer segmentation data, is neededas input. This input CSV should also contain the variable *AGE*, with the age of subjects. 
 
-Para extraer los datos de Freesurfer, debemos tener acceso al proyecto en cuestion en XNAT y correctamente configurado el cliente [xnatapic](https://github.com/asqwerty666/xnatapic). Para añadir la edad, debemos sacarla de la base de datos general del proyecto.
+---
+**Note for ACE users:** In order to extract Freesurfer data right permission to the XNAT project are needed as well as the [xnatapic](https://github.com/asqwerty666/xnatapic) client properly installed and configured. Subject's age could found al project general database and inserted easily into de CSV file.
 
-Ejemplo, para el caso del proyecto *bioface19*, primero construimos un archivo con los datos de FS.
+For instance, in the case of project *bioface19*, first we get the Freesurfer data,
 
 ```
 xnat_pullfs.pl -s aseg -x bioface19 -o bf_base_aseg.csv
@@ -21,7 +22,7 @@ xnat_pullfs.pl -s aparc -x bioface19 -o bf_base_aparc.csv
 join -t, bf_base_aseg.csv bf_base_aparc.csv > bf_base.csv
 ```
 
-Ahora construimos un archivo con las edades correspondientes,
+and with a previous file containing age of individuals,
 
 ```
 $ head bf_age.csv 
@@ -37,19 +38,20 @@ B008,58
 B009,51
 ```
 
-y los unimos al anterior,
+we can built a single file with joined data,
 
 ```
 join -t, bf_base.csv bf_age.csv > input_data.csv
 ```
 
-Finalmente ejecutamos el script,
+---
+The script is executed as simple as,
 
 ```
 Rscript nplus.r
 ```
 
-y obtenemos los resultados en el archivo *classifier_output.csv*,
+and we get the classifier results in the file *classifier_output.csv*,
 
 ```
 $ head classifier_output.csv 
@@ -64,17 +66,17 @@ B007,0
 B008,0
 B009,1
 ```
- y un grafico de control en *classifier_output.png*,
+Also, there are three other output files with plots for hippocampus, middle temporal cortex and entorhinal cortex vs subject's age. Those are images in postscript format and are named *classifier_output_hippocampus.ps*, *classifier_output_middletemporal.ps*, *classifier_output_entorhinal.png*
 
 ![classifier HV vs AGE](classifier_output.png)
 
-## Como citarlo
+## Cite it
 
-El metodo completo esta escrito en ingles y disponible formato MS Office en el archivo *nplus_method.docx*.
+The full metodology is poorly written in english and available in MS Office format at *nplus_method.docx* document.
 
-## Mas info
+## More info
 
-Toda la informacion relativa a la construccion del metodo, a pruebas varias con otros metodos y a posibles extensiones esta disponible en,
+All the info for building the method, alternatives, several test, possible extensions and so on, is available (in spanish) at,
 
 https://detritus.fundacioace.com/wiki/doku.php?id=neuroimagen:bioface_atn
 
