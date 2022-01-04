@@ -76,6 +76,8 @@ convert classifier_output_hippocampus.ps -rotate 90 classifier_output_hippocampu
 ---
 ![classifier HV vs AGE](classifier_output.png)
 
+For a better understanding of results, the cortical and subcortical volumes plotted on these plots are corrected by intracranial volume using the residual correction method (for ICV adjusment methods, see https://pubmed.ncbi.nlm.nih.gov/25339897/).
+
 ## Cite it
 
 The full metodology is poorly written in english and available in MS Office format at *nplus_method.docx* document.
