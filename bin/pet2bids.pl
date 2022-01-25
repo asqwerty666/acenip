@@ -39,10 +39,12 @@ $ptask{'job_name'} = 'dcm2bids_'.$proj;
 $ptask{'time'} = '2:0:0';
 $ptask{'partition'} = 'fast';
 foreach my $subject (sort keys %guys) {
-	$ptask{'command'} = 'dcm2bids -d '.$std{'PET'}.'/'.$guys{$subject}.'/ -p '.$subject.' -c '.$std{'DATA'}.'/'.$cfile.' -o '.$std{'DATA'}.'/bids/ --forceDcm2niix';
-	$ptask{'filename'} = $outdir.'/'.$subject.'dcm2bids.sh';
-	$ptask{'output'} = $outdir.'/dcm2bids'.$subject;
-	send2slurm(\%ptask);
+	if ( -d $std{'PET'}.'/'.$guys{$subject} ){
+		$ptask{'command'} = 'dcm2bids -d '.$std{'PET'}.'/'.$guys{$subject}.'/ -p '.$subject.' -c '.$std{'DATA'}.'/'.$cfile.' -o '.$std{'DATA'}.'/bids/ --forceDcm2niix';
+		$ptask{'filename'} = $outdir.'/'.$subject.'dcm2bids.sh';
+		$ptask{'output'} = $outdir.'/dcm2bids'.$subject;
+		send2slurm(\%ptask);
+	}
 }
 my %final;
 $final{'filename'} = $outdir.'/dcm2bids_end.sh';

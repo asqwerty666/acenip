@@ -23,6 +23,7 @@ use FSMetrics qw(tau_rois);
 my $cfile="";
 my $time = '2:0:0';
 my $style = "";
+my $tracer = "";
 
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
@@ -31,6 +32,7 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     if (/^-cut/) { $cfile = shift; chomp($cfile);}
     if (/^-time/) {$time = shift; chomp($time);}
     if (/^-r/) {$style = shift; chomp($style);}
+    if (/^-tracer/) {$tracer = shift, chomp($tracer)}
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/tau_reg.hlp'; exit;}
 }
 my $study = shift;
@@ -59,7 +61,12 @@ my @r_jobs;
 my @p_jobs;
 print "Running shit\n";
 foreach my $subject (@pets){
-        my %spet = check_pet($std{'DATA'},$subject);
+	my %spet;
+	if($tracer){
+        	%spet = check_pet($std{'DATA'},$subject);
+	}else{
+		%spet = check_pet($std{'DATA'},$subject,$tracer);	
+	}
 	my %smri = check_subj($std{'DATA'},$subject);
 	if($spet{'tau'} && $smri{'T1w'}){
 		push @ok_pets, $subject;

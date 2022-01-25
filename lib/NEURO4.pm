@@ -122,8 +122,7 @@ sub check_subj {
 }
 
 sub check_pet {
-        my $proj_path = shift;
-        my $subj = shift;
+        my ($proj_path, $subj, $tracer) = @_;
 	my %pet;
 	my $subj_dir = $proj_path.'/bids/sub-'.$subj.'/pet';
 	#sub-0001_single_fbb.nii.gz
@@ -136,7 +135,11 @@ sub check_pet {
 		if (@spet && -e $spet[0] && -f $spet[0]){
                         $pet{'combined'} = $spet[0];
                 }
-		@spet = find(file => 'name' => "sub-$subj*_tau.nii.gz", in =>  $subj_dir);
+		if (defined $tracer){
+			@spet = find(file => 'name' => "sub-".$subj."*_".$tracer."_tau.nii.gz", in =>  $subj_dir);
+		}else{
+			@spet = find(file => 'name' => "sub-$subj*_tau.nii.gz", in =>  $subj_dir);
+		}
                 if (@spet && -e $spet[0] && -f $spet[0]){
                         $pet{'tau'} = $spet[0];
                 }
