@@ -2,7 +2,7 @@
 
 ## Usage
 
-N values are estimated with the script *nplus.r*. you must have installed the following libraries,
+The N values are estimated with the script *nplus.r*. you must have installed the following libraries,
 
   - e1071
   - caret
