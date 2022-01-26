@@ -20,6 +20,7 @@ use File::Find::Rule;
 use Data::Dump qw(dump);
 use MIME::Lite;
 use File::Basename qw(basename);
+use File::Path qw(make_path);
 
 our @ISA                = qw(Exporter);
 our @EXPORT             = qw(print_help load_project cut_shit);
@@ -62,7 +63,7 @@ sub check_or_make {
 	if(opendir(TEST, $place)){
 	closedir TEST;
 	}else{
-		mkdir $place;
+		make_path $place;
 	}
 }
 
