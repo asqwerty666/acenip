@@ -19,12 +19,16 @@ use Data::Dump qw(dump);
 use Text::CSV qw( csv );
 #use Excel::Writer::XLSX;
 use Spreadsheet::Write;
+use File::Copy;
+use File::Temp qw( :mktemp);
 
 my $idir;
 my $guide;
 my $ofile;
 my $qcfile;
 my $info_page;
+my $outcsv = 0;
+my $outsav = 0;
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
@@ -34,6 +38,8 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     if (/^-o/) { $ofile = shift; chomp($ofile);}
     if (/^-qc/) { $qcfile = shift; chomp($qcfile);}
     if (/^-s/) { $info_page = shift; chomp($info_page);}
+    if (/^-xcsv/) {$outcsv = 1;}
+    if (/^-xsav/) {$outsav = 1;}
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/metrics2xls.hlp'; exit;}
 }
 my $study = shift;
@@ -43,7 +49,7 @@ die "Should supply results directory\n" unless $idir;
 die "Should supply guidance file\n" unless $guide;
 $ofile = $idir.'.xls' unless $ofile;
 $info_page = 'info_page.csv' unless $info_page;
-
+my $tmp_dir = $ENV{'TMPDIR'};
 $idir = inplace $std{'DATA'}, $idir;
 $info_page = inplace $std{'DATA'}, $info_page;
 $guide = inplace $std{'DATA'}, $guide;
@@ -60,10 +66,32 @@ for my $i (0 .. $#{$info}) {
 opendir (DIR, $idir);
 my @ifiles = grep(/\.csv/, readdir(DIR));
 close DIR;
+my $odir;
+if ($outcsv or $outsav) {
+	($odir = $ofile) =~ s/\.xls$//;
+	mkdir $odir unless -d $odir;
+}
 foreach my $ifile (@ifiles){
-        my $tmpf = 'tmp_'.$ifile;
+        my $tmpf = mktemp($tmp_dir.'/tmp_'.$ifile.'XXXXXX');
         my $order = 'join -t, -1 2 -2 1 '.$guide.' '.$idir.'/'.$ifile.' > '.$tmpf;
         system($order);
+	if ($outcsv) {
+		my $ocfile = $odir.'/'.$ifile;
+		copy $tmpf, $ocfile;
+	}
+	if ($outsav){
+		my $savfile = $odir.'/'.$ifile;
+		$savfile =~ s/csv$/sav/;
+		my $rscript = mktemp($tmp_dir.'/rtmpscript.XXXXX');
+		open ORS, ">$rscript";
+		print ORS 'library("haven")'."\n";
+		print ORS 'setwd("'.$odir.'")'."\n";
+		print ORS 'read.csv("'.$tmpf.'") -> w'."\n";
+		print ORS 'write_sav(w,"'.$savfile.'")'."\n";
+		close ORS;
+		print "$rscript\n";
+		system("Rscript $rscript");
+	}
         my $idata = csv (in => $tmpf); # as array of array
         (my $shname = $ifile) =~ s/\.csv$//;
         $workbook->addsheet($shname);

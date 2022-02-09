@@ -1,2 +1,6 @@
 # forget about the obsolete uploadingHack.sh
 uploadingHack.sh
+# some testing shit
+bin/fbb2std_fsl.sh
+bin/fsqc2xls.pl
+neuroass/nplus.backup
