@@ -17,6 +17,7 @@
 use strict; use warnings;
 use NEURO4 qw(load_project print_help populate check_or_make);
 use SLURM qw(send2slurm);
+use Data::Dump qw(dump);
 my $cfile = 'bids/conversion.json';
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
@@ -32,6 +33,7 @@ my $src_dir = $std{'PET'};
 my $proj_file = $std{'DATA'}.'/'.$proj.'_pet.csv';
 die "There is'nt pet list file!\n" unless -f $proj_file;
 my %guys = populate('^(\d{4});(.*)$', $proj_file);
+#dump %guys;
 my $outdir = "$std{'DATA'}/slurm";
 check_or_make($outdir);
 my %ptask;

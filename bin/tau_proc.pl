@@ -32,11 +32,12 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     if (/^-cut/) { $cfile = shift; chomp($cfile);}
     if (/^-time/) {$time = shift; chomp($time);}
     if (/^-r/) {$style = shift; chomp($style);}
-    if (/^-tracer/) {$tracer = shift, chomp($tracer)}
+    if (/^-tracer/) {$tracer = shift; chomp($tracer);}
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/tau_reg.hlp'; exit;}
 }
 my $study = shift;
 unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/tau_reg.hlp'; exit;}
+unless ($tracer) {die "Should supply -tracer RADIOTRACER\n"; }
 my %std = load_project($study);
 
 my $subj_dir = $ENV{'SUBJECTS_DIR'};
@@ -61,12 +62,7 @@ my @r_jobs;
 my @p_jobs;
 print "Running shit\n";
 foreach my $subject (@pets){
-	my %spet;
-	if($tracer){
-        	%spet = check_pet($std{'DATA'},$subject);
-	}else{
-		%spet = check_pet($std{'DATA'},$subject,$tracer);	
-	}
+        my %spet = check_pet($std{'DATA'},$subject,$tracer);
 	my %smri = check_subj($std{'DATA'},$subject);
 	if($spet{'tau'} && $smri{'T1w'}){
 		push @ok_pets, $subject;
@@ -142,7 +138,7 @@ $warn{'output'} = $outdir.'/tau_report';
 $warn{'dependency'} = 'afterok:'.join(',',@r_jobs);
 send2slurm(\%warn);
 # Calculating Metrics
-$warn{'command'} = $ENV{'PIPEDIR'}."/bin/tau_metrics.pl ".($style?" -r $style ":"").$study;
+$warn{'command'} = $ENV{'PIPEDIR'}."/bin/tau_metrics.pl -tracer ".$tracer." ".($style?" -r $style ":"").$study;
 $warn{'filename'} = $outdir.'/tau_metrics.sh';
 $warn{'job_name'} = 'tau_metrics_'.$study;
 $warn{'time'} = '2:0:0'; #si no ha terminado en X horas matalo
