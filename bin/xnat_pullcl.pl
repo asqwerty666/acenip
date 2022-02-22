@@ -31,7 +31,7 @@ die "Should supply XNAT project name\n" unless $xprj;
 #print "Wait a minute, getting XNAT subject list\n";
 my $tmp_dir = $ENV{'TMPDIR'};
 $tmpdir = tempdir(TEMPLATE => $tmp_dir.'/petcl.XXXXX', CLEANUP => 0);
-print "Working at $tmpdir\n";
+#print STDERR "Working at $tmpdir\n";
 my $order = "xnatapic list_subjects --project_id ".$xprj." --label > ".$tmpdir."/xnat_subjects.list";
 system($order);
 $order = "sort -t, -k 1 ".$tmpdir."/xnat_subjects.list > ".$tmpdir."/xnat_subjects_sorted.list";
