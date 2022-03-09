@@ -222,7 +222,7 @@ sub shit_done {
         my @adv = @_;
         my $msg = MIME::Lite->new(
                 From    => "$ENV{'USER'}\@detritus.fundacioace.com",
-                To      => "$ENV{'USER'}\@detritus.fundacioace.com",
+                To      => "$ENV{'USER'}",
                 Subject => 'Script terminado',
                 Type    => 'multipart/mixed',
         );

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2019 O. Sotolongo <asqwerty@gmail.com>
+# Copyright 2019 - 2022 O. Sotolongo <asqwerty@gmail.com>
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@ use FSMetrics qw(fs_file_metrics);
 use File::Basename qw(basename);
 use File::Temp qw( :mktemp tempdir);
 use File::Path qw(make_path);
+use File::Copy;
 use Cwd qw(cwd);
 use Text::CSV qw( csv );
 use Spreadsheet::Write;
@@ -26,9 +27,11 @@ use Data::Dump qw(dump);
 my $localdir = cwd;
 my $info_page = $ENV{PIPEDIR}.'/lib/info_page_mri.csv';
 my $guide;
-my $ofile;
+#my $ofile;
 my $internos;
 my $debug = 0;
+my $alt = 0;
+my $csvdir; my $savdir;
 # print help if called without arguments
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
@@ -36,7 +39,8 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     last if /^--$/;
     if (/^-g/) { $guide = shift; chomp($guide);}
     if (/^-i/) { $internos = shift; chomp($internos);}
-    if (/^-o/) { $ofile = shift; chomp($ofile);}
+#    if (/^-o/) { $ofile = shift; chomp($ofile);}
+    if (/^-a/) { $alt = 1; }
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/fs_metrics.hlp'; exit;}
 }
 # Este es el proyecto en XNAT. Es obligatorio.
@@ -50,12 +54,12 @@ unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/fs_metrics.hlp'; exit;}
 #my @plist = get_subjects($db);
 #my $subj_dir = $ENV{'SUBJECTS_DIR'};
 unless ($debug) {
-	my $logfile = 'fs_metrics_xnat.log';
+	my $logfile = 'fs_metrics_xnat_'.getLoggingTime().'.log';
 	open STDOUT, ">$logfile" or die "Can't redirect stdout";
 	open STDERR, ">&STDOUT" or die "Can't dup stdout";
 	open DBG, ">$logfile";
 }
-$ofile = $study.'_fsmetrics_'.getLoggingTime().'.xls';
+my $ofile = $study.'_fsmetrics_'.getLoggingTime().'.xls';
 my %guys;
 my $subjects_list = mktemp($tmp_dir.'/sbjsfileXXXXX');
 # Get subject list
@@ -80,7 +84,10 @@ while(<SLF>){
 close SLF;
 unlink $subjects_list;
 #while read -r line; do xp=$(echo ${line} | awk -F"," '{print $2}'); slab=$(echo ${line} | awk -F"," '{print $1}'); mkdir -p test_xnatfs/${xp}/stats; xnatapic get_fsresults --experiment_id ${xp} --all-stats test_xnatfs/${xp}/stats; done < exps_withdate.csv
-my $fsoutput = tempdir(TEMPLATE => $tmp_dir.'/fsout.XXXXX', CLEANUP => 1);
+my $fsoutput = tempdir(TEMPLATE => $tmp_dir.'/fsout.XXXXX', CLEANUP => 0);
+print "###############################################\n";
+print "### $fsoutput ### \n";
+print "###############################################\n";
 my @fspnames;
 foreach my $plab (sort keys %guys){
 	push @fspnames, $plab;
@@ -164,19 +171,38 @@ for my $i (0 .. $#{$info}) {
 $workbook->addsheet('FSQC');
 #for my $i (0 .. $#{$info}) {
 #	my $row = $info->[$i];
-my @qcrow = split ',', "Subject,Interno,Date,FSQC,Notes";
+my @qcrow; 
+if ($internos) {
+	@qcrow = split ',', "Subject,Interno,Date,FSQC,Notes";
+}else{
+	@qcrow = split ',', "Subject,Date,FSQC,Notes";
+}
 $workbook->addrow(\@qcrow);
 foreach my $sbj (sort keys %guys){
 	if (exists($guys{$sbj}) and exists($guys{$sbj}{'FSQC'}) and $guys{$sbj}{'FSQC'}){
 		if (exists($guys{$sbj}{'Notes'}) and $guys{$sbj}{'Notes'}){
-			@qcrow = split ',', "$sbj,$guys{$sbj}{'INTERNO'},$guys{$sbj}{'DATE'},$guys{$sbj}{'FSQC'},$guys{$sbj}{'Notes'}";
+			if ($internos){
+				@qcrow = split ',', "$sbj,$guys{$sbj}{'INTERNO'},$guys{$sbj}{'DATE'},$guys{$sbj}{'FSQC'},$guys{$sbj}{'Notes'}";
+			}else{
+				@qcrow = split ',', "$sbj,$guys{$sbj}{'DATE'},$guys{$sbj}{'FSQC'},$guys{$sbj}{'Notes'}";
+			}
 		}else{
-			@qcrow = split ',', "$sbj,$guys{$sbj}{'INTERNO'},$guys{$sbj}{'DATE'},$guys{$sbj}{'FSQC'}";
+			if ($internos){
+				@qcrow = split ',', "$sbj,$guys{$sbj}{'INTERNO'},$guys{$sbj}{'DATE'},$guys{$sbj}{'FSQC'}";
+			}else{
+				@qcrow = split ',', "$sbj,$guys{$sbj}{'DATE'},$guys{$sbj}{'FSQC'}";
+			}
 		}
 		$workbook->addrow(\@qcrow);
 	}
 }
 
+if ($alt) {
+	$csvdir = $study.'_fsmetrics_csv_'.getLoggingTime();
+	$savdir = $study.'_fsmetrics_spss_'.getLoggingTime();
+	make_path $csvdir;
+	make_path $savdir;
+}
 my $rwtmpout = $fsoutput.'/tmps';
 make_path $rwtmpout;
 opendir (DIR, $fsout);
@@ -193,13 +219,26 @@ foreach my $ifile (@ifiles){
 		my $row = $idata->[$i];
 		$workbook->addrow($row);
 	}
+	if ($alt) {
+		my $csvfile = $csvdir.'/'.$ifile;
+		copy $tmpf, $csvfile;
+		my $rscript = mktemp($fsoutput.'/rtmpscript.XXXXX');
+		open ORS, ">$rscript";
+		print ORS 'library("haven")'."\n";
+		print ORS 'read.csv("'.$tmpf.'") -> w'."\n";
+		my $savfile = $savdir.'/'.$shname.'.sav';
+		print ORS 'write_sav(w,"'.$savfile.'")'."\n";
+		close ORS;
+		system("Rscript $rscript");
+		unlink $rscript;
+	}
 	unlink $tmpf;
 }
 $workbook->close();
 
 
-#my $zfile = $fsoutput.'/'.$study."_mri_results.tgz";
-#system("tar czf $zfile $fsresdir");
-#shit_done basename($ENV{_}), $study, $zfile;
+my $zfile = $study."_fsmetrics.tgz";
+system("tar czf $zfile $csvdir $savdir");
+shit_done basename($ENV{_}), $study, $zfile;
 unlink $guide;
 close DBG unless $debug;

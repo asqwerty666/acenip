@@ -69,7 +69,7 @@ if ($cfile){
 my %ptask;
 $ptask{'time'} = '48:0:0';
 $ptask{'job_name'} = 'wmh_'.$study;
-$ptask{'cpus'} = 72;
+$ptask{'cpus'} = 64;
 $ptask{'mem_per_cpu'} = '4G';
 foreach my $pkey (sort @plist){
 	my $subj = $study."_".$pkey;
