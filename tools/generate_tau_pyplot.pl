@@ -44,9 +44,11 @@ foreach my $tag (sort keys %taud){
 	my $libfile = $ENV{'PIPEDIR'}.'/lib/tau/'.$tag.'.roi';
 	open ILF, "<$libfile";
 	while (<ILF>){
-		(my $roi) = /.*_(\w+)/;
-		$odata.="'".$roi."_left': ".$taud{$tag}.",\n";
-		$odata.="'".$roi."_right': ".$taud{$tag}.",\n";
+		my ($hand, $roi) = /\d+,(\w)_(\w+)/;
+		unless ($hand eq 'R'){
+			$odata.="'".$roi."_left': ".$taud{$tag}.",\n";
+			$odata.="'".$roi."_right': ".$taud{$tag}.",\n";
+		}
 	}
 	close ILF;
 }
