@@ -137,7 +137,7 @@ sub check_pet {
                         $pet{'combined'} = $spet[0];
                 }
 		if (defined $tracer){
-			@spet = find(file => 'name' => "sub-".$subj."*_".$tracer."_tau.nii.gz", in =>  $subj_dir);
+			@spet = find(file => 'name' => "sub-".$subj."*_".$tracer."*_tau.nii.gz", in =>  $subj_dir);
 		}else{
 			@spet = find(file => 'name' => "sub-$subj*_tau.nii.gz", in =>  $subj_dir);
 		}

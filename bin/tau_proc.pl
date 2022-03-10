@@ -54,7 +54,7 @@ my @pets = cut_shit($db, $data_dir.'/'.$cfile);
 #defino aqui las propiedades comunes de ejecucion
 my %ptask;
 $ptask{'job_name'} = 'tau_reg_'.$study;
-$ptask{'cpus'} = 4;
+$ptask{'cpus'} = 2;
 $ptask{'time'} = $time;
 my @ok_pets;
 my @rois = tau_rois($style);
@@ -69,6 +69,7 @@ foreach my $subject (@pets){
 		if(exists($ptask{'mailtype'})){ delete($ptask{'mailtype'}) };
 		if(exists($ptask{'dependency'})){ delete($ptask{'dependency'}) };
 		#Registro de PET a T1w
+		$ptask{'job_name'} = 'tau_reg_'.$study;
 		$ptask{'command'} = $ENV{'PIPEDIR'}."/bin/tau_reg.sh ".$study." ".$subject." ".$w_dir." ".$spet{'tau'};
 		$ptask{'filename'} = $outdir.'/'.$subject.'_tau_reg.sh';
 		$ptask{'output'} = $outdir.'/tau_reg_'.$subject;
