@@ -54,7 +54,7 @@ my @pets = cut_shit($db, $data_dir.'/'.$cfile);
 #defino aqui las propiedades comunes de ejecucion
 my %ptask;
 $ptask{'job_name'} = 'tau_reg_'.$study;
-$ptask{'cpus'} = 2;
+$ptask{'cpus'} = 4;
 $ptask{'time'} = $time;
 my @ok_pets;
 my @rois = tau_rois($style);

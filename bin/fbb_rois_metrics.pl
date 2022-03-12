@@ -20,7 +20,6 @@ use SLURM qw(send2slurm);
 use Data::Dump qw(dump);
 use File::Remove 'remove';
 use File::Basename qw(basename);
-use Parallel::ForkManager;
 
 my %ROI_Comps = fs_fbb_rois();
 
