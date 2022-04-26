@@ -44,7 +44,8 @@ ${FSLDIR}/bin/fslmaths ${tmp_dir}/rois/incsuit.nii.gz -kernel gauss 3.4 -fmean $
 #Excluir la parte de arriba correctamente
 mkdir ${tmp_dir}/rois/excsuit
 for x in `cat ${PIPEDIR}/lib/tau/excsuit.ref`; do
-       ${FSLDIR}/bin/fslmaths ${tmp_dir}/CerebinNS.nii.gz -uthr ${x} -thr  ${x} -div ${x} ${tmp_dir}/rois/excsuit/${x};
+	${FSLDIR}/bin/fslmaths ${tmp_dir}/CerebinNS.nii.gz -uthr ${x} -thr  ${x} -div ${x} ${tmp_dir}/rois/excsuit/${x};
+	sleep 2;
 done
 a=$(for x in ${tmp_dir}/rois/excsuit/*.nii.gz; do echo "${x} -add "; done)
 a=$(echo ${a} | sed 's/\(.*\)-add$/\1/')
