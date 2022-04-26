@@ -29,8 +29,14 @@ our %EXPORT_TAGS        = (all => [qw(print_help escape_name trim check_or_make 
                                         usual => [qw(print_help load_project check_or_make cut_shit)],);
 our $VERSION    = 1.0;
 
+=head1 NEURO4 is a set of funtions for helping in the pipeline
+
+=item print_help
+just print the help
+this funtions reads the path of a TXT file and print it at STDOUT
+=cut
+
 sub print_help {
-# just print the help
 	my $hlp = shift;
 	open HELP, "<$hlp";
 	while(<HELP>){
@@ -40,8 +46,12 @@ sub print_help {
 	return;
 }
 
+=item escape_name
+This function takes a string and remove some especial characters
+in order to escape directory names with a lot of strange symbols
+=cut
+
 sub escape_name {
-# in order to escape directory names with a lot of strange symbols
 	my $name = shift;
 	$name=~s/\ /\\\ /g;
 	$name=~s/\`/\\\`/g;
@@ -50,12 +60,21 @@ sub escape_name {
 	return $name;
 }
 
+=item trim
+This function takes a string and remove any trailing spaces after and before the text
+=cut
+
 sub trim {
 	my $string = shift;
 	$string =~ s/^\s+//;  #trim leading space
 	$string =~ s/\s+$//;  #trim trailing space
 	return $string;
 }
+
+=item check_or_make
+This is mostly helpless, just takes a path,
+checks if exists and create it otherwise
+=cut
 
 sub check_or_make {
 	my $place = shift;
@@ -66,6 +85,11 @@ sub check_or_make {
 		make_path $place;
 	}
 }
+=item inplace
+This function takes a path and a file name or two paths
+and returns a string with a single path as result of
+the concatenation of the first one plus the second one
+=cut 
 
 sub inplace {
         my $place = shift;
@@ -76,12 +100,25 @@ sub inplace {
         }
         return $place.'/'.$thing;
 }
-
+=item load_project
+This function take the name of a project, reads the configuration file
+that is located at ~/.config/neuro/ and return every project configuration
+stored as a hash that can be used at the scripts
+=cut
 sub load_project {
         my $study = shift;
         my %stdenv = map {/(.*) = (.*)/; $1=>$2 } read_file $ENV{HOME}."/.config/neuro/".$study.".cfg";
         return %stdenv;
 }
+=item check_subj
+Here the fun begins
+This function takes as input the name of the project and the subject ID
+Then it seeks along the BIDS structure for this subject and returns a hash,
+containing the MRI proper images. 
+
+It should return a single value, except for the T1w images, where an array 
+is returned. This was though this way because mostly a single session is done
+=cut 
 
 sub check_subj {
 	my $proj_path = shift;

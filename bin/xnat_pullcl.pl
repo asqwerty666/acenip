@@ -66,7 +66,7 @@ open STDOUT, ">$ofile" unless not $ofile;
 if($with_date){
 	$order = "join -t, ".$tmpdir."/xnat_subjects_sorted.list ".$tmpdir."/pet.results | sort -t, -k 2 | awk -F\",\" '{if (\$3) print \$2\";\"\$3\";\"\$4\";\"\$5}' | sed '1iSubject;Date;SUVR;Centiloid'";
 }else{
-        $order = "join -t, ".$tmpdir."/xnat_subjects_sorted.list ".$tmpdir."/pet.results | sort -t, -k 2 | awk -F\",\" '{if (\$3) print \$2\";\"\$3\";\"\$4}' | sed '1iSubject;Date;SUVR;Centiloid'";
+        $order = "join -t, ".$tmpdir."/xnat_subjects_sorted.list ".$tmpdir."/pet.results | sort -t, -k 2 | awk -F\",\" '{if (\$3) print \$2\";\"\$3\";\"\$4}' | sed '1iSubject;SUVR;Centiloid'";
 }
 system($order);
 #$order = "sed 's/;/,/g' ".$proj_file." | sort -t, -k 2 > ".$tmpdir."/all_pet.list;"; 

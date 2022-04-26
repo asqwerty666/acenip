@@ -65,7 +65,7 @@ foreach my $msub (@subs){
 				if(exists($measures{$subject}{$msub}[$i]) && $measures{$subject}{$msub}[$i]){
 					$mean = $measures{$subject}{$msub}[$i]/$measures{$subject}{$msub}[$norm];
 				}
-				print ODF ", $mean";
+				print ODF ",$mean";
 			}
 			print ODF "\n";
 		}
