@@ -18,8 +18,8 @@ require Exporter;
 use JSON qw(decode_json); 
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
-our @EXPORT = qw(xconf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects);
-our @EXPORT_OK = qw(xconf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects);
+our @EXPORT = qw(xconf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg);
+our @EXPORT_OK = qw(xconf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg);
 our %EXPORT_TAGS =(all => qw(xconf xget_pet xget_session xget_mri xput_rvr xput_report), usual => qw(xconf xget_session));
 
 our $VERSION = 0.1;
@@ -141,4 +141,26 @@ sub xget_subjects {
 		}
 	}
 	return %sbjs;
+}
+
+sub xget_pet_reg {
+	# Download de pet registered into native space in nifti format
+	# usage: xget_pet_reg(host, jsession, experiment, nifti_output);
+	#
+	my @xdata = @_;
+	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/experiments/'.$xdata[2].'/files?format=json" 2>/dev/null';
+	my $jres = qx/$crd/;
+	my $xfres = decode_json $jres;
+	foreach my $xres (@{$xfres->{'ResultSet'}{'Result'}}){
+		if ($xres->{'file_content'} eq 'PET_reg'){
+			my $xuri = $xres->{'URI'};
+			my $grd = 'curl -f -b "JSESSIONID='.$xdata[1].'" -X GET "'.$xdata[0].$xuri.'" -o '.$xdata[3].' 2>/dev/null';
+			system($grd);
+		}
+	}
+	if (-e $xdata[3]){
+		return 1;
+	}else{
+		return 0;
+	}
 }

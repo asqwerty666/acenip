@@ -20,7 +20,7 @@ use JSON qw(decode_json);
 use NEURO4 qw(check_pet check_subj load_project print_help check_or_make cut_shit get_pair);
 use SLURM qw(send2slurm);
 use FSMetrics qw(tau_rois);
-use XNATACE qw(xconf xget_pet xget_session); 
+use XNATACE qw(xconf xget_pet xget_session xget_pet_reg); 
 my $cfile="";
 my $time = '2:0:0';
 my $style = "";
@@ -75,19 +75,20 @@ foreach my $subject (@pets){
 	my $fake_tau = $w_dir.'/'.$subject.'_tau.nii.gz';
 	#print "$fake_tau\n";
 	my $xrd = xget_pet($xconf_data{'HOST'}, $jsession, $xprj, $psubject);
-	if ($xrd){
-		my $xld = 'curl -f -X GET -b "JSESSIONID='.$jsession.'" "'.$xconf_data{'HOST'}.'/data/experiments/'.$xrd.'/files?format=json" 2>/dev/null';
+#	if ($xrd){
+#		my $xld = 'curl -f -X GET -b "JSESSIONID='.$jsession.'" "'.$xconf_data{'HOST'}.'/data/experiments/'.$xrd.'/files?format=json" 2>/dev/null';
 		#print "$xld\n";
-		my $jres = qx/$xld/;
-		my $xfres = decode_json $jres;
-		foreach my $xres (@{$xfres->{'ResultSet'}{'Result'}}){
-			if ($xres->{'file_content'} eq 'PET_reg'){
-				my $xuri = $xres->{'URI'};
-				my $grd = 'curl -f -b "JSESSIONID='.$jsession.'" -X GET "'.$xconf_data{'HOST'}.$xuri.'" -o '.$fake_tau.' 2>/dev/null';
-				system($grd);
-			}
-		}
-	}
+#		my $jres = qx/$xld/;
+#		my $xfres = decode_json $jres;
+#		foreach my $xres (@{$xfres->{'ResultSet'}{'Result'}}){
+#			if ($xres->{'file_content'} eq 'PET_reg'){
+#				my $xuri = $xres->{'URI'};
+#				my $grd = 'curl -f -b "JSESSIONID='.$jsession.'" -X GET "'.$xconf_data{'HOST'}.$xuri.'" -o '.$fake_tau.' 2>/dev/null';
+#				system($grd);
+#			}
+#		}
+#	}
+	xget_pet_reg($xconf_data{'HOST'}, $jsession, $xprj, $fake_tau);
 	my %smri = check_subj($std{'DATA'},$subject);
 	if(-e $fake_tau && $smri{'T1w'}){
 		push @ok_pets, $subject;
