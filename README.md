@@ -1,6 +1,6 @@
 
 
-# ACE imaging pipeline 
+# ACE NeuroImaging Pipeline 
 
 La versión 0.4 del pipeline incluye algunas ventajas,
 
