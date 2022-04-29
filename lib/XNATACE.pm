@@ -205,7 +205,7 @@ sub xget_rvr_data {
 =item xget_subjects
 
 Get the list of subjects of a project into a HASH. 
-El HASH de input, I<%sbjs>, se construye como I<{ XNAT_ID => Label }>
+El HASH de input, I<%sbjs>, se construye como I<{ XNAT_ID =E<gt> Label }>
 
 usage: 
 	%sbjs = xget_subjects(host, jsession, project);

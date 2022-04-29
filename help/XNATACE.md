@@ -59,7 +59,7 @@
 - xget\_subjects
 
     Get the list of subjects of a project into a HASH. 
-    El HASH de input, _%sbjs_, se construye como _{ XNAT\_ID =_ Label }>
+    El HASH de input, _%sbjs_, se construye como _{ XNAT\_ID => Label }_
 
     usage: 
     	%sbjs = xget\_subjects(host, jsession, project);
