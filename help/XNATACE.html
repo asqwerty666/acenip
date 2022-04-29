@@ -1,0 +1,124 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:root@localhost" />
+</head>
+
+<body style="background-color: white">
+
+
+
+<ul id="index">
+  <li><a href="#XNATACE">XNATACE</a></li>
+  <li><a href="#POD-ERRORS">POD ERRORS</a></li>
+</ul>
+
+<h1 id="XNATACE">XNATACE</h1>
+
+<dl>
+
+<dt id="xconf">xconf</dt>
+<dd>
+
+<p>Get the XNAT connection data into a HASH</p>
+
+<p>usage: %xnat_data = xconf(configuration_file)</p>
+
+</dd>
+<dt id="xget_pet">xget_pet</dt>
+<dd>
+
+<p>Get the XNAT PET experiment ID</p>
+
+<p>usage: xget_pet(host, jsession, project, subject)</p>
+
+</dd>
+<dt id="xget_mri">xget_mri</dt>
+<dd>
+
+<p>Get the XNAT MRI experiment ID</p>
+
+<p>usage: xget_mri(host, jsession, project, subject)</p>
+
+</dd>
+<dt id="xget_session">xget_session</dt>
+<dd>
+
+<p>Create a new JSESSIONID on XNAT</p>
+
+<p>usage: xget_session(\%xconf);</p>
+
+</dd>
+<dt id="xput_report">xput_report</dt>
+<dd>
+
+<p>Upload a pdf report to XNAT</p>
+
+<p>usage: xput_report(host, jsession, subject, experiment, pdf_file);</p>
+
+</dd>
+<dt id="xput_rvr">xput_rvr</dt>
+<dd>
+
+<p>Upload a JSON file with VR data</p>
+
+<p>usage: xput_rvr(host, jsession, experiment, json_file);</p>
+
+</dd>
+<dt id="xget_rvr">xget_rvr</dt>
+<dd>
+
+<p>Get VR results into a HASH. Output is a hash with filenames and URI of each element stored at RVR</p>
+
+<p>usage: xget_rvr(host, jsession, project, experiment);</p>
+
+</dd>
+<dt id="xget_rvr_data">xget_rvr_data</dt>
+<dd>
+
+<p>Get RVR JSON data into a hash</p>
+
+<p>usage: xget_rvr_data(host, jsession, URI);</p>
+
+</dd>
+<dt id="xget_subjects">xget_subjects</dt>
+<dd>
+
+<p>Get the list of subjects of a project into a HASH. El HASH de input, <i>%sbjs</i>, se construye como <i>{ XNAT_ID =</i> Label }&gt;</p>
+
+<p>usage: %sbjs = xget_subjects(host, jsession, project);</p>
+
+</dd>
+<dt id="xget_pet_reg">xget_pet_reg</dt>
+<dd>
+
+<p>Download de pet registered into native space in nifti format</p>
+
+<p>usage: xget_pet_reg(host, jsession, experiment, nifti_output);</p>
+
+</dd>
+</dl>
+
+<h1 id="POD-ERRORS">POD ERRORS</h1>
+
+<p>Hey! <b>The above document had some coding errors, which are explained below:</b></p>
+
+<dl>
+
+<dt id="Around-line-29">Around line 29:</dt>
+<dd>
+
+<p>=over without closing =back</p>
+
+</dd>
+</dl>
+
+
+</body>
+
+</html>
+
+

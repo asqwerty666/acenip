@@ -24,6 +24,19 @@ our %EXPORT_TAGS =(all => qw(xconf xget_pet xget_session xget_mri xput_rvr xput_
 
 our $VERSION = 0.1;
 
+=head1 XNATACE
+
+=over
+
+=item xconf
+
+Get the XNAT connection data into a HASH
+
+usage: 
+	%xnat_data = xconf(configuration_file)
+
+=cut
+
 sub xconf {
 	# Get the XNAT connection data into a HASH
 	# usage %xnat_data = xconf(configuration_file)
@@ -37,6 +50,15 @@ sub xconf {
 	}
 	return %xconf;
 }
+
+=item xget_pet
+
+Get the XNAT PET experiment ID
+
+usage: 
+	xget_pet(host, jsession, project, subject)
+
+=cut
 
 sub xget_pet {
 	# Get the XNAT PET experiment ID
@@ -53,6 +75,15 @@ sub xget_pet {
 	return $xlab;
 }
 
+=item xget_mri
+
+Get the XNAT MRI experiment ID
+
+usage: 
+	xget_mri(host, jsession, project, subject)
+
+=cut
+
 sub xget_mri {
 	# Get the XNAT MRI experiment ID
 	# usage: xget_mri(host, jsession, project, subject)
@@ -67,6 +98,15 @@ sub xget_mri {
 	return $xlab;
 }
 
+=item xget_session 
+
+Create a new JSESSIONID on XNAT
+
+usage: 
+	xget_session(\%xconf);
+
+=cut
+
 sub xget_session {
 	# Create a new JSESSIONID on XNAT
 	# usage: xget_session(\%xconf);
@@ -74,6 +114,15 @@ sub xget_session {
 	my $crd = 'curl -f -u '.$xdata{'USER'}.':'.$xdata{'PASSWORD'}.' -X POST '.$xdata{'HOST'}.'/data/JSESSION 2>/dev/null';
 	return qx/$crd/;
 }
+
+=item xput_report
+
+Upload a pdf report to XNAT
+
+usage: 
+	xput_report(host, jsession, subject, experiment, pdf_file);
+
+=cut
 
 sub xput_report{
 	# upload a pdf report to XNAT
@@ -85,6 +134,15 @@ sub xput_report{
        system($crd);       
 }
 
+=item xput_rvr
+
+Upload a JSON file with VR data
+
+usage: 
+	xput_rvr(host, jsession, experiment, json_file);
+
+=cut
+
 sub xput_rvr {
 	# Upload a JSON file with VR data
 	# usage: xput_rvr(host, jsession, experiment, json_file);
@@ -92,6 +150,15 @@ sub xput_rvr {
 	my $crd = 'curl -f -X PUT -b JSESSIONID='.$xdata[1].' "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/RVR/files/report_data.json?overwrite=true" -F file="@'.$xdata[3].'"';
 	system($crd);
 }
+
+=item xget_rvr
+
+Get VR results into a HASH. Output is a hash with filenames and URI of each element stored at RVR
+
+usage: 
+	xget_rvr(host, jsession, project, experiment);
+
+=cut
 
 sub xget_rvr {
 	# Get VR results into a HASH
@@ -110,6 +177,15 @@ sub xget_rvr {
 	return %report_data;
 }
 
+=item xget_rvr_data
+
+Get RVR JSON data into a hash
+
+usage: 
+	xget_rvr_data(host, jsession, URI);
+
+=cut
+
 sub xget_rvr_data {
 	# Get RVR JSON data into a hash
 	# usage: xget_rvr_data(host, jsession, URI);  
@@ -125,6 +201,16 @@ sub xget_rvr_data {
 	}
 	return %rvr_data;
 }
+
+=item xget_subjects
+
+Get the list of subjects of a project into a HASH. 
+El HASH de input, I<%sbjs>, se construye como I<{ XNAT_ID => Label }>
+
+usage: 
+	%sbjs = xget_subjects(host, jsession, project);
+
+=cut
 
 sub xget_subjects {
 	# Get the list of subjects of a project into a HASH
@@ -142,6 +228,15 @@ sub xget_subjects {
 	}
 	return %sbjs;
 }
+
+=item xget_pet_reg
+
+Download de pet registered into native space in nifti format
+
+usage: 
+	xget_pet_reg(host, jsession, experiment, nifti_output);
+
+=cut
 
 sub xget_pet_reg {
 	# Download de pet registered into native space in nifti format
