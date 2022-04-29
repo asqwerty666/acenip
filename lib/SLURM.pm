@@ -78,7 +78,7 @@ usage: my $job_id = send2slurm(\%job_properties);
 
 Warning email: By default, if an empty HASH is passed to the function, 
 a no command sbatch script is launched
-with --mail-type=END option. The intention is that this could be used to
+with I<--mail-type=END> option. The intention is that this could be used to
 warn at the end of any launched swarm. Also, by changing B<mailtype> but 
 ommiting the B<command> value you can force the function to execute 
 an empty sbatch job with whatever warning behavior that you choose.
