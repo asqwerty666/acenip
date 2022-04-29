@@ -21,6 +21,36 @@ our @EXPORT_OK  = qw(fs_file_metrics fs_fbb_rois tau_rois pet_rois);
 our %EXPORT_TAGS        = (all => [qw(fs_file_metrics fs_fbb_rois tau_rois pet_rois)], usual => [qw(fs_file_metrics fs_fbb_rois)],);
 our $VERSION    = 0.1;
 
+=head1 FSMetrics
+
+Bunch of helpers for storing ROI structure and relative data
+
+=over 
+
+=item fs_file_metrics
+
+This function does not read any input. It sole purpose is to
+returns a HASH containing the templates of order for converting Freesurfer (FS)
+results into tables.
+
+Any hash element is composed by the template ('order'), a boolean ('active') to decide 
+if the FS stats will be processed and the name of the FS stat file ('file'). 
+The order template has two wildcards (<list> and <fs_output>) that should be 
+parsed and changed by the FS subject id and the output directory where the
+data tables will be stored for each subject
+
+The function could be invoked as,
+
+	my %stats = fs_file_metrics();
+
+in any script where this information would be needed. 
+
+The boolean element could be used to choose the stats that should 
+be processed and can be added or modified even at run time if needed. The 
+stored booleans only provided a decent default
+
+=cut
+
 sub fs_file_metrics {
 my %stats = ('wmparc_stats' => {
                 'order' => "asegstats2table --subjects <list> --meas volume --skip --statsfile wmparc.stats --all-segs --tablefile <fs_output>/wmparc_stats.txt",
@@ -154,6 +184,15 @@ my %stats = ('wmparc_stats' => {
 return %stats;
 }
 
+=item fs_fbb_rois
+
+I<deprecated>
+
+This function exports a HASH that contains the Freesurfer composition of the 
+usual segmentations used for building the SUVR ROI
+
+=cut 
+
 sub fs_fbb_rois{
 	my %ROIs = (
         	"Global" => ["caudalmiddlefrontal", "lateralorbitofrontal", "medialorbitofrontal", "parsopercularis", "parsorbitalis", "parstriangularis", "rostralmiddlefrontal", "superiorfrontal", "frontalpole", "caudalanteriorcingulate", "isthmuscingulate", "posteriorcingulate", "rostralanteriorcingulate", "inferiorparietal", "precuneus", "superiorparietal", "supramarginal", "middletemporal", "superiortemporal"],
@@ -162,6 +201,22 @@ sub fs_fbb_rois{
 	 );
 return %ROIs;
 }
+
+=item tau_rois
+
+This function takes a string as input and returns an ARRAY containing
+the list of ROIs that should be build and where the SUVR should be calculated 
+
+It is intended to be used for PET-Tau but could be used anywhere
+
+By default a list of Braak areas are returned. If the input string is B<alt>
+a grouping of those Braak areas is returned. If the purpose is to build 
+a meta_temporal ROI the string B<meta> should be passed as input
+
+The main idea here is read the corresponding file for each ROI, stored at
+F<PIPEDIR/lib/tau/> and build each ROI with the FS LUTs store there
+
+=cut 
 
 sub tau_rois{
 #	my @ROIs = ("braak_1", "braak_2", "braak_12", "braak_3", "braak_4", "braak_34", "braak_5", "braak_6", "braak_56", "meta_temporal");
@@ -176,6 +231,19 @@ sub tau_rois{
 	}
 return @ROIs;
 }
+
+=item pet_rois
+
+This function takes a string as input and returns an ARRAY containing
+the list of ROIs that should be build and where the SUVR should be calculated
+
+Input values are B<parietal>, B<frontal>, B<pieces> or B<global> (default)
+
+The main idea here is read the corresponding file for each ROI, stored at
+F<PIPEDIR/lib/pet/> and build each ROI with the FS LUTs stored there
+
+=cut
+
 sub pet_rois{
 	my $choice = shift;
 	my @ROIs;
@@ -191,3 +259,4 @@ sub pet_rois{
 return @ROIs;
 }
 
+=back

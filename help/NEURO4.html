@@ -1,0 +1,220 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:root@localhost" />
+</head>
+
+<body style="background-color: white">
+
+
+
+<ul id="index">
+  <li><a href="#NEURO4">NEURO4</a></li>
+</ul>
+
+<h1 id="NEURO4">NEURO4</h1>
+
+<p>This is a set of functions for helping in the pipeline</p>
+
+<dl>
+
+<dt id="print_help">print_help</dt>
+<dd>
+
+<p>just print the help</p>
+
+<p>this funtions reads the path of a TXT file and print it at STDOUT</p>
+
+<p>usage: print_help(help_file);</p>
+
+</dd>
+<dt id="escape_name">escape_name</dt>
+<dd>
+
+<p>This function takes a string and remove some especial characters in order to escape directory names with a lot of strange symbols.</p>
+
+<p>It returns the escaped string</p>
+
+<p>usage: escape_name(string);</p>
+
+</dd>
+<dt id="trim">trim</dt>
+<dd>
+
+<p>This function takes a string and remove any trailing spaces after and before the text</p>
+
+<p>usage: trim(string);</p>
+
+</dd>
+<dt id="check_or_make">check_or_make</dt>
+<dd>
+
+<p>This is mostly helpless, just takes a path, checks if exists and create it otherwise</p>
+
+<p>usage: check_or_make(path);</p>
+
+</dd>
+<dt id="inplace">inplace</dt>
+<dd>
+
+<p>This function takes a path and a file name or two paths and returns a string with a single path as result of the concatenation of the first one plus the second one</p>
+
+<p>usage: inplace(path, filename);</p>
+
+</dd>
+<dt id="load_project">load_project</dt>
+<dd>
+
+<p>This function take the name of a project, reads the configuration file that is located at ~/.config/neuro/ and return every project configuration stored as a hash that can be used at the scripts</p>
+
+<p>usage: load_project(project_name);</p>
+
+</dd>
+<dt id="check_subj">check_subj</dt>
+<dd>
+
+<p>Here the fun begins</p>
+
+<p>This function takes as input the name of the project and the subject ID Then it seeks along the BIDS structure for this subject and returns a hash, containing the MRI proper images.</p>
+
+<p>It should return a single value, except for the T1w images, where an array is returned. This was though this way because mostly a single session is done. However, the skill to detect more than one MRI was introduced to allow the movement correction when ADNI images are analyzed</p>
+
+<p>So, for T1w images the returned hash should be asked as</p>
+
+<pre><code>        @{$nifti{&#39;T1w&#39;}}</code></pre>
+
+<p>but for other kind of image it should asked as</p>
+
+<pre><code>        $nifti{&#39;T2w&#39;}</code></pre>
+
+<p>usage: check_subj(project_path, bids_id);</p>
+
+</dd>
+<dt id="check_pet">check_pet</dt>
+<dd>
+
+<p>This function takes as input the name of the project and the subject ID Then it seeks along the BIDS structure for this subject and returns a hash, containing the PET proper images.</p>
+
+<p>If also a tracer is given as input, then the returned hash contains the PET-tau associated to this tracer. This was introduced as part of a project were the subjects were analyzed with different radiotracers.</p>
+
+<p>If no tracer is given, it will seek for the FBB PETs. Those PETs are stored as</p>
+
+<pre><code>        - single: 4x5min
+        - combined: 20min</code></pre>
+
+<p>usage: check_pet(project_path, bids_id, $optional_radiotracer);</p>
+
+</dd>
+<dt id="check_fs_subj">check_fs_subj</dt>
+<dd>
+
+<p>This function checks if the Freesurfer directory of a given subjects exists</p>
+
+<p>usage: check_fs_subj(freesurfer_id)</p>
+
+</dd>
+<dt id="get_lut">get_lut</dt>
+<dd>
+
+<p>I really don&#39;t even remenber what this shit does</p>
+
+</dd>
+<dt id="run_dckey">run_dckey</dt>
+<dd>
+
+<p>Get the content of a public tag from a DICOM file.</p>
+
+<p>usage: run_dckey(key, dicom)</p>
+
+</dd>
+<dt id="dclokey">dclokey</dt>
+<dd>
+
+<p>Get the content of a private tag from a DICOM file.</p>
+
+<p>usage: dclokey(key, dicom)</p>
+
+</dd>
+<dt id="centiloid_fbb">centiloid_fbb</dt>
+<dd>
+
+<p>Returns the proper centiloid value for a given SUVR. Only valid for FBB.</p>
+
+<p>usage: centiloid_fbb(suvr);</p>
+
+</dd>
+<dt id="populate">populate</dt>
+<dd>
+
+<p>Takes a pattern and a filename and stores the content of the file into a HASH according to the given pattern</p>
+
+<p>usage: populate(pattern, filename);</p>
+
+</dd>
+<dt id="get_subjects">get_subjects</dt>
+<dd>
+
+<p>Parse a project database taking only the subjects and storing them into an array. The databse is expected to be build as,</p>
+
+<pre><code>        0000;name </code></pre>
+
+<p>usage: get_subjects(filename);</p>
+
+</dd>
+<dt id="get_list">get_list</dt>
+<dd>
+
+<p>Parse a project database taking only the subjects and storing them into an array. The databse is expected to be build with a four digits number at the beginning of line. Is similar to get_subjects() function but less restrictive</p>
+
+<p>usage: get_list(filename);</p>
+
+</dd>
+<dt id="get_pair">get_pair</dt>
+<dd>
+
+<p>A single file is loaded as input and parse into a HASH. The file should be written in the format:</p>
+
+<pre><code>        key;value</code></pre>
+
+<p>usage: get_pair(filename);</p>
+
+</dd>
+<dt id="shit_done">shit_done</dt>
+<dd>
+
+<p>this function is intended to be used after a script ends and then an email is send to the user with the name of the script, the name of the project and th results attached</p>
+
+<p>usage: shit_done(script_name, project_name, attached_file)</p>
+
+</dd>
+<dt id="cut_shit">cut_shit</dt>
+<dd>
+
+<p>This function takes a project database and a file with a list, then returns the elements that are common to both. It is intended to be used to restrict the scripts action over a few elements. It returns a single array.</p>
+
+<p>If it is correctly used, first the db is identified with load_project() function and then passed through this function to get the array of subjects to be analyzed. If the file with the cutting list do not exist, an array with all the subjects is returned.</p>
+
+<p>usage: cut_shit(db, list);</p>
+
+</dd>
+<dt id="getLoggingTime">getLoggingTime</dt>
+<dd>
+
+<p>This function returns a timestamp based string intended to be used to make unique filenames</p>
+
+<p>Stolen from Stackoverflow</p>
+
+<p>usage: getLoggingTime();</p>
+
+</dd>
+</dl>
+
+
+</body>
+
+</html>
+
+
