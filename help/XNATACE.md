@@ -70,11 +70,3 @@
 
     usage: 
     	xget\_pet\_reg(host, jsession, experiment, nifti\_output);
-
-# POD ERRORS
-
-Hey! **The above document had some coding errors, which are explained below:**
-
-- Around line 29:
-
-    &#x3d;over without closing =back
