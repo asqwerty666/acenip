@@ -1,6 +1,6 @@
 # SLURM
 
-Just a function to send the jobs to SLURM 
+This module contains just a function to send the jobs to SLURM 
 from the Perl scripts
 
 - send2slurm
@@ -36,7 +36,7 @@ from the Perl scripts
 
     Warning email: By default, if an empty HASH is passed to the function, 
     a no command sbatch script is launched
-    with --mail-type=END option. The intention is that this could be used to
+    with _--mail-type=END_ option. The intention is that this could be used to
     warn at the end of any launched swarm. Also, by changing **mailtype** but 
     ommiting the **command** value you can force the function to execute 
     an empty sbatch job with whatever warning behavior that you choose.

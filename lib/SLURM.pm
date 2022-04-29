@@ -40,7 +40,7 @@ sub define_task{
 
 =head1 SLURM
 
-Just a function to send the jobs to SLURM 
+This module contains just a function to send the jobs to SLURM 
 from the Perl scripts
 
 =over
