@@ -3,7 +3,7 @@
 ACE Neuroimaging pipeline is a colection of perl and bash scripts (mostly) that are used to
 run neuroimaging analysis with popular software packages like FSL, Freesurfer or ANTs. 
 
-Current development version of the pipeline (v0.5) is intended to be used in conjunction 
+Current development version of the pipeline (v0.5.1) is intended to be used in conjunction 
 with XNAT and is copleted integraed into the SLUM cluster. 
 
 See https://detritus.fundacioace.com/wiki/doku.php?id=neuroimagen:pipe04_user_en 
