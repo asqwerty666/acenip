@@ -2,10 +2,14 @@
 
 - xconf
 
+    Publish path of xnatapic configuration file
+
+- xget\_conf
+
     Get the XNAT connection data into a HASH
 
     usage: 
-    	%xnat\_data = xconf(configuration\_file)
+    	%xnat\_data = xget\_conf(configuration\_file)
 
 - xget\_pet
 

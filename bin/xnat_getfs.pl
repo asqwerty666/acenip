@@ -19,7 +19,7 @@
 use strict;
 use warnings;
 use NEURO4 qw(load_project print_help populate check_or_make);
-
+use XNATACE qw(xconf);
 my $prj;
 my $xprj;
 my $tmpdir; 
@@ -36,7 +36,11 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
 $xprj = $prj unless $xprj;
 die "Should supply project name\n" unless $xprj;
 my %std = load_project($prj);
-# Saco los sujetos del proyecto 
+if(exists($std{'XNAME'}) and $std{'XNAME'}){
+	$xprj = $std{'XNAME'};
+}
+# Saco los sujetos del proyecto
+
 my $order = "xnatapic list_subjects --project_id ".$xprj." --label > ".$std{'DATA'}."/xnat_subjects.list";
 print "Getting XNAT subject list\n";
 system($order);

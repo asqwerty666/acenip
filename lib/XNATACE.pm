@@ -18,9 +18,9 @@ require Exporter;
 use JSON qw(decode_json); 
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
-our @EXPORT = qw(xconf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg);
-our @EXPORT_OK = qw(xconf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg);
-our %EXPORT_TAGS =(all => qw(xconf xget_pet xget_session xget_mri xput_rvr xput_report), usual => qw(xconf xget_session));
+our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg);
+our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg);
+our %EXPORT_TAGS =(all => qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report), usual => qw(xconf xget_conf xget_session));
 
 our $VERSION = 0.1;
 
@@ -30,14 +30,24 @@ our $VERSION = 0.1;
 
 =item xconf
 
+Publish path of xnatapic configuration file
+
+=cut 
+
+sub xconf {
+	return $ENV{'HOME'}.'/.xnatapic/xnat.conf';
+}
+
+=item xget_conf
+
 Get the XNAT connection data into a HASH
 
 usage: 
-	%xnat_data = xconf(configuration_file)
+	%xnat_data = xget_conf(configuration_file)
 
 =cut
 
-sub xconf {
+sub xget_conf {
 	# Get the XNAT connection data into a HASH
 	# usage %xnat_data = xconf(configuration_file)
 	my $xconf_file = shift;

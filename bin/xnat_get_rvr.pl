@@ -9,7 +9,7 @@ use strict;
 use warnings;
 use File::Temp qw(:mktemp tempdir);
 use JSON qw(decode_json);
-use XNATACE qw(xconf xget_session xget_subjects xget_mri xget_rvr xget_rvr_data);
+use XNATACE qw(xget_conf xget_session xget_subjects xget_mri xget_rvr xget_rvr_data);
 use Data::Dump qw(dump);
 my $xprj;
 my $oxfile;
@@ -22,7 +22,7 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
 die "Should supply XNAT project" unless $xprj;
 $oxfile = $xprj.'_rvr_data.csv' unless $oxfile;
 my $xconf_file = $ENV{'HOME'}.'/.xnatapic/xnat.conf';
-my %xconf = xconf($xconf_file);
+my %xconf = xget_conf($xconf_file);
 #get the jsessionid
 my $jid = xget_session(\%xconf);
 #get the subjects list

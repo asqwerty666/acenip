@@ -7,7 +7,7 @@
 # 
 use strict;
 use warnings;
-use XNATACE qw(xconf xget_session xget_mri xput_report xput_rvr);
+use XNATACE qw(xget_conf xget_session xget_mri xput_report xput_rvr);
 use File::Find::Rule;
 use File::Basename qw(basename);
 use Text::CSV qw(csv);
@@ -26,7 +26,7 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
 die "Should supply reports directory" unless $rep_dir;
 die "Should supply XNAT project" unless $xprj;
 my $xconf_file = $ENV{'HOME'}.'/.xnatapic/xnat.conf';
-my %xconf = xconf($xconf_file);
+my %xconf = xget_conf($xconf_file);
 my $tmp_dir = $ENV{TMPDIR};
 my %vrdata;
 my %rdata;

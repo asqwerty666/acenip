@@ -25,7 +25,7 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/xnat_pullcl.hlp'; exit;}
 }
 $xprj = $prj unless $xprj;
-die "Should supply XNAT project name\n" unless $xprj;
+die "Should supply project name\n" unless $prj;
 #my %std = load_project($prj);
 #my $proj_file = $std{'DATA'}.'/'.$prj.'_mri.csv';
 #print "Wait a minute, getting XNAT subject list\n";

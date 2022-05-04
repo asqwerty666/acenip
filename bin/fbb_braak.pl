@@ -20,7 +20,7 @@ use JSON qw(decode_json);
 use NEURO4 qw(check_pet check_subj load_project print_help check_or_make cut_shit get_pair);
 use SLURM qw(send2slurm);
 use FSMetrics qw(tau_rois);
-use XNATACE qw(xconf xget_pet xget_session xget_pet_reg); 
+use XNATACE qw(xget_conf xget_pet xget_session xget_pet_reg); 
 my $cfile="";
 my $time = '2:0:0';
 my $style = "";
@@ -55,7 +55,7 @@ print "Collecting needed files\n";
 my @pets = cut_shit($db, $data_dir.'/'.$cfile);
 my %pet_data = get_pair($db);
 my $xconf_file = $ENV{'HOME'}.'/.xnatapic/xnat.conf';
-my %xconf_data = xconf($xconf_file);
+my %xconf_data = xget_conf($xconf_file);
 #defino aqui las propiedades comunes de ejecucion
 my %ptask;
 $ptask{'job_name'} = 'tau_reg_'.$study;
