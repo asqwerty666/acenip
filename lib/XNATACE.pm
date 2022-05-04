@@ -18,8 +18,8 @@ require Exporter;
 use JSON qw(decode_json); 
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
-our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg);
-our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg);
+our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data);
+our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data);
 our %EXPORT_TAGS =(all => qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report), usual => qw(xconf xget_conf xget_session));
 
 our $VERSION = 0.1;
@@ -52,7 +52,7 @@ usage:
 sub xget_conf {
 	# Get the XNAT connection data into a HASH
 	# usage %xnat_data = xconf(configuration_file)
-	my $xconf_file = shift;
+	my $xconf_file = xconf();
 	my %xconf;
 	open IDF, "<$xconf_file";
 	while (<IDF>){
@@ -110,6 +110,32 @@ sub xget_mri {
 	return $xlab;
 }
 
+=item xget_fs_data
+
+usage: xget_fs_data(host, jsession, project, experiment, output_path)
+=cut
+
+sub xget_fs_data {
+	my @xdata = @_;
+	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/projects/'.$xdata[2].'/experiments/'.$xdata[3].'/resources/FS/files?format=json"  2>/dev/null';
+	my $json_res = qx/$crd/;
+	my $file_uri;
+	my $fs_data = decode_json $json_res;
+	foreach my $var_data (@{$fs_data->{'ResultSet'}{'Result'}}){
+		if (${$var_data}{'file_content'} eq 'FSresults'){
+			$file_uri = ${$var_data}{'URI'};
+		}
+	}
+	if($file_uri){
+		$crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].$file_uri.'" -o '.$xdata[4].' 2>/dev/null';
+		system($crd);
+		return 0;
+	}else{
+		return "404: Not found";
+	}
+
+}
+
 =item xget_session 
 
 Create a new JSESSIONID on XNAT
@@ -122,7 +148,8 @@ usage:
 sub xget_session {
 	# Create a new JSESSIONID on XNAT
 	# usage: xget_session(\%xconf);
-	my %xdata = %{shift()};
+	#my %xdata = %{shift()};
+	my %xdata = xget_conf();
 	my $crd = 'curl -f -u '.$xdata{'USER'}.':'.$xdata{'PASSWORD'}.' -X POST '.$xdata{'HOST'}.'/data/JSESSION 2>/dev/null';
 	return qx/$crd/;
 }

@@ -19,18 +19,22 @@
 use strict;
 use warnings;
 use NEURO4 qw(load_project print_help populate check_or_make);
-use XNATACE qw(xconf);
+use XNATACE qw(xconf xget_conf xget_session xget_subjects xget_mri xget_fs_data);
+use File::Temp qw(tempdir);
+use Data::Dump qw(dump);
 my $prj;
 my $xprj;
-my $tmpdir; 
-chomp($tmpdir = `mktemp -d /tmp/fstar.XXXXXX`);
-my $guide = $tmpdir."/xnat_guys.list";
+my $tmpdir;
+my $cfile="";
+my $tmp_path = $ENV{'TMPDIR'};
+$tmpdir = tempdir(TEMPLATE => $tmp_path.'/fstar.XXXXXX', CLEANUP => 1);
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
     if (/^-p/) { $prj = shift; chomp($prj);} #nombre local del proyecto
     if (/^-x/) { $xprj = shift; chomp($xprj);} #nombre del proyecto en XNAT
+    if (/^-cut/) { $cfile = shift; chomp($cfile);}
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/xnat_getfs.hlp'; exit;}
 }
 $xprj = $prj unless $xprj;
@@ -39,44 +43,46 @@ my %std = load_project($prj);
 if(exists($std{'XNAME'}) and $std{'XNAME'}){
 	$xprj = $std{'XNAME'};
 }
-# Saco los sujetos del proyecto
-
-my $order = "xnatapic list_subjects --project_id ".$xprj." --label > ".$std{'DATA'}."/xnat_subjects.list";
-print "Getting XNAT subject list\n";
-system($order);
-# Para cada sujeto saco el ID de experimento de la MRI
-$order = "for x in `awk -F\",\" {'print \$1'} xnat_subjects.list`; do e=\$(xnatapic list_experiments --project_id ".$xprj." --subject_id \${x} --modality MRI); if [[ \${e} ]]; then echo \"\${x},\${e}\"; fi; done > ".$std{'DATA'}."/xnat_subject_mri.list";
-print "Getting experiments\n";
-system($order);
-# Ya teniendo los experimentos emparejo los sujetos segun codigo de proyecto local, codigo de XNAT y experimento de XNAT
 my $proj_file = $std{'DATA'}.'/'.$prj.'_mri.csv';
-$order = "sed 's/;/,/g' ".$proj_file." > ".$tmpdir."/all_mri.list;"; 
-$order.= "sort -t, -k 2 ".$tmpdir."/all_mri.list > ".$tmpdir."/all_mri_sorted.list;";
-$order.= "join -t, xnat_subjects.list xnat_subject_mri.list > ".$tmpdir."/tmp_mri.list;";
-$order.= "sort -t, -k 2 ".$tmpdir."/tmp_mri.list > ".$tmpdir."/xnat_tmp_mri_sorted.list;";
-$order.= "join -t, -j 2 ".$tmpdir."/all_mri_sorted.list ".$tmpdir."/xnat_tmp_mri_sorted.list  > ".$tmpdir."/xnat_guys.list";
-print "Sorting, joining, keeping shit together\n";
-system($order);
+my %guys = populate('^(\d{4});(.*)$', $proj_file);
+my %rguys;
+foreach my $guy (sort keys %guys){
+	$rguys{$guys{$guy}} = $guy;
+}
+my %xconfig = xget_conf();
+# Saco los sujetos del proyecto
+print "Getting XNAT subject list\n";
+my $jid = xget_session();
+my %subjects = xget_subjects($xconfig{'HOST'}, $jid, $xprj);
+# Lets sort the data;
+my %psubjects;
+foreach my $xsbj (sort keys %subjects) {
+	if (exists($rguys{$subjects{$xsbj}{'label'}})){
+		$psubjects{$xsbj}{'Subject'} = $subjects{$xsbj}{'label'};
+		$psubjects{$xsbj}{'PSubject'} = $rguys{$subjects{$xsbj}{'label'}};
+	}	
+}
+# Para cada sujeto saco el ID de experimento de la MRI
+foreach my $xsbj (sort keys %psubjects){
+	$psubjects{$xsbj}{'MRI'} = xget_mri($xconfig{'HOST'}, $jid, $xprj, $xsbj);
+}
+# Ya teniendo los experimentos emparejo los sujetos segun codigo de proyecto local, codigo de XNAT y experimento de XNAT
 # Y ahora voy a bajar todo el tgz para cada imagen y descomprimirla dentro del directorio
 # de sujetos de Freesurfer, con la convencion PROYECTO_IDLOCALSUJETO, tal y como hace el 
 # pipeline local. A partir de aqui se pueden ejecutar las operaciones que se deseen, como si
 # se hubiera hecho todo el procesamiento localmente.
 print "OK, now I'm going on\nDownloading and extracting\n";
-open IDF, "<$guide" or die "No such file or directory\n";
-while(<IDF>){
-	my ($pid, $imgid, $xsubj, $xexp) = /(.*),(.*),(.*),(.*)/;
-	my $fsdir = $ENV{'SUBJECTS_DIR'}."/".$prj."_".$imgid;
+foreach my $xsbj (sort keys %psubjects){
+	my $fsdir = $ENV{'SUBJECTS_DIR'}."/".$prj."_".$psubjects{$xsbj}{'PSubject'};
 	unless ( -d $fsdir){
-		my $tfsdir = $tmpdir."/".$prj."_".$imgid;
+		my $tfsdir = $tmpdir."/".$prj."_".$psubjects{$xsbj}{'PSubject'};
 		mkdir $tfsdir;
-		my $xorder = "xnatapic get_fsresults --experiment_id ".$xexp." --all-tgz ".$tfsdir;
-		print "$xorder\n";
-		system($xorder);
+		my $tfsout = $tfsdir.'/'.$xsbj.'.tar.gz';
+		xget_fs_data($xconfig{'HOST'}, $jid, $xprj,$psubjects{$xsbj}{'MRI'}, $tfsout);
 		mkdir $fsdir;
-		my $order = "tar xzvf ".$tfsdir."/*.tar.gz -C ".$fsdir."/ --transform=\'s/".$xsubj."//\' --exclude=\'fsaverage\'";
-		print "$order\n";
+		my $order = "tar xzf ".$tfsout." -C ".$fsdir."/ --transform=\'s/".$xsbj."//\' --exclude=\'fsaverage\' 2>/dev/null";
 		system($order);
 	}
 }
-$order = "rm -rf ".$tmpdir;
+my $order = "rm -rf ".$tmpdir;
 system($order);

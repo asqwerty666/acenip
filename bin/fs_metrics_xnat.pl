@@ -84,7 +84,7 @@ while(<SLF>){
 close SLF;
 unlink $subjects_list;
 #while read -r line; do xp=$(echo ${line} | awk -F"," '{print $2}'); slab=$(echo ${line} | awk -F"," '{print $1}'); mkdir -p test_xnatfs/${xp}/stats; xnatapic get_fsresults --experiment_id ${xp} --all-stats test_xnatfs/${xp}/stats; done < exps_withdate.csv
-my $fsoutput = tempdir(TEMPLATE => $tmp_dir.'/fsout.XXXXX', CLEANUP => 0);
+my $fsoutput = tempdir(TEMPLATE => $tmp_dir.'/fsout.XXXXX', CLEANUP => 1);
 print "###############################################\n";
 print "### $fsoutput ### \n";
 print "###############################################\n";
