@@ -32,6 +32,8 @@ our $VERSION = 0.1;
 
 Publish path of xnatapic configuration file
 
+usage $path = xconf();
+
 =cut 
 
 sub xconf {

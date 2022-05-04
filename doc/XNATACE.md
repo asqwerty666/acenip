@@ -4,6 +4,8 @@
 
     Publish path of xnatapic configuration file
 
+    usage $path = xconf();
+
 - xget\_conf
 
     Get the XNAT connection data into a HASH
