@@ -11,7 +11,7 @@
     Get the XNAT connection data into a HASH
 
     usage: 
-    	%xnat\_data = xget\_conf(configuration\_file)
+    	%xnat\_data = xget\_conf()
 
 - xget\_pet
 
@@ -26,6 +26,10 @@
 
     usage: 
     	xget\_mri(host, jsession, project, subject)
+
+- xget\_fs\_data
+
+    usage: xget\_fs\_data(host, jsession, project, experiment, output\_path)
 
 - xget\_session 
 
@@ -76,3 +80,28 @@
 
     usage: 
     	xget\_pet\_reg(host, jsession, experiment, nifti\_output);
+
+- xget\_pet\_data
+
+    Get the PET FBB analysis results into a HASH
+
+    usage:
+    	%xresult = xget\_pet\_reg(host, jsession, experiment);
+
+- xget\_exp\_data
+
+    Get a data field of an experiment.
+    The desired field shoud be indicated as input.
+    By example, if you want the date of the experiment this is 
+    seeked as 
+    	my $xdate = xget\_exp\_data($host, $session\_id, $experiment, 'date')
+
+    There are some common fields as _date_, _label_ or _dcmPatientId_ 
+    but in general  you should look at,
+
+            curl -X GET -b JSESSIONID=00000blahblah "http://myhost/data/experiments/myexperiment?format=json" 2>/dev/null | jq '.items[0].data_fields'
+
+    in order to know the available fields
+
+    usage:
+    	$xdata = xget\_exp\_data(host, jsession, experiment, field);

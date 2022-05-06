@@ -32,7 +32,7 @@
 
 <p>Get the XNAT connection data into a HASH</p>
 
-<p>usage: %xnat_data = xget_conf(configuration_file)</p>
+<p>usage: %xnat_data = xget_conf()</p>
 
 </dd>
 <dt id="xget_pet">xget_pet</dt>
@@ -49,6 +49,12 @@
 <p>Get the XNAT MRI experiment ID</p>
 
 <p>usage: xget_mri(host, jsession, project, subject)</p>
+
+</dd>
+<dt id="xget_fs_data">xget_fs_data</dt>
+<dd>
+
+<p>usage: xget_fs_data(host, jsession, project, experiment, output_path)</p>
 
 </dd>
 <dt id="xget_session">xget_session</dt>
@@ -105,6 +111,28 @@
 <p>Download de pet registered into native space in nifti format</p>
 
 <p>usage: xget_pet_reg(host, jsession, experiment, nifti_output);</p>
+
+</dd>
+<dt id="xget_pet_data">xget_pet_data</dt>
+<dd>
+
+<p>Get the PET FBB analysis results into a HASH</p>
+
+<p>usage: %xresult = xget_pet_reg(host, jsession, experiment);</p>
+
+</dd>
+<dt id="xget_exp_data">xget_exp_data</dt>
+<dd>
+
+<p>Get a data field of an experiment. The desired field shoud be indicated as input. By example, if you want the date of the experiment this is seeked as my $xdate = xget_exp_data($host, $session_id, $experiment, &#39;date&#39;)</p>
+
+<p>There are some common fields as <i>date</i>, <i>label</i> or <i>dcmPatientId</i> but in general you should look at,</p>
+
+<pre><code>        curl -X GET -b JSESSIONID=00000blahblah &quot;http://myhost/data/experiments/myexperiment?format=json&quot; 2&gt;/dev/null | jq &#39;.items[0].data_fields&#39;</code></pre>
+
+<p>in order to know the available fields</p>
+
+<p>usage: $xdata = xget_exp_data(host, jsession, experiment, field);</p>
 
 </dd>
 </dl>

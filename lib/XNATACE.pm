@@ -18,8 +18,8 @@ require Exporter;
 use JSON qw(decode_json); 
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
-our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data);
-our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data);
+our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data);
+our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data);
 our %EXPORT_TAGS =(all => qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report), usual => qw(xconf xget_conf xget_session));
 
 our $VERSION = 0.1;
@@ -45,7 +45,7 @@ sub xconf {
 Get the XNAT connection data into a HASH
 
 usage: 
-	%xnat_data = xget_conf(configuration_file)
+	%xnat_data = xget_conf()
 
 =cut
 
@@ -298,4 +298,81 @@ sub xget_pet_reg {
 		return 0;
 	}
 }
+
+=item xget_pet_data
+
+Get the PET FBB analysis results into a HASH
+
+usage:
+	%xresult = xget_pet_data(host, jsession, experiment);
+
+=cut
+
+sub xget_pet_data {
+	# Get the PET FBB analysis results into a HASH
+	# usage %xresult = xget_pet_reg(host, jsession, experiment);
+	my @xdata = @_;
+	my %xresult;
+	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/experiments/'.$xdata[2].'/files/mriSessionMatch.json" 2>/dev/null';
+	my $jres = qx/$crd/;
+	if($jres) {
+		my $xfres = decode_json $jres;
+		foreach my $xres (@{$xfres->{'ResultSet'}{'Result'}}){
+			foreach my $xkey (sort keys %{$xres}){
+				$xresult{$xkey} = ${$xres}{$xkey};
+			}
+		}
+	}
+	return %xresult;
+}
+
+=item xget_exp_data
+
+Get a data field of an experiment.
+The desired field shoud be indicated as input.
+By example, if you want the date of the experiment this is 
+seeked as 
+	my $xdate = xget_exp_data($host, $session_id, $experiment, 'date')
+
+There are some common fields as I<date>, I<label> or I<dcmPatientId> 
+but in general  you should look at,
+
+	curl -X GET -b JSESSIONID=00000blahblah "http://myhost/data/experiments/myexperiment?format=json" 2>/dev/null | jq '.items[0].data_fields'
+
+in order to know the available fields
+
+usage:
+	$xdata = xget_exp_data(host, jsession, experiment, field);
+
+=cut
+
+sub xget_exp_data {
+	# usage $xdata = xget_exp_data(host, jsession, experiment, field);	
+	my @xdata = @_;
+	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/experiments/'.$xdata[2].'?format=json" 2>/dev/null';
+	my $jres = qx/$crd/;
+	my $xfres = decode_json $jres;
+	return $xfres->{items}[0]{data_fields}{$xdata[3]};
+}
+
+=item xget_sbj_data
+
+Get the subjects metadata. Not too
+much interesting but to extract
+the subject label.
+
+usage:
+	$xdata = xget_sbj_data(host, jsession, subject, field);
+
+=cut
+
+sub xget_sbj_data {
+	# usage $xdata = xget_sbj_data(host, jsession, subject, field);
+	my @xdata = @_;
+	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/subjects/'.$xdata[2].'?format=json" 2>/dev/null';
+	my $jres = qx/$crd/;
+	my $xfres = decode_json $jres;
+	return $xfres->{items}[0]{data_fields}{$xdata[3]};
+}
+
 =back
