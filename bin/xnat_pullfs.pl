@@ -18,22 +18,25 @@
 
 # v0.1 - extraer aseg -> done
 # v0.2 - extraer aparc -> done
+# v0.3 - remove xnatapic depends -> done
+
 
 use strict; use warnings;
 use NEURO4 qw(populate get_subjects check_fs_subj load_project print_help check_or_make cut_shit);
 use FSMetrics qw(fs_file_metrics);
+use XNATACE qw(xget_conf xget_session xget_subjects xget_mri xget_sbj_data xget_fs_stats);
 use File::Basename qw(basename);
 use File::Slurp qw(read_file);
+use File::Temp qw(tempdir);
 use Data::Dump qw(dump);
 
 my $stats = "aseg";
 my $all = 0;
 my $prj;
 my $xprj;
-my $tmpdir; 
+my $tmp_dir = $ENV{'TMPDIR'};
+my $tmpdir = tempdir(TEMPLATE => $tmp_dir.'/fs.XXXXX', CLEANUP => 1); 
 my $ofile;
-chomp($tmpdir = `mktemp -d /tmp/fstar.XXXXXX`);
-my $guide = $tmpdir."/xnat_guys.list";
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
@@ -44,31 +47,21 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     if (/^-x/) { $xprj = shift; chomp($xprj);} #nombre del proyecto en XNAT
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/xnat_pullfs.hlp'; exit;}
 }
-#unless ($prj) { print_help $ENV{'PIPEDIR'}.'/doc/xnat_get.hlp'; exit;}
 $xprj = $prj unless $xprj;
 die "Should supply the XNAT project name\n" unless $xprj;
-#my %std = load_project($prj);
-# La parte inicial es comun con xnat_pullfs.pl (a lo mejor meterlo en una funcion?)
+my %std = load_project($prj);
+if(exists($std{'XNAME'}) and $std{'XNAME'}){
+	$xprj = $std{'XNAME'};
+}
 # Saco los sujetos del proyecto 
-my $order = "xnatapic list_subjects --project_id ".$xprj." --label > ".$tmpdir."/xnat_subjects.list";
-#print "Getting XNAT subject list\n";
-#print "$order\n";
-system($order);
-# Para cada sujeto saco el ID de experimento de la MRI
-$order = "for x in `awk -F\",\" {'print \$1'} ".$tmpdir."/xnat_subjects.list`; do e=\$(xnatapic list_experiments --project_id ".$xprj." --subject_id \${x} --modality MRI); if [[ \${e} ]]; then echo \"\${x},\${e}\"; fi; done > ".$tmpdir."/xnat_subject_mri.list";
-#print("$order\n");
-#print "Getting experiments\n";
-system($order);
-# Ya teniendo los experimentos emparejo los sujetos segun codigo de proyecto local, codigo de XNAT y experimento de XNAT
-#my $proj_file = $std{'DATA'}.'/'.$prj.'_mri.csv';
-#$order = "sed 's/;/,/g' ".$proj_file." > ".$tmpdir."/all_mri.list;"; 
-#$order.= "sort -t, -k 2 ".$tmpdir."/all_mri.list > ".$tmpdir."/all_mri_sorted.list;";
-$order = "join -t, ".$tmpdir."/xnat_subjects.list ".$tmpdir."/xnat_subject_mri.list > ".$tmpdir."/tmp_mri.list;";
-$order.= "sort -t, -k 2 ".$tmpdir."/tmp_mri.list > ".$guide;
-#$order.= "sort -t, -k 2 ".$tmpdir."/tmp_mri.list > ".$tmpdir."/xnat_tmp_mri_sorted.list;";
-#$order.= "join -t, -j 2 ".$tmpdir."/all_mri_sorted.list ".$tmpdir."/xnat_tmp_mri_sorted.list  > ".$guide;
-#print "Sorting, joining, keeping shit together\n";
-system($order);
+my %xconfig = xget_session();
+my $jid = $xconfig{'JSESSION'};
+my %subjects = xget_subjects($xconfig{'HOST'}, $jid, $xprj);
+my %psubjects;
+foreach my $xsbj (sort keys %subjects){
+	$psubjects{$xsbj}{'MRI'} = xget_mri($xconfig{'HOST'}, $jid, $xprj, $xsbj);
+	$psubjects{$xsbj}{'label'} = xget_sbj_data($xconfig{'HOST'}, $jid, $xsbj, 'label');
+}
 # Ahora voy a bajar el archivo de stats para cada imagen y dentro de un directorio
 # para cada sujeto, con la convencion IDSUJETOXNAT. 
 # De aqui he de extraer las estadisticas que se han pedido
@@ -76,29 +69,24 @@ system($order);
 my @fsnames;
 my $fsout = $tmpdir.'/fsresults';
 mkdir $fsout unless -d $fsout;
-open IDF, "<$guide" or die "No such file or directory\n";
 my $okheader = 0;
 open STDOUT, ">$ofile" unless not $ofile;
-#my $ofile = $std{'DATA'}.'/'.$prj.'_'.$stats.'.csv';
-#open ODF, ">$ofile";
-while(<IDF>){
+foreach my $subject (sort keys %psubjects){
 	# Primero voy a ir sacando los IDs de sujeto y experimentos que he capturado
-	my ($xsubj, $pid, $xexp) = /(.*),(.*),(.*)/;
 	# Hago un directorio para cada uno
-	my $order = 'mkdir -p '.$fsout.'/'.$xsubj.'/stats';
+	my $order = 'mkdir -p '.$fsout.'/'.$subject.'/stats';
 	system($order);
 	# ahora voy a intentar sacar las estadisticas
 	if($stats eq "aseg"){
 		# y guardo el archivo de stats
-		$order = 'xnatapic get_fsresults --experiment_id '.$xexp.' --stats '.$stats.' '.$fsout.'/'.$xsubj.'/ 1>/dev/null';
-		system($order);
+		my $tmp_out = $fsout.'/'.$subject.'/stats/'.$stats.'.stats';
+		xget_fs_stats($xconfig{'HOST'}, $jid, $psubjects{$subject}{'MRI'}, 'aseg.stats' , $tmp_out);
 		# Aqui voy a sacar los volumenes porque son distintos a los demas
-		my $lookhere = $fsout.'/'.$xsubj.'/'.$stats.'.stats';
-		if( -f $lookhere){
-			my @tdata = `grep -v "^#" $lookhere | awk '{print \$5","\$4}'`;
+		if( -f $tmp_out){
+			my @tdata = `grep -v "^#" $tmp_out | awk '{print \$5","\$4}'`;
 			chomp @tdata; 
 			my %udata = map { my ($key, $value) = split ","; $key => $value } @tdata;
-			my $etiv = `grep  EstimatedTotalIntraCranialVol $lookhere | awk -F", " '{print \$4}'`;
+			my $etiv = `grep  EstimatedTotalIntraCranialVol $tmp_out | awk -F", " '{print \$4}'`;
 			chomp $etiv;
 			unless($okheader) {
 				print "Subject_ID";
@@ -108,7 +96,7 @@ while(<IDF>){
 				$okheader = 1;
 				print ",eTIV\n";
 			}
-			print "$pid";
+			print "$psubjects{$subject}{'label'}";
 			foreach my $roi (sort keys %udata){
 				print ",$udata{$roi}";
 			}
@@ -124,12 +112,10 @@ while(<IDF>){
 		my %udata;
 		my $go=0;
 		foreach my $hemi (@hemis){
-			$order = 'xnatapic get_fsresults --experiment_id '.$xexp.' --stats '.$hemi.'.'.$stats.' '.$fsout.'/'.$xsubj.'/ 1>/dev/null';
-			system($order);
-			my $lookhere = $fsout.'/'.$xsubj.'/'.$hemi.'.'.$stats.'.stats';
-			#print "$lookhere\n";
-			if (-f $lookhere) {
-				my @tdata = `grep -v "^#" $fsout/$xsubj/$hemi.$stats.stats | awk '{print \$1","\$3","\$4","\$5}'`;
+			my $tmp_out = $fsout.'/'.$subject.'/stats/'.$hemi.'.'.$stats.'.stats';
+			xget_fs_stats($xconfig{'HOST'}, $jid, $psubjects{$subject}{'MRI'}, $hemi.'.'.$stats.'.stats' , $tmp_out);
+			if (-f $tmp_out) {
+				my @tdata = `grep -v "^#" $tmp_out | awk '{print \$1","\$3","\$4","\$5}'`;
 				chomp @tdata;
 				foreach my $chunk (@tdata) {
 					my ($key, $sa, $gv, $tv) = split /,/, $chunk; 
@@ -137,7 +123,7 @@ while(<IDF>){
 					$udata{$hemi}{$key}{'GrayVol'} = $gv;
 					$udata{$hemi}{$key}{'ThickAvg'} = $tv;
 				}
-				$etiv = `grep  EstimatedTotalIntraCranialVol $fsout/$xsubj/$hemi.$stats.stats | awk -F", " '{print \$4}'`;
+				$etiv = `grep  EstimatedTotalIntraCranialVol $tmp_out | awk -F", " '{print \$4}'`;
 				chomp $etiv;
 				$go = 1;
 			}
@@ -155,7 +141,7 @@ while(<IDF>){
 				$okheader = 1;
 				print ",eTIV\n";
 			}
-			print "$pid";
+			print "$psubjects{$subject}{'label'}";
 			foreach my $hemi (@hemis){
 				foreach my $dhead (sort keys %{$udata{$hemi}}){
 					foreach my $measure (@meassures){
@@ -167,6 +153,4 @@ while(<IDF>){
 		}
 	}
 }
-#close ODF;
-$order = 'rm -rf '.$tmpdir;
-system($order);
+close STDOUT;

@@ -49,10 +49,10 @@ my %rguys;
 foreach my $guy (sort keys %guys){
 	$rguys{$guys{$guy}} = $guy;
 }
-my %xconfig = xget_conf();
+my %xconfig = xget_session();
 # Saco los sujetos del proyecto
 print "Getting XNAT subject list\n";
-my $jid = xget_session();
+my $jid = $xconfig{'JSESSION'};
 my %subjects = xget_subjects($xconfig{'HOST'}, $jid, $xprj);
 # Lets sort the data;
 my %psubjects;

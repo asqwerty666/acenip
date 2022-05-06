@@ -4,7 +4,7 @@
 use strict;
 use warnings;
 use NEURO4 qw(load_project print_help populate check_or_make);
-use XNATACE qw(xconf xget_conf xget_session xget_subjects xget_pet xget_pet_data xget_exp_data xget_sbj_data);
+use XNATACE qw(xget_session xget_subjects xget_pet xget_pet_data xget_exp_data xget_sbj_data);
 use File::Temp qw(tempdir);
 my $prj;
 my $xprj;
@@ -29,10 +29,10 @@ my %std = load_project($prj);
 if(exists($std{'XNAME'}) and $std{'XNAME'}){
 	$xprj = $std{'XNAME'};
 }
-my %xconfig = xget_conf();
+my %xconfig = xget_session();
 # Saco los sujetos del proyecto
 #print "Getting XNAT subject list\n";
-my $jid = xget_session();
+my $jid = $xconfig{'JSESSION'};
 my %subjects = xget_subjects($xconfig{'HOST'}, $jid, $xprj);
 #print "Getting PET data now\n";
 my %spets;

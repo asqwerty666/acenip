@@ -25,13 +25,12 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
 }
 die "Should supply reports directory" unless $rep_dir;
 die "Should supply XNAT project" unless $xprj;
-my $xconf_file = $ENV{'HOME'}.'/.xnatapic/xnat.conf';
-my %xconf = xget_conf($xconf_file);
+my %xconf = xget_session();
 my $tmp_dir = $ENV{TMPDIR};
 my %vrdata;
 my %rdata;
 # get the session ID
-my $jid = xget_session(\%xconf);
+my $jid = $xconf{'JSESSION'};
 
 my @pdfs = find(file => 'name' => "*.pdf", in => $rep_dir);
 foreach my $report (@pdfs) {

@@ -32,7 +32,9 @@ our $VERSION = 0.1;
 
 Publish path of xnatapic configuration file
 
-usage $path = xconf();
+usage: 
+
+	$path = xconf();
 
 =cut 
 
@@ -45,6 +47,7 @@ sub xconf {
 Get the XNAT connection data into a HASH
 
 usage: 
+
 	%xnat_data = xget_conf()
 
 =cut
@@ -68,6 +71,7 @@ sub xget_conf {
 Get the XNAT PET experiment ID
 
 usage: 
+
 	xget_pet(host, jsession, project, subject)
 
 =cut
@@ -92,6 +96,7 @@ sub xget_pet {
 Get the XNAT MRI experiment ID
 
 usage: 
+
 	xget_mri(host, jsession, project, subject)
 
 =cut
@@ -114,6 +119,7 @@ sub xget_mri {
 Get the full Freesurfer directory in a tar.gz file
 
 usage: 
+
 	xget_fs_data(host, jsession, project, experiment, output_path)
 =cut
 
@@ -143,7 +149,7 @@ Get a single stats file from Freesurfer segmentation
 
 usage:
 
-	xget_fs_stats(host, jsession, project, experiment, stats_file, output_file) 
+	xget_fs_stats(host, jsession, experiment stats_file, output_file) 
 =cut
 
 sub xget_fs_stats {
@@ -168,10 +174,12 @@ sub xget_fs_stats {
 
 =item xget_session 
 
-Create a new JSESSIONID on XNAT
+Create a new JSESSIONID on XNAT. Return the connection data
+for the server AND the ID of the created session
 
 usage: 
-	xget_session(\%xconf);
+
+	xget_session();
 
 =cut
 
@@ -181,7 +189,8 @@ sub xget_session {
 	#my %xdata = %{shift()};
 	my %xdata = xget_conf();
 	my $crd = 'curl -f -u '.$xdata{'USER'}.':'.$xdata{'PASSWORD'}.' -X POST '.$xdata{'HOST'}.'/data/JSESSION 2>/dev/null';
-	return qx/$crd/;
+	$xdata{'JSESSION'} = qx/$crd/;
+	return %xdata;
 }
 
 =item xput_report
@@ -189,6 +198,7 @@ sub xget_session {
 Upload a pdf report to XNAT
 
 usage: 
+
 	xput_report(host, jsession, subject, experiment, pdf_file);
 
 =cut
@@ -208,6 +218,7 @@ sub xput_report{
 Upload a JSON file with VR data
 
 usage: 
+
 	xput_rvr(host, jsession, experiment, json_file);
 
 =cut
@@ -225,6 +236,7 @@ sub xput_rvr {
 Get VR results into a HASH. Output is a hash with filenames and URI of each element stored at RVR
 
 usage: 
+
 	xget_rvr(host, jsession, project, experiment);
 
 =cut
@@ -251,6 +263,7 @@ sub xget_rvr {
 Get RVR JSON data into a hash
 
 usage: 
+
 	xget_rvr_data(host, jsession, URI);
 
 =cut
@@ -277,6 +290,7 @@ Get the list of subjects of a project into a HASH.
 El HASH de input, I<%sbjs>, se construye como I<{ XNAT_ID =E<gt> Label }>
 
 usage: 
+
 	%sbjs = xget_subjects(host, jsession, project);
 
 =cut
@@ -303,6 +317,7 @@ sub xget_subjects {
 Download de pet registered into native space in nifti format
 
 usage: 
+
 	xget_pet_reg(host, jsession, experiment, nifti_output);
 
 =cut
@@ -334,6 +349,7 @@ sub xget_pet_reg {
 Get the PET FBB analysis results into a HASH
 
 usage:
+
 	%xresult = xget_pet_data(host, jsession, experiment);
 
 =cut
@@ -362,6 +378,7 @@ Get a data field of an experiment.
 The desired field shoud be indicated as input.
 By example, if you want the date of the experiment this is 
 seeked as 
+
 	my $xdate = xget_exp_data($host, $session_id, $experiment, 'date')
 
 There are some common fields as I<date>, I<label> or I<dcmPatientId> 
@@ -372,6 +389,7 @@ but in general  you should look at,
 in order to know the available fields
 
 usage:
+
 	$xdata = xget_exp_data(host, jsession, experiment, field);
 
 =cut
@@ -392,6 +410,7 @@ much interesting but to extract
 the subject label.
 
 usage:
+
 	$xdata = xget_sbj_data(host, jsession, subject, field);
 
 =cut

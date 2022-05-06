@@ -24,7 +24,9 @@
 
 <p>Publish path of xnatapic configuration file</p>
 
-<p>usage $path = xconf();</p>
+<p>usage:</p>
+
+<pre><code>        $path = xconf();</code></pre>
 
 </dd>
 <dt id="xget_conf">xget_conf</dt>
@@ -32,7 +34,9 @@
 
 <p>Get the XNAT connection data into a HASH</p>
 
-<p>usage: %xnat_data = xget_conf()</p>
+<p>usage:</p>
+
+<pre><code>        %xnat_data = xget_conf()</code></pre>
 
 </dd>
 <dt id="xget_pet">xget_pet</dt>
@@ -40,7 +44,9 @@
 
 <p>Get the XNAT PET experiment ID</p>
 
-<p>usage: xget_pet(host, jsession, project, subject)</p>
+<p>usage:</p>
+
+<pre><code>        xget_pet(host, jsession, project, subject)</code></pre>
 
 </dd>
 <dt id="xget_mri">xget_mri</dt>
@@ -48,13 +54,17 @@
 
 <p>Get the XNAT MRI experiment ID</p>
 
-<p>usage: xget_mri(host, jsession, project, subject)</p>
+<p>usage:</p>
+
+<pre><code>        xget_mri(host, jsession, project, subject)</code></pre>
 
 </dd>
 <dt id="xget_fs_data-Get-the-full-Freesurfer-directory-in-a-tar.gz-file">xget_fs_data Get the full Freesurfer directory in a tar.gz file</dt>
 <dd>
 
-<p>usage: xget_fs_data(host, jsession, project, experiment, output_path)</p>
+<p>usage:</p>
+
+<pre><code>        xget_fs_data(host, jsession, project, experiment, output_path)</code></pre>
 
 </dd>
 <dt id="xget_fs_stats">xget_fs_stats</dt>
@@ -64,15 +74,17 @@
 
 <p>usage:</p>
 
-<pre><code>        xget_fs_stats(host, jsession, project, experiment, stats_file, output_file) </code></pre>
+<pre><code>        xget_fs_stats(host, jsession, experiment stats_file, output_file) </code></pre>
 
 </dd>
 <dt id="xget_session">xget_session</dt>
 <dd>
 
-<p>Create a new JSESSIONID on XNAT</p>
+<p>Create a new JSESSIONID on XNAT. Return the connection data for the server AND the ID of the created session</p>
 
-<p>usage: xget_session(\%xconf);</p>
+<p>usage:</p>
+
+<pre><code>        xget_session();</code></pre>
 
 </dd>
 <dt id="xput_report">xput_report</dt>
@@ -80,7 +92,9 @@
 
 <p>Upload a pdf report to XNAT</p>
 
-<p>usage: xput_report(host, jsession, subject, experiment, pdf_file);</p>
+<p>usage:</p>
+
+<pre><code>        xput_report(host, jsession, subject, experiment, pdf_file);</code></pre>
 
 </dd>
 <dt id="xput_rvr">xput_rvr</dt>
@@ -88,7 +102,9 @@
 
 <p>Upload a JSON file with VR data</p>
 
-<p>usage: xput_rvr(host, jsession, experiment, json_file);</p>
+<p>usage:</p>
+
+<pre><code>        xput_rvr(host, jsession, experiment, json_file);</code></pre>
 
 </dd>
 <dt id="xget_rvr">xget_rvr</dt>
@@ -96,7 +112,9 @@
 
 <p>Get VR results into a HASH. Output is a hash with filenames and URI of each element stored at RVR</p>
 
-<p>usage: xget_rvr(host, jsession, project, experiment);</p>
+<p>usage:</p>
+
+<pre><code>        xget_rvr(host, jsession, project, experiment);</code></pre>
 
 </dd>
 <dt id="xget_rvr_data">xget_rvr_data</dt>
@@ -104,7 +122,9 @@
 
 <p>Get RVR JSON data into a hash</p>
 
-<p>usage: xget_rvr_data(host, jsession, URI);</p>
+<p>usage:</p>
+
+<pre><code>        xget_rvr_data(host, jsession, URI);</code></pre>
 
 </dd>
 <dt id="xget_subjects">xget_subjects</dt>
@@ -112,7 +132,9 @@
 
 <p>Get the list of subjects of a project into a HASH. El HASH de input, <i>%sbjs</i>, se construye como <i>{ XNAT_ID =&gt; Label }</i></p>
 
-<p>usage: %sbjs = xget_subjects(host, jsession, project);</p>
+<p>usage:</p>
+
+<pre><code>        %sbjs = xget_subjects(host, jsession, project);</code></pre>
 
 </dd>
 <dt id="xget_pet_reg">xget_pet_reg</dt>
@@ -120,7 +142,9 @@
 
 <p>Download de pet registered into native space in nifti format</p>
 
-<p>usage: xget_pet_reg(host, jsession, experiment, nifti_output);</p>
+<p>usage:</p>
+
+<pre><code>        xget_pet_reg(host, jsession, experiment, nifti_output);</code></pre>
 
 </dd>
 <dt id="xget_pet_data">xget_pet_data</dt>
@@ -128,13 +152,17 @@
 
 <p>Get the PET FBB analysis results into a HASH</p>
 
-<p>usage: %xresult = xget_pet_data(host, jsession, experiment);</p>
+<p>usage:</p>
+
+<pre><code>        %xresult = xget_pet_data(host, jsession, experiment);</code></pre>
 
 </dd>
 <dt id="xget_exp_data">xget_exp_data</dt>
 <dd>
 
-<p>Get a data field of an experiment. The desired field shoud be indicated as input. By example, if you want the date of the experiment this is seeked as my $xdate = xget_exp_data($host, $session_id, $experiment, &#39;date&#39;)</p>
+<p>Get a data field of an experiment. The desired field shoud be indicated as input. By example, if you want the date of the experiment this is seeked as</p>
+
+<pre><code>        my $xdate = xget_exp_data($host, $session_id, $experiment, &#39;date&#39;)</code></pre>
 
 <p>There are some common fields as <i>date</i>, <i>label</i> or <i>dcmPatientId</i> but in general you should look at,</p>
 
@@ -142,7 +170,9 @@
 
 <p>in order to know the available fields</p>
 
-<p>usage: $xdata = xget_exp_data(host, jsession, experiment, field);</p>
+<p>usage:</p>
+
+<pre><code>        $xdata = xget_exp_data(host, jsession, experiment, field);</code></pre>
 
 </dd>
 <dt id="xget_sbj_data">xget_sbj_data</dt>
@@ -150,7 +180,9 @@
 
 <p>Get the subjects metadata. Not too much interesting but to extract the subject label.</p>
 
-<p>usage: $xdata = xget_sbj_data(host, jsession, subject, field);</p>
+<p>usage:</p>
+
+<pre><code>        $xdata = xget_sbj_data(host, jsession, subject, field);</code></pre>
 
 </dd>
 </dl>

@@ -54,8 +54,8 @@ check_or_make($outdir);
 print "Collecting needed files\n";
 my @pets = cut_shit($db, $data_dir.'/'.$cfile);
 my %pet_data = get_pair($db);
-my $xconf_file = $ENV{'HOME'}.'/.xnatapic/xnat.conf';
-my %xconf_data = xget_conf($xconf_file);
+#my $xconf_file = $ENV{'HOME'}.'/.xnatapic/xnat.conf';
+#my %xconf_data = xget_conf($xconf_file);
 #defino aqui las propiedades comunes de ejecucion
 my %ptask;
 $ptask{'job_name'} = 'tau_reg_'.$study;
@@ -68,8 +68,8 @@ my @p_jobs;
 print "Running shit\n";
 #my $jrd = 'xnatapic get_jsession';
 #my $jsession = qx/$jrd/;
-my $jsession = xget_session(\%xconf_data);
-chomp $jsession;
+my %xconf_data = xget_session();
+my $jsession = %xconf_data{'JSESSION'};
 foreach my $subject (@pets){ 
 	my $psubject = $pet_data{$subject};
 	my $fake_tau = $w_dir.'/'.$subject.'_tau.nii.gz';
