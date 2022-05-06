@@ -18,8 +18,8 @@ require Exporter;
 use JSON qw(decode_json); 
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
-our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data);
-our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data);
+our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats);
+our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats);
 our %EXPORT_TAGS =(all => qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report), usual => qw(xconf xget_conf xget_session));
 
 our $VERSION = 0.1;
@@ -111,8 +111,10 @@ sub xget_mri {
 }
 
 =item xget_fs_data
+Get the full Freesurfer directory in a tar.gz file
 
-usage: xget_fs_data(host, jsession, project, experiment, output_path)
+usage: 
+	xget_fs_data(host, jsession, project, experiment, output_path)
 =cut
 
 sub xget_fs_data {
@@ -129,11 +131,39 @@ sub xget_fs_data {
 	if($file_uri){
 		$crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].$file_uri.'" -o '.$xdata[4].' 2>/dev/null';
 		system($crd);
-		return 0;
+		return 1;
 	}else{
-		return "404: Not found";
+		return 0;
 	}
+}
 
+=item xget_fs_stats
+
+Get a single stats file from Freesurfer segmentation
+
+usage:
+
+	xget_fs_stats(host, jsession, project, experiment, stats_file, output_file) 
+=cut
+
+sub xget_fs_stats {
+	my @xdata = @_;
+	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/FS/files?format=json" 2>/dev/null';
+	my $json_res = qx/$crd/;
+	my $fs_data = decode_json $json_res;
+	my $file_uri;
+	foreach my $var_data (@{$fs_data->{'ResultSet'}{'Result'}}){
+		if ((${$var_data}{'file_content'} eq 'FSstats') and (${$var_data}{'Name'} eq $xdata[3])){
+			$file_uri = ${$var_data}{'URI'};
+		}
+	}
+	if($file_uri){
+                $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].$file_uri.'" -o '.$xdata[4].' 2>/dev/null';
+		system($crd);
+		return 1;
+	}else{
+		return 0;
+	}
 }
 
 =item xget_session 

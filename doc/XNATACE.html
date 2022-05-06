@@ -51,10 +51,20 @@
 <p>usage: xget_mri(host, jsession, project, subject)</p>
 
 </dd>
-<dt id="xget_fs_data">xget_fs_data</dt>
+<dt id="xget_fs_data-Get-the-full-Freesurfer-directory-in-a-tar.gz-file">xget_fs_data Get the full Freesurfer directory in a tar.gz file</dt>
 <dd>
 
 <p>usage: xget_fs_data(host, jsession, project, experiment, output_path)</p>
+
+</dd>
+<dt id="xget_fs_stats">xget_fs_stats</dt>
+<dd>
+
+<p>Get a single stats file from Freesurfer segmentation</p>
+
+<p>usage:</p>
+
+<pre><code>        xget_fs_stats(host, jsession, project, experiment, stats_file, output_file) </code></pre>
 
 </dd>
 <dt id="xget_session">xget_session</dt>
@@ -118,7 +128,7 @@
 
 <p>Get the PET FBB analysis results into a HASH</p>
 
-<p>usage: %xresult = xget_pet_reg(host, jsession, experiment);</p>
+<p>usage: %xresult = xget_pet_data(host, jsession, experiment);</p>
 
 </dd>
 <dt id="xget_exp_data">xget_exp_data</dt>
@@ -133,6 +143,14 @@
 <p>in order to know the available fields</p>
 
 <p>usage: $xdata = xget_exp_data(host, jsession, experiment, field);</p>
+
+</dd>
+<dt id="xget_sbj_data">xget_sbj_data</dt>
+<dd>
+
+<p>Get the subjects metadata. Not too much interesting but to extract the subject label.</p>
+
+<p>usage: $xdata = xget_sbj_data(host, jsession, subject, field);</p>
 
 </dd>
 </dl>

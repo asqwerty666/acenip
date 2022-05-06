@@ -28,8 +28,18 @@
     	xget\_mri(host, jsession, project, subject)
 
 - xget\_fs\_data
+Get the full Freesurfer directory in a tar.gz file
 
-    usage: xget\_fs\_data(host, jsession, project, experiment, output\_path)
+    usage: 
+    	xget\_fs\_data(host, jsession, project, experiment, output\_path)
+
+- xget\_fs\_stats
+
+    Get a single stats file from Freesurfer segmentation
+
+    usage:
+
+            xget_fs_stats(host, jsession, project, experiment, stats_file, output_file) 
 
 - xget\_session 
 
@@ -86,7 +96,7 @@
     Get the PET FBB analysis results into a HASH
 
     usage:
-    	%xresult = xget\_pet\_reg(host, jsession, experiment);
+    	%xresult = xget\_pet\_data(host, jsession, experiment);
 
 - xget\_exp\_data
 
@@ -105,3 +115,12 @@
 
     usage:
     	$xdata = xget\_exp\_data(host, jsession, experiment, field);
+
+- xget\_sbj\_data
+
+    Get the subjects metadata. Not too
+    much interesting but to extract
+    the subject label.
+
+    usage:
+    	$xdata = xget\_sbj\_data(host, jsession, subject, field);
