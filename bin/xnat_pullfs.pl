@@ -24,7 +24,7 @@
 use strict; use warnings;
 use NEURO4 qw(populate get_subjects check_fs_subj load_project print_help check_or_make cut_shit);
 use FSMetrics qw(fs_file_metrics);
-use XNATACE qw(xget_conf xget_session xget_subjects xget_mri xget_sbj_data xget_fs_stats);
+use XNATACE qw(xget_conf xget_session xget_subjects xget_mri xget_sbj_data xget_fs_stats xget_exp_data);
 use File::Basename qw(basename);
 use File::Slurp qw(read_file);
 use File::Temp qw(tempdir);
@@ -37,11 +37,13 @@ my $xprj;
 my $tmp_dir = $ENV{'TMPDIR'};
 my $tmpdir = tempdir(TEMPLATE => $tmp_dir.'/fs.XXXXX', CLEANUP => 1); 
 my $ofile;
+my $with_date = 0;
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
     if (/^-s/) { $stats = shift;}
+    if (/^-d/) { $with_date = 1; }
     if (/^-o/) { $ofile = shift; chomp($ofile);}
     if (/^-p/) { $prj = shift; chomp($prj);} #nombre local del proyecto
     if (/^-x/) { $xprj = shift; chomp($xprj);} #nombre del proyecto en XNAT
@@ -61,6 +63,7 @@ my %psubjects;
 foreach my $xsbj (sort keys %subjects){
 	$psubjects{$xsbj}{'MRI'} = xget_mri($xconfig{'HOST'}, $jid, $xprj, $xsbj);
 	$psubjects{$xsbj}{'label'} = xget_sbj_data($xconfig{'HOST'}, $jid, $xsbj, 'label');
+	$psubjects{$xsbj}{'date'} = xget_exp_data($xconfig{'HOST'}, $jid, $psubjects{$xsbj}{'MRI'}, 'date')
 }
 # Ahora voy a bajar el archivo de stats para cada imagen y dentro de un directorio
 # para cada sujeto, con la convencion IDSUJETOXNAT. 
@@ -89,7 +92,8 @@ foreach my $subject (sort keys %psubjects){
 			my $etiv = `grep  EstimatedTotalIntraCranialVol $tmp_out | awk -F", " '{print \$4}'`;
 			chomp $etiv;
 			unless($okheader) {
-				print "Subject_ID";
+				print 'Subject_ID';
+				print ',Date' if $with_date;
 				foreach my $dhead (sort keys %udata){
 					print ",$dhead";
 				}
@@ -97,6 +101,7 @@ foreach my $subject (sort keys %psubjects){
 				print ",eTIV\n";
 			}
 			print "$psubjects{$subject}{'label'}";
+			print ",$psubjects{$subject}{'date'}" if $with_date;
 			foreach my $roi (sort keys %udata){
 				print ",$udata{$roi}";
 			}
@@ -131,6 +136,7 @@ foreach my $subject (sort keys %psubjects){
 		if ($go){
 			unless($okheader) {
 				print "Subject_ID";
+				print ',Date' if $with_date;
 				foreach my $hemi (@hemis){
 					foreach my $dhead (sort keys %{$udata{$hemi}}){
 						foreach my $measure (@meassures){
@@ -142,6 +148,7 @@ foreach my $subject (sort keys %psubjects){
 				print ",eTIV\n";
 			}
 			print "$psubjects{$subject}{'label'}";
+			print ",$psubjects{$subject}{'date'}" if $with_date;
 			foreach my $hemi (@hemis){
 				foreach my $dhead (sort keys %{$udata{$hemi}}){
 					foreach my $measure (@meassures){

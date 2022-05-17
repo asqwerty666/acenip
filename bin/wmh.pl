@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2018 O. Sotolongo <osotolongo@fundacioace.org>
+# Copyright 2022 O. Sotolongo <asqwerty@gmail.com>
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,12 +20,14 @@ use Data::Dump qw(dump);
 use NEURO4 qw(populate check_subj load_project print_help check_or_make get_subjects get_list);
 
 my $cfile;
+my $icbm = 0;
 
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
     if (/^-cut/) { $cfile = shift; chomp($cfile);}
+    if (/^-a/) {$icbm = 1;}
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/recon.hlp'; exit;}
 }
 
@@ -82,12 +84,17 @@ foreach my $pkey (sort @plist){
 		$ptask{'command'} = 'cp '.$t1char.' '.$input_dir.'/'."\n";
 		$ptask{'command'}.= 'antsRegistrationSyNQuick.sh -d 3 -t a -f '.$t1char.' -m '.$nifti{'T2w'}.' -o '.$input_dir.'/'.$pkey.'t2tot1_'."\n";
 		$ptask{'command'}.= 'antsApplyTransforms -d 3 -i '.$nifti{'T2w'}.' -r '.$t1char.' -t '.$input_dir.'/'.$pkey.'t2tot1_0GenericAffine.mat -o '.$input_dir.'/'.$t2base."\n";
-#singularity run --cleanenv -B /nas:/nas -B /old_nas/f5cehbi/output:/output -B /old_nas/f5cehbi/input:/input /nas/usr/local/opt/singularity/pgs.simg sh /WMHs_segmentation_PGS.sh sub-0020_T1w.nii.gz sub-0020_T2w_resampled.nii.gz sub-0020_WMH.nii.gz
+		if($icbm) {
+			$ptask{'command'}.= 'antsRegistrationSyNQuick.sh -t s -d 3 -f '.$t1char.' -m '.$ENV{'FSLDIR'}.'/data/standard/MNI152_T1_1mm.nii.gz -o '.$input_dir.'/'.$pkey.'_mni_t1_warp'."\n";
+			$ptask{'command'}.= 'antsApplyTransforms -d 3 -i '.$ENV{'FSLDIR'}.'/data/atlases/JHU/JHU-ICBM-labels-1mm.nii.gz -r '.$t1char.' -t '.$input_dir.'/'.$pkey.'_mni_t1_warp1Warp.nii.gz -t '.$input_dir.'/'.$pkey.'_mni_t1_warp0GenericAffine.mat -n GenericLabel -o '.$output_dir.'/'.$pkey.'_JHU_labels.nii.gz'."\n";
+			$ptask{'command'}.= 'antsApplyTransforms -d 3 -i '.$ENV{'FSLDIR'}.'/data/atlases/JHU/JHU-ICBM-tracts-maxprob-thr25-1mm.nii.gz -r '.$t1char.' -t '.$input_dir.'/'.$pkey.'_mni_t1_warp1Warp.nii.gz -t '.$input_dir.'/'.$pkey.'_mni_t1_warp0GenericAffine.mat -n GenericLabel -o '.$output_dir.'/'.$pkey.'_JHU_tracts.nii.gz'."\n";
+		}
 		$ptask{'command'}.= 'singularity run --cleanenv -B /nas:/nas -B '.$output_dir.':/output -B '.$minput.':/input '.$pgs.' sh /WMHs_segmentation_PGS.sh '.$t1base.' '.$t2base.' '.$pkey.'_WMH.nii.gz'."\n";
 		$ptask{'filename'} = $outdir.'/'.$subj.'wmh_orders.sh';
 		$ptask{'output'} = $outdir.'/wmh-slurm-'.$subj;
-		send2slurm(\%ptask);
+		my $jobid = send2slurm(\%ptask);
 #		sleep(10);
+#
 	}
 }
 

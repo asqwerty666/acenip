@@ -28,7 +28,9 @@
 
 <p>this funtions reads the path of a TXT file and print it at STDOUT</p>
 
-<p>usage: print_help(help_file);</p>
+<p>usage:</p>
+
+<pre><code>        print_help(help_file);</code></pre>
 
 </dd>
 <dt id="escape_name">escape_name</dt>
@@ -38,7 +40,9 @@
 
 <p>It returns the escaped string</p>
 
-<p>usage: escape_name(string);</p>
+<p>usage:</p>
+
+<pre><code>        escape_name(string);</code></pre>
 
 </dd>
 <dt id="trim">trim</dt>
@@ -46,7 +50,9 @@
 
 <p>This function takes a string and remove any trailing spaces after and before the text</p>
 
-<p>usage: trim(string);</p>
+<p>usage:</p>
+
+<pre><code>        trim(string);</code></pre>
 
 </dd>
 <dt id="check_or_make">check_or_make</dt>
@@ -54,7 +60,9 @@
 
 <p>This is mostly helpless, just takes a path, checks if exists and create it otherwise</p>
 
-<p>usage: check_or_make(path);</p>
+<p>usage:</p>
+
+<pre><code>        check_or_make(path);</code></pre>
 
 </dd>
 <dt id="inplace">inplace</dt>
@@ -62,7 +70,9 @@
 
 <p>This function takes a path and a file name or two paths and returns a string with a single path as result of the concatenation of the first one plus the second one</p>
 
-<p>usage: inplace(path, filename);</p>
+<p>usage:</p>
+
+<pre><code>        inplace(path, filename);</code></pre>
 
 </dd>
 <dt id="load_project">load_project</dt>
@@ -70,7 +80,9 @@
 
 <p>This function take the name of a project, reads the configuration file that is located at ~/.config/neuro/ and return every project configuration stored as a hash that can be used at the scripts</p>
 
-<p>usage: load_project(project_name);</p>
+<p>usage:</p>
+
+<pre><code>        load_project(project_name);</code></pre>
 
 </dd>
 <dt id="check_subj">check_subj</dt>
@@ -90,7 +102,9 @@
 
 <pre><code>        $nifti{&#39;T2w&#39;}</code></pre>
 
-<p>usage: check_subj(project_path, bids_id);</p>
+<p>usage:</p>
+
+<pre><code>        check_subj(project_path, bids_id);  </code></pre>
 
 </dd>
 <dt id="check_pet">check_pet</dt>
@@ -105,7 +119,9 @@
 <pre><code>        - single: 4x5min
         - combined: 20min</code></pre>
 
-<p>usage: check_pet(project_path, bids_id, $optional_radiotracer);</p>
+<p>usage:</p>
+
+<pre><code>        check_pet(project_path, bids_id, $optional_radiotracer);</code></pre>
 
 </dd>
 <dt id="check_fs_subj">check_fs_subj</dt>
@@ -113,7 +129,9 @@
 
 <p>This function checks if the Freesurfer directory of a given subjects exists</p>
 
-<p>usage: check_fs_subj(freesurfer_id)</p>
+<p>usage:</p>
+
+<pre><code>        check_fs_subj(freesurfer_id) </code></pre>
 
 </dd>
 <dt id="get_lut">get_lut</dt>
@@ -127,7 +145,9 @@
 
 <p>Get the content of a public tag from a DICOM file.</p>
 
-<p>usage: run_dckey(key, dicom)</p>
+<p>usage:</p>
+
+<pre><code>        run_dckey(key, dicom)</code></pre>
 
 </dd>
 <dt id="dclokey">dclokey</dt>
@@ -135,7 +155,9 @@
 
 <p>Get the content of a private tag from a DICOM file.</p>
 
-<p>usage: dclokey(key, dicom)</p>
+<p>usage:</p>
+
+<pre><code>        dclokey(key, dicom)</code></pre>
 
 </dd>
 <dt id="centiloid_fbb">centiloid_fbb</dt>
@@ -143,7 +165,9 @@
 
 <p>Returns the proper centiloid value for a given SUVR. Only valid for FBB.</p>
 
-<p>usage: centiloid_fbb(suvr);</p>
+<p>usage:</p>
+
+<pre><code>        centiloid_fbb(suvr);</code></pre>
 
 </dd>
 <dt id="populate">populate</dt>
@@ -151,7 +175,9 @@
 
 <p>Takes a pattern and a filename and stores the content of the file into a HASH according to the given pattern</p>
 
-<p>usage: populate(pattern, filename);</p>
+<p>usage:</p>
+
+<pre><code>        populate(pattern, filename); </code></pre>
 
 </dd>
 <dt id="get_subjects">get_subjects</dt>
@@ -161,7 +187,9 @@
 
 <pre><code>        0000;name </code></pre>
 
-<p>usage: get_subjects(filename);</p>
+<p>usage:</p>
+
+<pre><code>        get_subjects(filename);</code></pre>
 
 </dd>
 <dt id="get_list">get_list</dt>
@@ -169,7 +197,9 @@
 
 <p>Parse a project database taking only the subjects and storing them into an array. The databse is expected to be build with a four digits number at the beginning of line. Is similar to get_subjects() function but less restrictive</p>
 
-<p>usage: get_list(filename);</p>
+<p>usage:</p>
+
+<pre><code>        get_list(filename);</code></pre>
 
 </dd>
 <dt id="get_pair">get_pair</dt>
@@ -179,7 +209,9 @@
 
 <pre><code>        key;value</code></pre>
 
-<p>usage: get_pair(filename);</p>
+<p>usage:</p>
+
+<pre><code>        get_pair(filename);</code></pre>
 
 </dd>
 <dt id="shit_done">shit_done</dt>
@@ -187,7 +219,9 @@
 
 <p>this function is intended to be used after a script ends and then an email is send to the user with the name of the script, the name of the project and th results attached</p>
 
-<p>usage: shit_done(script_name, project_name, attached_file)</p>
+<p>usage:</p>
+
+<pre><code>        shit_done(script_name, project_name, attached_file)</code></pre>
 
 </dd>
 <dt id="cut_shit">cut_shit</dt>
@@ -195,9 +229,11 @@
 
 <p>This function takes a project database and a file with a list, then returns the elements that are common to both. It is intended to be used to restrict the scripts action over a few elements. It returns a single array.</p>
 
-<p>If it is correctly used, first the db is identified with load_project() function and then passed through this function to get the array of subjects to be analyzed. If the file with the cutting list do not exist, an array with all the subjects is returned.</p>
+<p>If it is correctly used, first the db is identified with <i>load_project()</i> function and then passed through this function to get the array of subjects to be analyzed. If the file with the cutting list do not exist, an array with all the subjects is returned.</p>
 
-<p>usage: cut_shit(db, list);</p>
+<p>usage:</p>
+
+<pre><code>        cut_shit(db, list);</code></pre>
 
 </dd>
 <dt id="getLoggingTime">getLoggingTime</dt>
@@ -207,7 +243,9 @@
 
 <p>Stolen from Stackoverflow</p>
 
-<p>usage: getLoggingTime();</p>
+<p>usage:</p>
+
+<pre><code>        getLoggingTime(); </code></pre>
 
 </dd>
 </dl>
