@@ -63,7 +63,7 @@ my %psubjects;
 foreach my $xsbj (sort keys %subjects){
 	$psubjects{$xsbj}{'MRI'} = xget_mri($xconfig{'HOST'}, $jid, $xprj, $xsbj);
 	$psubjects{$xsbj}{'label'} = xget_sbj_data($xconfig{'HOST'}, $jid, $xsbj, 'label');
-	$psubjects{$xsbj}{'date'} = xget_exp_data($xconfig{'HOST'}, $jid, $psubjects{$xsbj}{'MRI'}, 'date')
+	$psubjects{$xsbj}{'date'} = xget_exp_data($xconfig{'HOST'}, $jid, $psubjects{$xsbj}{'MRI'}, 'date') if $with_date;
 }
 # Ahora voy a bajar el archivo de stats para cada imagen y dentro de un directorio
 # para cada sujeto, con la convencion IDSUJETOXNAT. 
