@@ -5,6 +5,7 @@ Calculates tau SUVR uncorrected and corrected from MRI+PET nifiti images
 Options:
 -cut <text_file>: Process only the subjects included in this file
 -time: use this time as maximum limit for processes
+-tracer: especify the tau tracer that should be used <mandatory>
 -r: calculates metrics on different ROIs, admissible values are: meta or alt. If not present calculates SUVR on BRAAK ROIs
 -h: print this help
 <project>: Name of the project
