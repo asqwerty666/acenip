@@ -114,6 +114,8 @@ foreach my $subject (sort keys %psubjects){
 		my @hemis = ('lh', 'rh');
 		my @meassures = ('SurfArea', 'GrayVol', 'ThickAvg');
 		my $etiv;
+		my $ctx_thick;
+		my $ctx_vol;
 		my %udata;
 		my $go=0;
 		foreach my $hemi (@hemis){
@@ -129,7 +131,11 @@ foreach my $subject (sort keys %psubjects){
 					$udata{$hemi}{$key}{'ThickAvg'} = $tv;
 				}
 				$etiv = `grep  EstimatedTotalIntraCranialVol $tmp_out | awk -F", " '{print \$4}'`;
+				$ctx_thick = `grep MeanThickness $tmp_out | awk -F", " '{print \$4}'`;
+				$ctx_vol = `grep CortexVol $tmp_out | awk -F", " '{print \$4}'`;
 				chomp $etiv;
+				chomp $ctx_thick;
+				chomp $ctx_vol;
 				$go = 1;
 			}
 		}
@@ -145,7 +151,7 @@ foreach my $subject (sort keys %psubjects){
 					}
 				}
 				$okheader = 1;
-				print ",eTIV\n";
+				print ",eTIV,Cortex_Thickness,Cortex_Volume\n";
 			}
 			print "$psubjects{$subject}{'label'}";
 			print ",$psubjects{$subject}{'date'}" if $with_date;
@@ -156,7 +162,7 @@ foreach my $subject (sort keys %psubjects){
 					}
 				}
 			}
-			print ",$etiv\n";
+			print ",$etiv,$ctx_thick,$ctx_vol\n";
 		}
 	}
 }
