@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2021 O. Sotolongo <asqwerty@gmail.com>
+# Copyright 2022 O. Sotolongo <asqwerty@gmail.com>
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@ require Exporter;
 use JSON qw(decode_json); 
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
-our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats);
-our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats);
+our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc);
+our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc);
 our %EXPORT_TAGS =(all => qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report), usual => qw(xconf xget_conf xget_session));
 
 our $VERSION = 0.1;
@@ -141,6 +141,32 @@ sub xget_fs_data {
 	}else{
 		return 0;
 	}
+}
+
+=item xget_fs_qc
+
+Get Freeesurfer QC info
+
+usage:
+
+	xget_fs_qc(host, jsession, experiment);
+
+Output is a hash with I<rating> and I<notes>
+
+=cut 
+
+sub xget_fs_qc {
+	my @xdata = @_;
+	my %qc;
+	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/fsqc/files/rating.json" 2>/dev/null';
+	my $json_res = qx/$crd/;
+	my $qc_data = decode_json $json_res;
+	foreach my $var_data (@{$qc_data->{'ResultSet'}{'Result'}}){
+		foreach my $kdata (sort keys %{$var_data}){
+			$qc{$kdata} = ${$var_data}{$kdata};
+		}
+	}
+	return %qc;
 }
 
 =item xget_fs_stats

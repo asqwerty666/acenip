@@ -46,28 +46,14 @@ unless ($debug) {
 	open DBG, ">$logfile";
 }
 $ofile = $study.'_fbb_cl_metrics_'.getLoggingTime().'.xls';
-my %guys;
-my $subjects_list = mktemp($tmp_dir.'/sbjsfileXXXXX');
 # Get subject list
-my $order = 'xnatapic list_subjects --project_id '.$study.' --label > '.$subjects_list;
-system($order);
-open SLF, "<$subjects_list";
-while(<SLF>){
-	my ($stag, $slab) = /(.*),(.*)/;
-	chomp($slab);
-	$guys{$slab}{'XNATSBJ'} = $stag;
-	my $xnat_order = 'xnatapic list_experiments --project_id '.$study.' --subject_id '.$stag.' --modality PET --date';
-	my $xtag = qx/$xnat_order/;
-	chomp($xtag);
-	if($xtag){
-		my ($xnam, $xdate) = $xtag =~ /(.*),(.*)/;
-		$guys{$slab}{'XNATEXP'} = $xnam;
-		#$xdate =~ s/-/./g;
-		$guys{$slab}{'DATE'} = $xdate;
-	}
+my %xconfig = xget_session();
+my %guys = xget_subjects($xconfig{'HOST'}, $xconfig{'JSESSION'}, $study);
+foreach my $stag (sort keys %guys){
+	$guys{$stag}{'XNATSBJ'} = $stag;
+	$guys{$stag}{'XNATEXP'} = xget_pet($xconfig{'HOST'}, $xconfig{'JSESSION'}, $study, $stag);
+	$guys{$stag}{'DATE'} = xget_exp_data($xconfig{'HOST'}, $xconfig{'JSESSION'}, $guys{$stag}{'XNATEXP'}, 'date');
 }
-close SLF; 
-unlink $subjects_list;
 # to guide or not to guide?
 unless ($guide) {
 	$guide = mktemp($tmp_dir.'/guide_data.XXXXX');
@@ -98,22 +84,14 @@ unless ($guide) {
 	}
 	close GDF;
 }
-# TMP shit
-my $fbbout = tempdir(TEMPLATE => $tmp_dir.'/fsout.XXXXX', CLEANUP => 1);
-# Get FBB results
-my $fbfile = $fbbout.'/fbbcl.csv';
-$order = 'xnatapic get_fbbcl --project_id '.$study.' --output '.$fbfile;
-system($order);
-open CLF, "<$fbfile";
-while(<CLF>){
-	if(/, \d$/){
-		my ($sbj, $suvr, $cl, $qc) = /(.*), (.*), (.*), (.*)$/;
-		$guys{$sbj}{'SUVR'} = $suvr;
-		$guys{$sbj}{'CL'} = $cl;
-		$guys{$sbj}{'QC'} = $qcpass[$qc];
+foreach my $sbj (sort keys %guys) {
+	my %tmp_hash = xget_pet_data($xconfig{'HOST'}, $xconfig{'JSESSION'}, $guys{$sbj}{'XNATEXP'});
+	if(%tmp_hash){
+		foreach my $tmp_var (sort keys %tmp_hash){
+			$guys{$sbj}{$tmp_var} = $tmp_hash{$tmp_var} unless $tmp_var eq '_';
+		}
 	}
 }
-close CLF;
 # make xls file
 # info first
 my $info = csv (in => $info_page);
@@ -126,17 +104,17 @@ for my $i (0 .. $#{$info}) {
 $workbook->addsheet('FBB Centiloid');
 my @drow;
 if($internos){
-	@drow = split ',', "Subject,Interno,Date,SUVR,CL,QC";
+	@drow = split ',', "Subject,Interno,Date,SUVR,Centiloid,QC";
 }else{
-	@drow = split ',', "Subject,Date,SUVR,CL,QC";
+	@drow = split ',', "Subject,Date,SUVR,Centiloid,QC";
 }
 $workbook->addrow(\@drow);
 foreach my $sbj (sort keys %guys){
-	if(exists($guys{$sbj}) and exists($guys{$sbj}{'SUVR'}) and $guys{$sbj}{'SUVR'} and ($guys{$sbj}{'SUVR'} ne 'null')){
+	if(exists($guys{$sbj}) and exists($guys{$sbj}{'suvr'}) and $guys{$sbj}{'suvr'} and ($guys{$sbj}{'suvr'} ne 'null')){
 		 if($internos){
-			 @drow = split ',', "$sbj,$guys{$sbj}{'INTERNO'},$guys{$sbj}{'DATE'},$guys{$sbj}{'SUVR'},$guys{$sbj}{'CL'},$guys{$sbj}{'QC'}";
+			 @drow = split ',', "$sbj,$guys{$sbj}{'INTERNO'},$guys{$sbj}{'DATE'},$guys{$sbj}{'suvr'},$guys{$sbj}{'cl'},$guys{$sbj}{'qc'}";
 		}else{
-			@drow = split ',', "$sbj,$guys{$sbj}{'DATE'},$guys{$sbj}{'SUVR'},$guys{$sbj}{'CL'},$guys{$sbj}{'QC'}";
+			@drow = split ',', "$sbj,$guys{$sbj}{'DATE'},$guys{$sbj}{'suvr'},$guys{$sbj}{'cl'},$guys{$sbj}{'qc'}";
 		}
 		$workbook->addrow(\@drow);
 	}
