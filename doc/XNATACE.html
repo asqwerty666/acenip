@@ -39,14 +39,52 @@
 <pre><code>        %xnat_data = xget_conf()</code></pre>
 
 </dd>
-<dt id="xget_pet">xget_pet</dt>
+<dt id="xget_session">xget_session</dt>
 <dd>
 
-<p>Get the XNAT PET experiment ID</p>
+<p>Create a new JSESSIONID on XNAT. Return the connection data for the server AND the ID of the created session</p>
 
 <p>usage:</p>
 
-<pre><code>        xget_pet(host, jsession, project, subject)</code></pre>
+<pre><code>        xget_session();</code></pre>
+
+</dd>
+<dt id="xget_subjects">xget_subjects</dt>
+<dd>
+
+<p>Get the list of subjects of a project into a HASH. El HASH de input, <i>%sbjs</i>, se construye como <i>{ XNAT_ID =&gt; Label }</i></p>
+
+<p>usage:</p>
+
+<pre><code>        %sbjs = xget_subjects(host, jsession, project);</code></pre>
+
+</dd>
+<dt id="xget_sbj_data">xget_sbj_data</dt>
+<dd>
+
+<p>Get the subjects metadata. Not too much interesting but to extract the subject label.</p>
+
+<p>usage:</p>
+
+<pre><code>        $xdata = xget_sbj_data(host, jsession, subject, field);</code></pre>
+
+</dd>
+<dt id="xget_exp_data">xget_exp_data</dt>
+<dd>
+
+<p>Get a data field of an experiment. The desired field shoud be indicated as input. By example, if you want the date of the experiment this is seeked as</p>
+
+<pre><code>        my $xdate = xget_exp_data($host, $session_id, $experiment, &#39;date&#39;)</code></pre>
+
+<p>There are some common fields as <i>date</i>, <i>label</i> or <i>dcmPatientId</i> but in general you should look at,</p>
+
+<pre><code>        curl -X GET -b JSESSIONID=00000blahblah &quot;http://myhost/data/experiments/myexperiment?format=json&quot; 2&gt;/dev/null | jq &#39;.items[0].data_fields&#39;</code></pre>
+
+<p>in order to know the available fields</p>
+
+<p>usage:</p>
+
+<pre><code>        $xdata = xget_exp_data(host, jsession, experiment, field);</code></pre>
 
 </dd>
 <dt id="xget_mri">xget_mri</dt>
@@ -59,12 +97,15 @@
 <pre><code>        xget_mri(host, jsession, project, subject)</code></pre>
 
 </dd>
-<dt id="xget_fs_data-Get-the-full-Freesurfer-directory-in-a-tar.gz-file">xget_fs_data Get the full Freesurfer directory in a tar.gz file</dt>
+<dt id="xget_fs_data">xget_fs_data</dt>
 <dd>
+
+<p>Get the full Freesurfer directory in a tar.gz file</p>
 
 <p>usage:</p>
 
-<pre><code>        xget_fs_data(host, jsession, project, experiment, output_path)</code></pre>
+<pre><code>        xget_fs_data(host, jsession, project, experiment, output_path)
+        </code></pre>
 
 </dd>
 <dt id="xget_fs_stats">xget_fs_stats</dt>
@@ -74,67 +115,39 @@
 
 <p>usage:</p>
 
-<pre><code>        xget_fs_stats(host, jsession, experiment stats_file, output_file) </code></pre>
+<pre><code>        xget_fs_stats(host, jsession, experiment, stats_file, output_file) </code></pre>
 
 </dd>
-<dt id="xget_session">xget_session</dt>
+<dt id="xget_fs_allstats">xget_fs_allstats</dt>
 <dd>
 
-<p>Create a new JSESSIONID on XNAT. Return the connection data for the server AND the ID of the created session</p>
+<p>Get all stats files from Freesurfer segmentation and write it down at selected directory</p>
 
 <p>usage:</p>
 
-<pre><code>        xget_session();</code></pre>
+<pre><code>        xget_fs_allstats(host, jsession, experiment, output_dir)</code></pre>
 
 </dd>
-<dt id="xput_report">xput_report</dt>
+<dt id="xget_fs_qc">xget_fs_qc</dt>
 <dd>
 
-<p>Upload a pdf report to XNAT</p>
+<p>Get Freeesurfer QC info</p>
 
 <p>usage:</p>
 
-<pre><code>        xput_report(host, jsession, subject, experiment, pdf_file);</code></pre>
+<pre><code>        xget_fs_qc(host, jsession, experiment);</code></pre>
+
+<p>Output is a hash with <i>rating</i> and <i>notes</i></p>
 
 </dd>
-<dt id="xput_rvr">xput_rvr</dt>
+<dt id="xget_pet">xget_pet</dt>
 <dd>
 
-<p>Upload a JSON file with VR data</p>
+<p>Get the XNAT PET experiment ID</p>
 
 <p>usage:</p>
 
-<pre><code>        xput_rvr(host, jsession, experiment, json_file);</code></pre>
-
-</dd>
-<dt id="xget_rvr">xget_rvr</dt>
-<dd>
-
-<p>Get VR results into a HASH. Output is a hash with filenames and URI of each element stored at RVR</p>
-
-<p>usage:</p>
-
-<pre><code>        xget_rvr(host, jsession, project, experiment);</code></pre>
-
-</dd>
-<dt id="xget_rvr_data">xget_rvr_data</dt>
-<dd>
-
-<p>Get RVR JSON data into a hash</p>
-
-<p>usage:</p>
-
-<pre><code>        xget_rvr_data(host, jsession, URI);</code></pre>
-
-</dd>
-<dt id="xget_subjects">xget_subjects</dt>
-<dd>
-
-<p>Get the list of subjects of a project into a HASH. El HASH de input, <i>%sbjs</i>, se construye como <i>{ XNAT_ID =&gt; Label }</i></p>
-
-<p>usage:</p>
-
-<pre><code>        %sbjs = xget_subjects(host, jsession, project);</code></pre>
+<pre><code>        xget_pet(host, jsession, project, subject)</code></pre>
 
 </dd>
 <dt id="xget_pet_reg">xget_pet_reg</dt>
@@ -157,32 +170,64 @@
 <pre><code>        %xresult = xget_pet_data(host, jsession, experiment);</code></pre>
 
 </dd>
-<dt id="xget_exp_data">xget_exp_data</dt>
+<dt id="xput_report">xput_report</dt>
 <dd>
 
-<p>Get a data field of an experiment. The desired field shoud be indicated as input. By example, if you want the date of the experiment this is seeked as</p>
-
-<pre><code>        my $xdate = xget_exp_data($host, $session_id, $experiment, &#39;date&#39;)</code></pre>
-
-<p>There are some common fields as <i>date</i>, <i>label</i> or <i>dcmPatientId</i> but in general you should look at,</p>
-
-<pre><code>        curl -X GET -b JSESSIONID=00000blahblah &quot;http://myhost/data/experiments/myexperiment?format=json&quot; 2&gt;/dev/null | jq &#39;.items[0].data_fields&#39;</code></pre>
-
-<p>in order to know the available fields</p>
+<p>Upload a pdf report to XNAT</p>
 
 <p>usage:</p>
 
-<pre><code>        $xdata = xget_exp_data(host, jsession, experiment, field);</code></pre>
+<pre><code>        xput_report(host, jsession, subject, experiment, pdf_file);</code></pre>
 
 </dd>
-<dt id="xget_sbj_data">xget_sbj_data</dt>
+<dt id="xput_rvr">xput_rvr</dt>
 <dd>
 
-<p>Get the subjects metadata. Not too much interesting but to extract the subject label.</p>
+<p>Upload a JSON file with VR data</p>
 
 <p>usage:</p>
 
-<pre><code>        $xdata = xget_sbj_data(host, jsession, subject, field);</code></pre>
+<pre><code>        xput_rvr(host, jsession, experiment, json_file);</code></pre>
+
+</dd>
+<dt id="xcreate_res">xcreate_res</dt>
+<dd>
+
+<p>Create an empty experiment resource</p>
+
+<p>usage:</p>
+
+<pre><code>        xcreate_res(host, jsession, experiment, res_name)</code></pre>
+
+</dd>
+<dt id="xput_res">xput_res</dt>
+<dd>
+
+<p>Upload data to an experiment resource</p>
+
+<p>usage:</p>
+
+<pre><code>        xput_res(host, jsession, experiment, type, file, filename)</code></pre>
+
+</dd>
+<dt id="xget_rvr">xget_rvr</dt>
+<dd>
+
+<p>Get VR results into a HASH. Output is a hash with filenames and URI of each element stored at RVR</p>
+
+<p>usage:</p>
+
+<pre><code>        xget_rvr(host, jsession, project, experiment);</code></pre>
+
+</dd>
+<dt id="xget_rvr_data">xget_rvr_data</dt>
+<dd>
+
+<p>Get RVR JSON data into a hash</p>
+
+<p>usage:</p>
+
+<pre><code>        xget_rvr_data(host, jsession, URI);</code></pre>
 
 </dd>
 </dl>

@@ -16,37 +16,6 @@
 
             %xnat_data = xget_conf()
 
-- xget\_pet
-
-    Get the XNAT PET experiment ID
-
-    usage: 
-
-            xget_pet(host, jsession, project, subject)
-
-- xget\_mri
-
-    Get the XNAT MRI experiment ID
-
-    usage: 
-
-            xget_mri(host, jsession, project, subject)
-
-- xget\_fs\_data
-Get the full Freesurfer directory in a tar.gz file
-
-    usage: 
-
-            xget_fs_data(host, jsession, project, experiment, output_path)
-
-- xget\_fs\_stats
-
-    Get a single stats file from Freesurfer segmentation
-
-    usage:
-
-            xget_fs_stats(host, jsession, experiment stats_file, output_file) 
-
 - xget\_session 
 
     Create a new JSESSIONID on XNAT. Return the connection data
@@ -55,38 +24,6 @@ Get the full Freesurfer directory in a tar.gz file
     usage: 
 
             xget_session();
-
-- xput\_report
-
-    Upload a pdf report to XNAT
-
-    usage: 
-
-            xput_report(host, jsession, subject, experiment, pdf_file);
-
-- xput\_rvr
-
-    Upload a JSON file with VR data
-
-    usage: 
-
-            xput_rvr(host, jsession, experiment, json_file);
-
-- xget\_rvr
-
-    Get VR results into a HASH. Output is a hash with filenames and URI of each element stored at RVR
-
-    usage: 
-
-            xget_rvr(host, jsession, project, experiment);
-
-- xget\_rvr\_data
-
-    Get RVR JSON data into a hash
-
-    usage: 
-
-            xget_rvr_data(host, jsession, URI);
 
 - xget\_subjects
 
@@ -97,21 +34,15 @@ Get the full Freesurfer directory in a tar.gz file
 
             %sbjs = xget_subjects(host, jsession, project);
 
-- xget\_pet\_reg
+- xget\_sbj\_data
 
-    Download de pet registered into native space in nifti format
-
-    usage: 
-
-            xget_pet_reg(host, jsession, experiment, nifti_output);
-
-- xget\_pet\_data
-
-    Get the PET FBB analysis results into a HASH
+    Get the subjects metadata. Not too
+    much interesting but to extract
+    the subject label.
 
     usage:
 
-            %xresult = xget_pet_data(host, jsession, experiment);
+            $xdata = xget_sbj_data(host, jsession, subject, field);
 
 - xget\_exp\_data
 
@@ -133,12 +64,117 @@ Get the full Freesurfer directory in a tar.gz file
 
             $xdata = xget_exp_data(host, jsession, experiment, field);
 
-- xget\_sbj\_data
+- xget\_mri
 
-    Get the subjects metadata. Not too
-    much interesting but to extract
-    the subject label.
+    Get the XNAT MRI experiment ID
+
+    usage: 
+
+            xget_mri(host, jsession, project, subject)
+
+- xget\_fs\_data
+
+    Get the full Freesurfer directory in a tar.gz file
+
+    usage: 
+
+            xget_fs_data(host, jsession, project, experiment, output_path)
+            
+
+- xget\_fs\_stats
+
+    Get a single stats file from Freesurfer segmentation
 
     usage:
 
-            $xdata = xget_sbj_data(host, jsession, subject, field);
+            xget_fs_stats(host, jsession, experiment, stats_file, output_file) 
+
+- xget\_fs\_allstats
+
+    Get all stats files from Freesurfer segmentation and write it down at selected directory
+
+    usage:
+
+            xget_fs_allstats(host, jsession, experiment, output_dir)
+
+- xget\_fs\_qc
+
+    Get Freeesurfer QC info
+
+    usage:
+
+            xget_fs_qc(host, jsession, experiment);
+
+    Output is a hash with _rating_ and _notes_
+
+- xget\_pet
+
+    Get the XNAT PET experiment ID
+
+    usage: 
+
+            xget_pet(host, jsession, project, subject)
+
+- xget\_pet\_reg
+
+    Download de pet registered into native space in nifti format
+
+    usage: 
+
+            xget_pet_reg(host, jsession, experiment, nifti_output);
+
+- xget\_pet\_data
+
+    Get the PET FBB analysis results into a HASH
+
+    usage:
+
+            %xresult = xget_pet_data(host, jsession, experiment);
+
+- xput\_report
+
+    Upload a pdf report to XNAT
+
+    usage: 
+
+            xput_report(host, jsession, subject, experiment, pdf_file);
+
+- xput\_rvr
+
+    Upload a JSON file with VR data
+
+    usage: 
+
+            xput_rvr(host, jsession, experiment, json_file);
+
+- xcreate\_res 
+
+    Create an empty experiment resource
+
+    usage:
+
+            xcreate_res(host, jsession, experiment, res_name)
+
+- xput\_res 
+
+    Upload data to an experiment resource
+
+    usage:
+
+            xput_res(host, jsession, experiment, type, file, filename)
+
+- xget\_rvr
+
+    Get VR results into a HASH. Output is a hash with filenames and URI of each element stored at RVR
+
+    usage: 
+
+            xget_rvr(host, jsession, project, experiment);
+
+- xget\_rvr\_data
+
+    Get RVR JSON data into a hash
+
+    usage: 
+
+            xget_rvr_data(host, jsession, URI);
