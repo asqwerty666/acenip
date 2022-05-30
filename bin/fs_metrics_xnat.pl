@@ -15,6 +15,7 @@
 use strict; use warnings;
 use NEURO4 qw(get_subjects check_fs_subj load_project print_help shit_done check_or_make getLoggingTime);
 use FSMetrics qw(fs_file_metrics);
+use XNATACE qw(xget_session xget_subjects xget_mri xget_exp_data xget_fs_qc xget_fs_allstats);
 use File::Basename qw(basename);
 use File::Temp qw( :mktemp tempdir);
 use File::Path qw(make_path);
@@ -27,7 +28,6 @@ use Data::Dump qw(dump);
 my $localdir = cwd;
 my $info_page = $ENV{PIPEDIR}.'/lib/info_page_mri.csv';
 my $guide;
-#my $ofile;
 my $internos;
 my $debug = 0;
 my $alt = 0;
@@ -39,7 +39,6 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     last if /^--$/;
     if (/^-g/) { $guide = shift; chomp($guide);}
     if (/^-i/) { $internos = shift; chomp($internos);}
-#    if (/^-o/) { $ofile = shift; chomp($ofile);}
     if (/^-a/) { $alt = 1; }
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/fs_metrics.hlp'; exit;}
 }
@@ -47,12 +46,6 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
 my $study = shift;
 my $tmp_dir = $ENV{'TMPDIR'};
 unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/fs_metrics.hlp'; exit;}
-#my %std = load_project($study);
-#my $db = $std{DATA}.'/'.$study.'_mri.csv';
-#my $fsout = $std{DATA}.'/fsrecon';
-#check_or_make($fsout);
-#my @plist = get_subjects($db);
-#my $subj_dir = $ENV{'SUBJECTS_DIR'};
 unless ($debug) {
 	my $logfile = 'fs_metrics_xnat_'.getLoggingTime().'.log';
 	open STDOUT, ">$logfile" or die "Can't redirect stdout";
@@ -60,41 +53,25 @@ unless ($debug) {
 	open DBG, ">$logfile";
 }
 my $ofile = $study.'_fsmetrics_'.getLoggingTime().'.xls';
-my %guys;
-my $subjects_list = mktemp($tmp_dir.'/sbjsfileXXXXX');
-# Get subject list
-my $order = 'xnatapic list_subjects --project_id '.$study.' --label > '.$subjects_list;
-system($order);
-#while read -r line; do stag=$(echo ${line} | awk -F"," '{print $1}'); slab=$(echo ${line} | awk -F"," '{print $2}'); xtag=$(xnatapic list_experiments --project_id facehbi --subject_id ${stag} --modality MRI --date); echo "${slab},${xtag}"; done < xnat_subjects.csv > exps_withdate.csv
-#while read -r line; do xp=$(echo ${line} | awk -F"," '{print $2}'); slab=$(echo ${line} | awk -F"," '{print $1}'); mkdir -p test_xnatfs/${xp}/stats; xnatapic get_fsresults --experiment_id ${xp} --all-stats test_xnatfs/${xp}/stats; done < exps_withdate.csv
-#my $exps_withdate = mktemp("expsfile.XXXXX");
-open SLF, "<$subjects_list";
-while(<SLF>){
-	my ($stag, $slab) = /(.*),(.*)/;
-	chomp($slab);
-	$guys{$slab}{'XNATSBJ'} = $stag;
-	my $xnat_order = 'xnatapic list_experiments --project_id '.$study.' --subject_id '.$stag.' --modality MRI --date';
-	my $xtag = qx/$xnat_order/;
-	chomp($xtag);
-	my ($xnam, $xdate) = $xtag =~ /(.*),(.*)/;
-	$guys{$slab}{'XNATEXP'} = $xnam;
-	#$xdate =~ s/-/./g;
-	$guys{$slab}{'DATE'} = $xdate;
+my %xconf = xget_session();
+my %subjects = xget_subjects($xconf{'HOST'}, $xconf{'JSESSION'}, $study);
+my %inbreed;
+foreach my $key (sort keys %subjects){ $inbreed{$subjects{$key}{'label'}} = $key;}
+foreach my $sbj (sort keys %subjects){
+	$subjects{$sbj}{'experiment'} = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $study, $sbj);
+	$subjects{$sbj}{'DATE'} = xget_exp_data($xconf{'HOST'}, $xconf{'JSESSION'}, $subjects{$sbj}{'experiment'}, 'date');
 }
-close SLF;
-unlink $subjects_list;
-#while read -r line; do xp=$(echo ${line} | awk -F"," '{print $2}'); slab=$(echo ${line} | awk -F"," '{print $1}'); mkdir -p test_xnatfs/${xp}/stats; xnatapic get_fsresults --experiment_id ${xp} --all-stats test_xnatfs/${xp}/stats; done < exps_withdate.csv
+#dump %subjects; exit;
 my $fsoutput = tempdir(TEMPLATE => $tmp_dir.'/fsout.XXXXX', CLEANUP => 1);
 print "###############################################\n";
 print "### $fsoutput ### \n";
 print "###############################################\n";
 my @fspnames;
-foreach my $plab (sort keys %guys){
+foreach my $plab (sort keys %inbreed){
 	push @fspnames, $plab;
 	my $outdir = $fsoutput.'/'.$plab.'/stats';
 	make_path $outdir; 
-	$order = 'xnatapic get_fsresults --experiment_id '.$guys{$plab}{'XNATEXP'}.' --all-stats '.$outdir;
-	system($order);
+	xget_fs_allstats($xconf{'HOST'}, $xconf{'JSESSION'}, $subjects{$inbreed{$plab}}{'experiment'}, $outdir);
 }
 
 my %stats = fs_file_metrics();
@@ -123,43 +100,37 @@ unless ($guide) {
 		while (<IIF>){
 			if (/.*,\d{8}$/){
 				my ($sbj, $interno) = /(.*),(\d{8})$/;
-				$guys{$sbj}{'INTERNO'} = $interno;
+				if(exists($inbreed{$sbj}) and $inbreed{$sbj}){
+					$subjects{$inbreed{$sbj}}{'INTERNO'} = $interno;
+				}
 			}
 		}
 		close IIF;
 		print GDF "Subject,Interno,Date\n";
-		foreach my $plab (sort keys %guys){
-			if (exists($guys{$plab}{'INTERNO'}) and exists($guys{$plab}{'DATE'})){
-				print GDF "$plab,$guys{$plab}{'INTERNO'},$guys{$plab}{'DATE'}\n";
-				print "$plab,$guys{$plab}{'INTERNO'},$guys{$plab}{'DATE'}\n";
+		foreach my $plab (sort keys %inbreed){
+			if (exists($subjects{$inbreed{$plab}}{'INTERNO'}) and exists($subjects{$inbreed{$plab}}{'DATE'})){
+				print GDF "$plab,$subjects{$inbreed{$plab}}{'INTERNO'},$subjects{$inbreed{$plab}}{'DATE'}\n";
 
 			}
 		}
 	}else{
 		print GDF "Subject,Date\n";
-		foreach my $plab (sort keys %guys){
-			print GDF "$plab,$guys{$plab}{'DATE'}\n";
+		foreach my $plab (sort keys %inbreed){
+			print GDF "$subjects{$inbreed{$plab}}{'label'},$subjects{$inbreed{$plab}}{'DATE'}\n";
 		}
 	}
 	close GDF;
 }
 
 my $fsqcfile = $fsoutput.'/fsqc.csv';
-#my $fsqcfile = $localdir.'/fsqc.csv';
-#dump $fsqcfile;
-$order = 'xnatapic get_fsqc --project_id '.$study.' --output '.$fsqcfile;
-system($order);
-#$order = 'sed -i \'s/"//g;s/ //g;1iSubject,QC,Notes\' '.$fsqcfile;
-#system($order);
-my @fsqc_data;
-open QCF, "<$fsqcfile";
-while (<QCF>) {
-	my ($sbj, $qcok, $qcnotes) = /(.*), "(.*)", "(.*)"/;
-	$qcok =~ tr/ODILg/odilG/;
-	$guys{$sbj}{'FSQC'} = $qcok;
-	$guys{$sbj}{'Notes'} = $qcnotes;
+foreach my $sbj (sort keys %subjects){
+	if(exists($subjects{$sbj}{'experiment'}) and $subjects{$sbj}{'experiment'}){
+		my %tmp_hash = xget_fs_qc($xconf{'HOST'}, $xconf{'JSESSION'}, $subjects{$sbj}{'experiment'});
+		$tmp_hash{'rating'} =~ tr/ODILg/odilG/;
+		$subjects{$sbj}{'FSQC'} = $tmp_hash{'rating'};
+		$subjects{$sbj}{'Notes'} = $tmp_hash{'notes'};
+	}
 }
-close QCF;
 my $info = csv (in => $info_page);
 my $workbook = Spreadsheet::Write->new(file => $ofile, sheet => 'Info');
 for my $i (0 .. $#{$info}) {
@@ -167,10 +138,7 @@ for my $i (0 .. $#{$info}) {
 	$workbook->addrow($row);
 }
 
-#$info = csv (in => $fsqcfile);
 $workbook->addsheet('FSQC');
-#for my $i (0 .. $#{$info}) {
-#	my $row = $info->[$i];
 my @qcrow; 
 if ($internos) {
 	@qcrow = split ',', "Subject,Interno,Date,FSQC,Notes";
@@ -178,19 +146,19 @@ if ($internos) {
 	@qcrow = split ',', "Subject,Date,FSQC,Notes";
 }
 $workbook->addrow(\@qcrow);
-foreach my $sbj (sort keys %guys){
-	if (exists($guys{$sbj}) and exists($guys{$sbj}{'FSQC'}) and $guys{$sbj}{'FSQC'}){
-		if (exists($guys{$sbj}{'Notes'}) and $guys{$sbj}{'Notes'}){
+foreach my $sbj (sort keys %inbreed){
+	if (exists($subjects{$inbreed{$sbj}}) and exists($subjects{$inbreed{$sbj}}{'FSQC'}) and $subjects{$inbreed{$sbj}}{'FSQC'}){
+		if (exists($subjects{$inbreed{$sbj}}{'Notes'}) and $subjects{$inbreed{$sbj}}{'Notes'}){
 			if ($internos){
-				@qcrow = split ',', "$sbj,$guys{$sbj}{'INTERNO'},$guys{$sbj}{'DATE'},$guys{$sbj}{'FSQC'},$guys{$sbj}{'Notes'}";
+				@qcrow = split ',', "$subjects{$inbreed{$sbj}}{'label'},$subjects{$inbreed{$sbj}}{'INTERNO'},$subjects{$inbreed{$sbj}}{'DATE'},$subjects{$inbreed{$sbj}}{'FSQC'},$subjects{$inbreed{$sbj}}{'Notes'}";
 			}else{
-				@qcrow = split ',', "$sbj,$guys{$sbj}{'DATE'},$guys{$sbj}{'FSQC'},$guys{$sbj}{'Notes'}";
+				@qcrow = split ',', "$subjects{$inbreed{$sbj}}{'label'},$subjects{$inbreed{$sbj}}{'DATE'},$subjects{$inbreed{$sbj}}{'FSQC'},$subjects{$inbreed{$sbj}}{'Notes'}";
 			}
 		}else{
 			if ($internos){
-				@qcrow = split ',', "$sbj,$guys{$sbj}{'INTERNO'},$guys{$sbj}{'DATE'},$guys{$sbj}{'FSQC'}";
+				@qcrow = split ',', "$subjects{$inbreed{$sbj}}{'label'},$subjects{$inbreed{$sbj}}{'INTERNO'},$subjects{$inbreed{$sbj}}{'DATE'},$subjects{$inbreed{$sbj}}{'FSQC'}";
 			}else{
-				@qcrow = split ',', "$sbj,$guys{$sbj}{'DATE'},$guys{$sbj}{'FSQC'}";
+				@qcrow = split ',', "$subjects{$inbreed{$sbj}}{'label'},$subjects{$inbreed{$sbj}}{'DATE'},$subjects{$inbreed{$sbj}}{'FSQC'}";
 			}
 		}
 		$workbook->addrow(\@qcrow);
@@ -203,6 +171,7 @@ if ($alt) {
 	make_path $csvdir;
 	make_path $savdir;
 }
+
 my $rwtmpout = $fsoutput.'/tmps';
 make_path $rwtmpout;
 opendir (DIR, $fsout);
@@ -236,9 +205,10 @@ foreach my $ifile (@ifiles){
 }
 $workbook->close();
 
-
-my $zfile = $study."_fsmetrics.tgz";
-system("tar czf $zfile $csvdir $savdir");
-shit_done basename($ENV{_}), $study, $zfile;
+if($alt){
+	my $zfile = $study."_fsmetrics.tgz";
+	system("tar czf $zfile $csvdir $savdir");
+	shit_done basename($ENV{_}), $study, $zfile;
+}
 unlink $guide;
 close DBG unless $debug;

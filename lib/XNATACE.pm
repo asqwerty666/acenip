@@ -18,8 +18,8 @@ require Exporter;
 use JSON qw(decode_json); 
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
-our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats);
-our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats);
+our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res xcreate_res);
+our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res xcreate_res);
 our %EXPORT_TAGS =(all => qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report), usual => qw(xconf xget_conf xget_session));
 
 our $VERSION = 0.1;
@@ -429,7 +429,7 @@ Create an empty experiment resource
 
 usage:
 
-	xcreate_res(host, jsession, experiment, name)
+	xcreate_res(host, jsession, experiment, res_name)
 
 =cut
 

@@ -28,7 +28,11 @@
 use strict; use warnings;
 use Cwd qw(cwd);
 use NEURO4 qw(load_project print_help populate check_or_make getLoggingTime);
-
+use XNATACE qw(xget_session xget_mri xget_fs_data xget_subjects xcreate_res xput_res);
+use File::Temp qw(:mktemp tempdir);
+use File::Find::Rule;
+use File::Basename qw(basename);
+use Data::Dump qw(dump);
 my $prj;
 my $xprj;
 my $ifile; my $efile;
@@ -61,7 +65,10 @@ die "Should run this under X!\n" unless $ENV{'DISPLAY'};
 # Estos son los experimentos a los que vamos a revisar o hacer el QC. 
 # Puedes tomar la lista completa y reducirla a lo que quieres o simplemente 
 # tomar la lista as is
+my $tmp_dir = $ENV{TMPDIR};
+my %xconf = xget_session();
 my @pollos;
+my %epollos;
 $efile=$wdir.'/'.$xprj.'_experiment.list';
 if ($ifile and -f $ifile){
 	$efile=$wdir.'/'.$xprj.'_experiment_custom.list';
@@ -70,10 +77,11 @@ if ($ifile and -f $ifile){
 	close IDF;
 	open TDF, ">$efile";
 	foreach my $pollo (@pollos){
-		my $look = "xnatapic list_experiments --project_id $xprj --subject_id $pollo --modality MRI";
-		my $epollo = qx/$look/;
-		chomp $epollo;
-		print TDF "$epollo\n";
+		$epollos{$pollo} = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $pollo);
+		#my $look = "xnatapic list_experiments --project_id $xprj --subject_id $pollo --modality MRI";
+		#my $epollo = qx/$look/;
+		#chomp $epollo;
+		print TDF "$epollos{$pollo}\n";
 	}
 	close TDF;
 }
@@ -93,14 +101,32 @@ unless ($odir and -d $odir) {
 	if ($ifile and -f $ifile){
 		# si me has dado una lista de los que quieres procesar
 		# me limito a preparar esos
+		my $tsdir = tempdir(TEMPLATE => $tmp_dir.'/tars_data.XXXXX', CLEANUP => 1);
 		foreach my $pollo (@pollos){
-			my $pre = "xnatapic prepare_fsqc --project_id $xprj --outdir $odir --subject_id $pollo";
+			my $otfile = $tsdir.'/'.$pollo.'.tar.gz';
+			xget_fs_data($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $epollos{$pollo}, $otfile);
+			my $otdir = $odir.'/'.$epollos{$pollo};
+			mkdir $otdir;
+			my $pre = 'tar xzf '.$otfile.' --strip-components=1 -C '.$otdir.' */mri/{orig,aparc+aseg}.mgz */label/*.aparc.annot */surf/*.pial* */stats/*.aparc.stats';
 			system($pre);
+			unlink $otfile;
 		}
+		unlink $tsdir;
 	}else{	
 		#pero si no hay lista los bajo todos
-		my $pre = "xnatapic prepare_fsqc --project_id $xprj --outdir $odir";
-		system($pre);
+		my $tsdir = tempdir(TEMPLATE => $tmp_dir.'/tars_data.XXXXX', CLEANUP => 1);
+		my %allchicks = xget_subjects($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj);
+		foreach  my $pollo (sort keys %allchicks){
+			$epollos{$pollo} = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $pollo);
+			my $otfile = $tsdir.'/'.$pollo.'.tar.gz';
+			xget_fs_data($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $epollos{$pollo}, $otfile);
+			my $otdir = $odir.'/'.$epollos{$pollo};
+			mkdir $otdir;
+			my $pre = 'tar xzf '.$otfile.' --strip-components=1 -C '.$otdir.' */mri/{orig,aparc+aseg}.mgz */label/*.aparc.annot */surf/*.pial* */stats/*.aparc.stats';
+			system($pre);
+			unlink $otfile;
+		}
+		unlink $tsdir;
 	}
 }
 
@@ -124,5 +150,27 @@ if ($ifile and -f $ifile){
 	system($order);
 }
 #por ultimo subimos los resultados que haya
-my $post = "xnatapic upload_fsqc --qcdir $vqcd";
-system($post);
+my $imgdir = $vqcd.'/annot_visualizations';
+my $ratings = $vqcd.'/ratings/cortical_contour_rate_freesurfer_orig.mgz_ratings.all.csv';
+my $qc_template = '{"ResultSet":{"Result":[{"rating":"<QC>", "notes":"<NOTE>"}]}}';
+my $qc_dir = tempdir(TEMPLATE => $tmp_dir.'/qc_data.XXXXX', CLEANUP => 1);
+open RDF, "<$ratings" or die "There is no ratings file!";
+while(<RDF>){
+	my ($experiment,$qc,$notes) = /(.*),(.*),(.*)/;
+	$notes =~ s/^Notes://;
+	my $rqc = $qc_template;
+	$rqc =~ s/<QC>/$qc/;
+	$rqc =~ s/<NOTE>/$notes/;
+	my $rfile = $qc_dir.'/'.$experiment.'.json';
+	open QCF, ">$rfile" or die "Could not create temp file\n";
+	print QCF "$rqc";
+	close QCF;
+	xcreate_res($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'fsqc');
+	xput_res($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'fsqc', 'rating.json', $rfile);
+	my @tifs = find(file => 'name' => "$experiment*.tif", in => $imgdir);
+	foreach my $tifimg (@tifs){
+		my $iname = basename $tifimg;
+		xput_res($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'fsqc', $iname, $tifimg);
+	}
+}
+close RDF;

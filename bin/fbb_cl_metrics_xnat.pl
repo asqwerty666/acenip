@@ -15,6 +15,7 @@
 use strict; use warnings;
 use Cwd qw(cwd);
 use NEURO4 qw(load_project print_help populate check_or_make getLoggingTime);
+use XNATACE qw(xget_session xget_subjects xget_pet xget_exp_data xget_pet_data);
 use Spreadsheet::Write;
 use Text::CSV qw( csv );
 use Data::Dump qw(dump);
@@ -49,11 +50,15 @@ $ofile = $study.'_fbb_cl_metrics_'.getLoggingTime().'.xls';
 # Get subject list
 my %xconfig = xget_session();
 my %guys = xget_subjects($xconfig{'HOST'}, $xconfig{'JSESSION'}, $study);
+my %inbreed;
+foreach my $key (sort keys %guys) { $inbreed{$guys{$key}{'label'}} = $key; }
 foreach my $stag (sort keys %guys){
-	$guys{$stag}{'XNATSBJ'} = $stag;
 	$guys{$stag}{'XNATEXP'} = xget_pet($xconfig{'HOST'}, $xconfig{'JSESSION'}, $study, $stag);
-	$guys{$stag}{'DATE'} = xget_exp_data($xconfig{'HOST'}, $xconfig{'JSESSION'}, $guys{$stag}{'XNATEXP'}, 'date');
+	if($guys{$stag}{'XNATEXP'}){
+		$guys{$stag}{'DATE'} = xget_exp_data($xconfig{'HOST'}, $xconfig{'JSESSION'}, $guys{$stag}{'XNATEXP'}, 'date');
+	}
 }
+#dump %guys; exit;
 # to guide or not to guide?
 unless ($guide) {
 	$guide = mktemp($tmp_dir.'/guide_data.XXXXX');
@@ -63,37 +68,42 @@ unless ($guide) {
 		while (<IIF>){
 			if (/.*,\d{8}$/){
 				my ($sbj, $interno) = /(.*),(\d{8})$/;
-				$guys{$sbj}{'INTERNO'} = $interno;
+				if(exists($inbreed{$sbj}) and $inbreed{$sbj}){
+					$guys{$inbreed{$sbj}}{'INTERNO'} = $interno;
+				}
 			}
 		}
 		close IIF;
 		print GDF "Subject,Interno,Date\n";
-		foreach my $plab (sort keys %guys){
-			if (exists($guys{$plab}{'INTERNO'}) and exists($guys{$plab}{'DATE'})){
-				print GDF "$plab,$guys{$plab}{'INTERNO'},$guys{$plab}{'DATE'}\n";
-				print "$plab,$guys{$plab}{'INTERNO'},$guys{$plab}{'DATE'}\n";
+		foreach my $plab (sort keys %inbreed){
+			if (exists($guys{$inbreed{$plab}}{'INTERNO'}) and exists($guys{$inbreed{$plab}}{'DATE'})){
+				print GDF "$plab,$guys{$inbreed{$plab}}{'INTERNO'},$guys{$inbreed{$plab}}{'DATE'}\n";
+				#print "$plab,$guys{$plab}{'INTERNO'},$guys{$plab}{'DATE'}\n";
 			}
 		}
 	}else{
 		print GDF "Subject,Date\n";
-		foreach my $plab (sort keys %guys){
-			if(exists($guys{$plab}) and exists($guys{$plab}{'DATE'}) and $guys{$plab}{'DATE'}){ 
-				print GDF "$plab,$guys{$plab}{'DATE'}\n"; 
+		foreach my $plab (sort keys %inbreed){
+			if(exists($guys{$inbreed{$plab}}) and exists($guys{$inbreed{$plab}}{'DATE'}) and $guys{$inbreed{$plab}}{'DATE'}){ 
+				print GDF "$plab,$guys{$inbreed{$plab}}{'DATE'}\n"; 
 			}
 		}
 	}
 	close GDF;
 }
 foreach my $sbj (sort keys %guys) {
-	my %tmp_hash = xget_pet_data($xconfig{'HOST'}, $xconfig{'JSESSION'}, $guys{$sbj}{'XNATEXP'});
-	if(%tmp_hash){
-		foreach my $tmp_var (sort keys %tmp_hash){
-			$guys{$sbj}{$tmp_var} = $tmp_hash{$tmp_var} unless $tmp_var eq '_';
+	if(exists($guys{$sbj}{'XNATEXP'}) and $guys{$sbj}{'XNATEXP'}){
+		my %tmp_hash = xget_pet_data($xconfig{'HOST'}, $xconfig{'JSESSION'}, $guys{$sbj}{'XNATEXP'});
+		if(%tmp_hash){
+			foreach my $tmp_var (sort keys %tmp_hash){
+				$guys{$sbj}{$tmp_var} = $tmp_hash{$tmp_var} unless $tmp_var eq '_';
+			}
 		}
 	}
 }
 # make xls file
 # info first
+#dump %guys; exit;
 my $info = csv (in => $info_page);
 my $workbook = Spreadsheet::Write->new(file => $ofile, sheet => 'Info');
 for my $i (0 .. $#{$info}) {
@@ -109,13 +119,14 @@ if($internos){
 	@drow = split ',', "Subject,Date,SUVR,Centiloid,QC";
 }
 $workbook->addrow(\@drow);
-foreach my $sbj (sort keys %guys){
-	if(exists($guys{$sbj}) and exists($guys{$sbj}{'suvr'}) and $guys{$sbj}{'suvr'} and ($guys{$sbj}{'suvr'} ne 'null')){
+foreach my $sbj (sort keys %inbreed){
+	if(exists($guys{$inbreed{$sbj}}) and exists($guys{$inbreed{$sbj}}{'surv'}) and $guys{$inbreed{$sbj}}{'surv'} and ($guys{$inbreed{$sbj}}{'surv'} ne 'null')){
 		 if($internos){
-			 @drow = split ',', "$sbj,$guys{$sbj}{'INTERNO'},$guys{$sbj}{'DATE'},$guys{$sbj}{'suvr'},$guys{$sbj}{'cl'},$guys{$sbj}{'qc'}";
+			 @drow = split ',', "$sbj,$guys{$inbreed{$sbj}}{'INTERNO'},$guys{$inbreed{$sbj}}{'DATE'},$guys{$inbreed{$sbj}}{'surv'},$guys{$inbreed{$sbj}}{'cl'},$guys{$inbreed{$sbj}}{'qa'}";
 		}else{
-			@drow = split ',', "$sbj,$guys{$sbj}{'DATE'},$guys{$sbj}{'suvr'},$guys{$sbj}{'cl'},$guys{$sbj}{'qc'}";
+			@drow = split ',', "$sbj,$guys{$inbreed{$sbj}}{'DATE'},$guys{$inbreed{$sbj}}{'surv'},$guys{$inbreed{$sbj}}{'cl'},$guys{$inbreed{$sbj}}{'qa'}";
 		}
+		#dump @drow;
 		$workbook->addrow(\@drow);
 	}
 }
