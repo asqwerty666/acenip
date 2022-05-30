@@ -18,7 +18,7 @@
 
 # v0.1 - extraer aseg -> done
 # v0.2 - extraer aparc -> done
-# v0.3 - remove xnatapic depends -> done
+# v0.3 - remove external dependencies -> done
 
 
 use strict; use warnings;

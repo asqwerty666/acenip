@@ -21,9 +21,6 @@
 # Yep, is a mess but I should allow to people to revise the QC 
 # without work across an entire project
 #
-# Also, this script depends on xnatapic tool that is a private ACE tool.
-# So this is difficult to add to another pipelines. \(_ _)/ 
-#
 
 use strict; use warnings;
 use Cwd qw(cwd);
@@ -78,9 +75,6 @@ if ($ifile and -f $ifile){
 	open TDF, ">$efile";
 	foreach my $pollo (@pollos){
 		$epollos{$pollo} = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $pollo);
-		#my $look = "xnatapic list_experiments --project_id $xprj --subject_id $pollo --modality MRI";
-		#my $epollo = qx/$look/;
-		#chomp $epollo;
 		print TDF "$epollos{$pollo}\n";
 	}
 	close TDF;
@@ -130,7 +124,6 @@ unless ($odir and -d $odir) {
 	}
 }
 
-#my $vqcd = $wdir.'/visualqc_output';
 if ( -d $vqcd ){
 	#aqui igual, si existe el directorio de output 
 	#no lo sobreescribo sino que le añado el timestamp al nuevo
