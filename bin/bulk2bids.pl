@@ -32,7 +32,7 @@ my $proj_file = $std{'DATA'}.'/'.$proj.'_mri.csv';
 my %guys = populate('^(\d{4});(.*)$', $proj_file);
 my $outdir = "$std{'DATA'}/slurm";
 check_or_make($outdir);
-# defino las propiedas generales de la tarea en el schedule manager
+# defino las propiedades generales de la tarea en el schedule manager
 my %ptask;
 $ptask{'cpus'} = 8;
 $ptask{'job_name'} = 'dcm2bids_'.$proj;

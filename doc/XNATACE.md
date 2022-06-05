@@ -178,3 +178,11 @@
     usage: 
 
             xget_rvr_data(host, jsession, URI);
+
+- xget\_dicom
+
+    Get the full DICOM for a given experiment
+
+    usage:
+
+            xget_dicom(host, jsession, experiment, output_dir)

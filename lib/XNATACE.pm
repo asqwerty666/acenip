@@ -16,10 +16,11 @@ use strict; use warnings;
 package XNATACE;
 require Exporter;
 use JSON qw(decode_json); 
+use File::Temp qw(:mktemp tempdir);
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
-our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res xcreate_res);
-our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res xcreate_res);
+our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res xcreate_res xget_dicom);
+our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res xcreate_res xget_dicom);
 our %EXPORT_TAGS =(all => qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report), usual => qw(xconf xget_conf xget_session));
 
 our $VERSION = 0.1;
@@ -508,4 +509,26 @@ sub xget_rvr_data {
 	return %rvr_data;
 }
 
+=item xget_dicom
+
+Get the full DICOM for a given experiment
+
+usage:
+
+	xget_dicom(host, jsession, experiment, output_dir)
+
+=cut 
+	
+sub xget_dicom {
+	# Get the DICOM!!!!!
+	# Only usefull if you want to pass from xnat to acenip
+	my @xdata = @_;
+	my $tmp_dir = $ENV{'TMPDIR'};
+	my $zdir = tempdir(TEMPLATE => ($tmp_dir?$tmp_dir:'.').'/zipdir.XXXXX', CLEANUP => 1);
+	my $zipfile = $zdir.'/'.$xdata[2].'.zip';
+	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/scans/ALL/files?format=zip" -o '.$zipfile;
+	system($crd);
+	my $zrd = '7za x -o'.$xdata[3].' '.$zipfile;
+	system($zrd);
+}
 =back
