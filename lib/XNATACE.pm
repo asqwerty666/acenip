@@ -19,8 +19,8 @@ use JSON qw(decode_json);
 use File::Temp qw(:mktemp tempdir);
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
-our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res xcreate_res xget_dicom);
-our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res xcreate_res xget_dicom);
+our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res xcreate_res xget_dicom xget_sbj_demog);
+our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res xcreate_res xget_dicom xget_sbj_demog);
 our %EXPORT_TAGS =(all => qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report), usual => qw(xconf xget_conf xget_session));
 
 our $VERSION = 0.1;
@@ -135,6 +135,26 @@ sub xget_sbj_data {
 	my $jres = qx/$crd/;
 	my $xfres = decode_json $jres;
 	return $xfres->{items}[0]{data_fields}{$xdata[3]};
+}
+
+
+=item xget_sbj_demog
+
+Get demographics variable from given subject, if available
+
+usage:
+
+	$xdata = xget_sbj_demog(host, jsession, subject, field);
+
+=cut 
+
+sub xget_sbj_demog {
+	my @xdata = @_;
+        my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/subjects/'.$xdata[2].'?format=json" 2>/dev/null';
+        my $jres = qx/$crd/;
+        my $xfres = decode_json $jres;
+	#dump $xfres->{items}[0];
+        return $xfres->{items}[0]{children}[0]{items}[0]{data_fields}{$xdata[3]};
 }
 
 =item xget_exp_data
