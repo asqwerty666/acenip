@@ -27,12 +27,12 @@ a <- lm(base$MidTemp ~ base$ICV)
 base$aMidTemp = base$MidTemp - a$coefficients[[2]]*(base$ICV - mean(base$ICV, na.rm=TRUE))
 output_fig="classifier_output_middletemporal.ps"
 postscript(output_fig, width=1024, height=600, bg="white")
-plot(base$AGE, base$aMidTemp, main = "Middle temporal cortex volume versus Age", xlab="Age", ylab="adjusted MidTemp", pch=19, col=ifelse(base$ND==1,"red","green"))
+plot(base$AGE, base$aMidTemp, main = "Middle temporal cortex volume versus Age", xlab="Age", ylab="adjusted MidTemp Volume", pch=19, col=ifelse(base$ND==1,"red","green"))
 dev.off()
 a <- lm(base$Entorhinal ~ base$ICV)
 base$aEntorhinal = base$Entorhinal - a$coefficients[[2]]*(base$ICV - mean(base$ICV, na.rm=TRUE))
 output_fig="classifier_output_entorhinal.ps"
 postscript(output_fig, width=1024, height=600, bg="white")
-plot(base$AGE, base$aMidTemp, main = "Entorhinal cortex volume versus Age", xlab="Age", ylab="adjusted Entorhinal", pch=19, col=ifelse(base$ND==1,"red","green"))
+plot(base$AGE, base$aEntorhinal, main = "Entorhinal cortex volume versus Age", xlab="Age", ylab="adjusted Entorhinal Volume", pch=19, col=ifelse(base$ND==1,"red","green"))
 dev.off()
 
