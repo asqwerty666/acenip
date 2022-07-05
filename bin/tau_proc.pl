@@ -24,11 +24,13 @@ my $cfile="";
 my $time = '2:0:0';
 my $style = "";
 my $tracer = "";
+my $ror = "";
 
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
+    if (/^-o/) {$ror = shift; chomp($ror);}
     if (/^-cut/) { $cfile = shift; chomp($cfile);}
     if (/^-time/) {$time = shift; chomp($time);}
     if (/^-r/) {$style = shift; chomp($style);}
@@ -88,11 +90,11 @@ foreach my $subject (@pets){
 			send2slurm(\%ptask);
 		}
 		#Hacer mascara de Eroded WM
-#	        $ptask{'output'} = $outdir.'/tau_ewm_'.$subject;
-#	        $ptask{'filename'} = $outdir.'/'.$subject.'_ewm.sh';
-#	        $ptask{'command'} = $ENV{'PIPEDIR'}.'/bin/get_tref_ewm.sh '.$study.'_'.$subject.' '.$w_dir.'/.tmp_'.$subject;
-#	        $mask_chain.= $w_dir.'/.tmp_'.$subject.'/rois/ewm.nii.gz ';
-#	        send2slurm(\%ptask);
+	        $ptask{'output'} = $outdir.'/tau_ewm_'.$subject;
+	        $ptask{'filename'} = $outdir.'/'.$subject.'_ewm.sh';
+	        $ptask{'command'} = $ENV{'PIPEDIR'}.'/bin/get_tref_ewm.sh '.$study.'_'.$subject.' '.$w_dir.'/.tmp_'.$subject;
+	        $mask_chain.= $w_dir.'/.tmp_'.$subject.'/rois/ewm.nii.gz ';
+	        send2slurm(\%ptask);
 		#Hacer mascara de cerebelo
 	        $ptask{'output'} = $outdir.'/tau_cgm_'.$subject;
 	        $ptask{'filename'} = $outdir.'/'.$subject.'_cgm.sh';
@@ -120,12 +122,12 @@ foreach my $subject (@pets){
 		my $pjob_id = send2slurm(\%ptask);
 		push @p_jobs, $pjob_id;	
 		#PVC MTC
-		$ptask{'output'} = $outdir.'/tau_mtc_'.$subject;
-		$ptask{'filename'} = $outdir.'/'.$subject.'_mtc.sh';
-		$ptask{'command'} = $ENV{'PIPEDIR'}.'/bin/petmtc.pl -i '.$w_dir.'/'.$subject.'_tau.nii.gz -m '.$w_dir.'/'.$subject.'_masks.nii.gz -o '.$w_dir.'/'.$subject.'_mtc.csv';
-		$ptask{'dependency'} = 'afterok:'.$sjob_id;
-		$pjob_id = send2slurm(\%ptask);
-		push @p_jobs, $pjob_id;
+#		$ptask{'output'} = $outdir.'/tau_mtc_'.$subject;
+#		$ptask{'filename'} = $outdir.'/'.$subject.'_mtc.sh';
+#		$ptask{'command'} = $ENV{'PIPEDIR'}.'/bin/petmtc.pl -i '.$w_dir.'/'.$subject.'_tau.nii.gz -m '.$w_dir.'/'.$subject.'_masks.nii.gz -o '.$w_dir.'/'.$subject.'_mtc.csv';
+#		$ptask{'dependency'} = 'afterok:'.$sjob_id;
+#		$pjob_id = send2slurm(\%ptask);
+#		push @p_jobs, $pjob_id;
 	}
 }
 # Generating report
@@ -139,7 +141,7 @@ $warn{'output'} = $outdir.'/tau_report';
 $warn{'dependency'} = 'afterok:'.join(',',@r_jobs);
 send2slurm(\%warn);
 # Calculating Metrics
-$warn{'command'} = $ENV{'PIPEDIR'}."/bin/tau_metrics.pl -tracer ".$tracer." ".($style?" -r $style ":"").$study;
+$warn{'command'} = $ENV{'PIPEDIR'}."/bin/tau_metrics.pl -tracer ".$tracer." ".($style?" -r $style ":"").($ror?" -o $ror ":"").$study;
 $warn{'filename'} = $outdir.'/tau_metrics.sh';
 $warn{'job_name'} = 'tau_metrics_'.$study;
 $warn{'time'} = '2:0:0'; #si no ha terminado en X horas matalo

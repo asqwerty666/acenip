@@ -8,13 +8,15 @@ my $cfile="";
 my @rois = tau_rois();
 my $style = "";
 my $tracer = "";
+my $ror = "icgm";
 @ARGV = ("-h") unless @ARGV;
 
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
     if (/^-cut/) { $cfile = shift; chomp($cfile);}
-    if (/^-tracer/) {$tracer = shift, chomp($tracer)};
+    if (/^-tracer/) {$tracer = shift; chomp($tracer);}
+    if (/^-o/) {$ror = shift; chomp($ror);}
     if (/^-r/) {$style = shift; chomp($style);}
 }
 
@@ -26,9 +28,14 @@ my $w_dir=$std{'WORKING'};
 my $data_dir=$std{'DATA'};
 my $db = $data_dir.'/'.$study.'_pet.csv';
 our @subjects = cut_shit($db, $data_dir."/".$cfile);
-my @subs = ("pvc", "unc","mtc");
+#my @subs = ("pvc", "unc","mtc");
+my @subs = ("pvc", "unc");
 if($style){@rois = tau_rois($style);}
-my $norm = @rois; 
+my $norm = @rois;
+my $asize = $norm;
+if ($ror ne "ewm") {
+	$norm++;
+}
 my %measures;
 foreach my $subject (@subjects){
 	my %spet = check_pet($std{'DATA'},$subject,$tracer);
@@ -49,18 +56,18 @@ foreach my $subject (@subjects){
 #dump %measures;
 
 foreach my $msub (@subs){
-	my $ofile = $data_dir.'/'.$study."_tau_suvr_".$tracer."_".$msub.".csv";
+	my $ofile = $data_dir.'/'.$study."_tau_suvr_".$tracer."_".$msub."_".$ror.".csv";
 	print "Writing $ofile\n";
 	open ODF, ">$ofile";
 	print ODF "Subject";
 	foreach my $roi (@rois){
-		print ODF ", $roi";
+		print ODF ",$roi";
 	}
 	print ODF "\n";
 	foreach my $subject (@subjects){
 		if(exists($measures{$subject}) && exists($measures{$subject}{$msub}) && exists($measures{$subject}{$msub}[$norm]) && $measures{$subject}{$msub}[$norm]){
 			print ODF "$subject";
-			for (my $i=0; $i<$norm; $i++){
+			for (my $i=0; $i<$asize; $i++){
 				my $mean = 0;
 				if(exists($measures{$subject}{$msub}[$i]) && $measures{$subject}{$msub}[$i]){
 					$mean = $measures{$subject}{$msub}[$i]/$measures{$subject}{$msub}[$norm];
