@@ -46,6 +46,7 @@ foreach my $subject (sort keys %guys) {
 		$ptask{'filename'} = $outdir.'/'.$subject.'dcm2bids.sh';
 		$ptask{'output'} = $outdir.'/dcm2bids'.$subject;
 		send2slurm(\%ptask);
+		print "$ptask{'filename'}\n";
 	}
 }
 my %final;
@@ -54,3 +55,4 @@ $final{'job_name'} = 'dcm2bids_'.$proj;
 $final{'output'} = $outdir.'/dmc2bids_end';
 $final{'dependency'} = 'singleton';
 send2slurm(\%final);
+

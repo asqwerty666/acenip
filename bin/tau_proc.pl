@@ -25,12 +25,14 @@ my $time = '2:0:0';
 my $style = "";
 my $tracer = "";
 my $ror = "";
+my $slices_file = 'cuts.csv';
 
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
     if (/^-o/) {$ror = shift; chomp($ror);}
+    if (/^-s/) {$slices_file = shift; chomp($slices_file);}
     if (/^-cut/) { $cfile = shift; chomp($cfile);}
     if (/^-time/) {$time = shift; chomp($time);}
     if (/^-r/) {$style = shift; chomp($style);}
@@ -52,11 +54,18 @@ check_or_make($outdir);
 
 print "Collecting needed files\n";
 my @pets = cut_shit($db, $data_dir.'/'.$cfile);
-
+my $cut_file = $data_dir.'/'.$slices_file;
+my %slices;
+open IDF, "<$cut_file" or die "No file with cutting slices\n";
+while (<IDF>) {
+	my ($id, $slice) = /(\d*),(\d*)/;
+	$slices{$id} = $slice;
+}
+close IDF;
 #defino aqui las propiedades comunes de ejecucion
 my %ptask;
 $ptask{'job_name'} = 'tau_reg_'.$study;
-$ptask{'cpus'} = 4;
+$ptask{'cpus'} = 8;
 $ptask{'time'} = $time;
 my @ok_pets;
 my @rois = tau_rois($style);
@@ -72,7 +81,11 @@ foreach my $subject (@pets){
 		if(exists($ptask{'dependency'})){ delete($ptask{'dependency'}) };
 		#Registro de PET a T1w
 		$ptask{'job_name'} = 'tau_reg_'.$study;
-		$ptask{'command'} = $ENV{'PIPEDIR'}."/bin/tau_reg.sh ".$study." ".$subject." ".$w_dir." ".$spet{'tau'};
+		if(exists $slices{$subject} and $slices{$subject}){
+			$ptask{'command'} = $ENV{'PIPEDIR'}."/bin/tau_reg.sh ".$study." ".$subject." ".$w_dir." ".$spet{'tau'}." ".$slices{$subject};
+		}else{
+			$ptask{'command'} = $ENV{'PIPEDIR'}."/bin/tau_reg.sh ".$study." ".$subject." ".$w_dir." ".$spet{'tau'}." 0";
+		}
 		$ptask{'filename'} = $outdir.'/'.$subject.'_tau_reg.sh';
 		$ptask{'output'} = $outdir.'/tau_reg_'.$subject;
 		my $job_id = send2slurm(\%ptask);

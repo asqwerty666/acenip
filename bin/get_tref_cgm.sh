@@ -15,6 +15,7 @@ fi
 if [ ! -f ${tmp_dir}/all_aseg.nii.gz ]; then
 	mri_label2vol --seg $SUBJECTS_DIR/${subject}/mri/aparc+aseg.mgz --temp $SUBJECTS_DIR/${subject}/mri/rawavg.mgz --o ${tmp_dir}/all_aseg.nii.gz --reg ${tmp_dir}/rois/register.dat;
 	#mri_label2vol --seg $SUBJECTS_DIR/${subject}/mri/aparc+aseg.mgz --temp $SUBJECTS_DIR/${subject}/mri/nu.mgz 
+	sleep 5
 fi
 mkdir ${tmp_dir}/rois/${roi%.ref};
 for x in `cat ${PIPEDIR}/lib/tau/${roi}`; do 
@@ -22,6 +23,7 @@ for x in `cat ${PIPEDIR}/lib/tau/${roi}`; do
 	rlabel=$(echo ${x} | awk -F"," '{print $1}');
 	nlabel=$(echo ${x} | awk -F"," '{print $2}');
 	${FSLDIR}/bin/fslmaths ${tmp_dir}/all_aseg.nii.gz -uthr ${rlabel} -thr ${rlabel} -div ${rlabel} ${tmp_dir}/rois/${roi%.ref}/${nlabel}
+	sleep 2
 done
 a=$(for x in ${tmp_dir}/rois/${roi%.ref}/*.nii.gz; do echo "${x} -add "; done) 
 a=$(echo ${a} | sed 's/\(.*\)-add$/\1/')
@@ -52,4 +54,7 @@ a=$(echo ${a} | sed 's/\(.*\)-add$/\1/')
 ${FSLDIR}/bin/fslmaths ${a} ${tmp_dir}/rois/excsuit.nii.gz
 ${FSLDIR}/bin/fslmaths ${tmp_dir}/rois/excsuit.nii.gz -kernel gauss 3.4 -fmean ${tmp_dir}/rois/excsuit_smooth.nii.gz
 ${FSLDIR}/bin/fslmaths ${tmp_dir}/rois/incsuit_smooth.nii.gz -sub ${tmp_dir}/rois/excsuit_smooth.nii.gz -bin ${tmp_dir}/rois/icereb_mask.nii.gz
-${FSLDIR}/bin/fslmaths ${tmp_dir}/rois/${roi%.ref} -mas ${tmp_dir}/rois/icereb_mask.nii.gz ${tmp_dir}/rois/icgm.nii.gz 
+${FSLDIR}/bin/fslmaths ${tmp_dir}/rois/${roi%.ref} -mas ${tmp_dir}/rois/icereb_mask.nii.gz ${tmp_dir}/rois/icgm_full.nii.gz 
+#Ahora excluyo de la mascara todos los voxels que no esten en el pet original
+${FSLDIR}/bin/fslmaths ${tmp_dir}/rois/icgm_full.nii.gz -mas ${tmp_dir}/${subject}_tau_mask.nii.gz ${tmp_dir}/rois/icgm_masked.nii.gz
+${FSLDIR}/bin/fslmaths ${tmp_dir}/rois/icgm_masked.nii.gz -kernel gauss 3.3973 -fmean -thr 0.7 -bin ${tmp_dir}/rois/icgm.nii.gz

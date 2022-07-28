@@ -23,6 +23,7 @@ for x in `cat ${PIPEDIR}/lib/tau/${roi}.roi`; do
 	rlabel=$(echo ${x} | awk -F"," '{print $1}');
 	nlabel=$(echo ${x} | awk -F"," '{print $2}');
 	${FSLDIR}/bin/fslmaths ${tmp_dir}/all_aseg.nii.gz -uthr ${rlabel} -thr ${rlabel} -div ${rlabel} ${tmp_dir}/rois/${roi}/${nlabel};
+	sleep 2
 done
 a=$(for x in ${tmp_dir}/rois/${roi}/*.nii.gz; do echo "${x} -add "; done) 
 a=$(echo ${a} | sed 's/\(.*\)-add$/\1/')

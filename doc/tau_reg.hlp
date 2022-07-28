@@ -1,8 +1,10 @@
-usage: tau_proc.pl [-cut <text_file>] [-time] [-r] <project>
+usage: tau_proc.pl [-o <ROR>] [-s <csv_file>] [-cut <text_file>] [-time] [-r] <project>
 
 Calculates tau SUVR uncorrected and corrected from MRI+PET nifiti images
 
 Options:
+-o <ROR>: Select region of reference for metrics calculation, default: icgm, admissible values: ewm, icgm
+-s <csv_file>: A file with the amount of slices that should be removed from the bottom of the MRIin order to remove the neck and improve the PET registration
 -cut <text_file>: Process only the subjects included in this file
 -time: use this time as maximum limit for processes
 -tracer: especify the tau tracer that should be used <mandatory>
