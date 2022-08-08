@@ -26,11 +26,11 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
     if (/^-cut/) { $cfile = shift; chomp($cfile);}
-    if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/recon.hlp'; exit;}
+    if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/wmh_metrics.hlp'; exit;}
 }
 
 my $study = shift;
-unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/recon.hlp'; exit;}
+unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/wmh_metrics.hlp'; exit;}
 my %std = load_project($study);
 my $data_dir=$std{'DATA'};
 my $mri_db = $std{'DATA'}.'/'.$study.'_mri.csv';
