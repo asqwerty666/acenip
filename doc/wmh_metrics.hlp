@@ -1,0 +1,9 @@
+usage: wmh_metrics.pl [-cut <text file>] <project>
+
+Get PGS WMH metrics for a project
+
+Options:
+-cut <text file>: Process only the subject included in text file
+-h: print this help
+<project>: Name of the project (mandatory)
+
