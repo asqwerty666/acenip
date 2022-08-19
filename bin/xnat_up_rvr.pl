@@ -23,7 +23,7 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     if (/^-d/) {$rep_dir = shift; chomp($rep_dir);}
     if (/^-x/) {$xprj = shift; chomp($xprj);}
 }
-die "Should supply reports directory" unless $rep_dir;
+#die "Should supply reports directory" unless $rep_dir;
 die "Should supply XNAT project" unless $xprj;
 my %xconf = xget_session();
 my $tmp_dir = $ENV{TMPDIR};
@@ -32,22 +32,42 @@ my %rdata;
 # get the session ID
 my $jid = $xconf{'JSESSION'};
 
-my @pdfs = find(file => 'name' => "*.pdf", in => $rep_dir);
-foreach my $report (@pdfs) {
-	my $bnreport = basename $report;
-	(my $xsbj = $bnreport) =~ s/.pdf//;
-	$vrdata{$xsbj} = xget_mri($xconf{'HOST'}, $jid, $xprj, $xsbj);
-	xput_report($xconf{'HOST'}, $jid, $xsbj, $vrdata{$xsbj}, $report);
-}
-if ($vrfile) {
+if ($rep_dir) {
+	my @pdfs = find(file => 'name' => "*.pdf", in => $rep_dir);
+	foreach my $report (@pdfs) {
+		my $bnreport = basename $report;
+		(my $xsbj = $bnreport) =~ s/.pdf//;
+		$vrdata{$xsbj} = xget_mri($xconf{'HOST'}, $jid, $xprj, $xsbj);
+		xput_report($xconf{'HOST'}, $jid, $xsbj, $vrdata{$xsbj}, $report);
+	}
+	if ($vrfile) {
+		my $ref_vr = csv(in => $vrfile, headers => "auto");
+		foreach my $mrdata (@$ref_vr){
+			my $rep_body = '{"ResultSet":{"Result":[{';
+			my @rep_arr;
+			foreach my $rk (sort keys %$mrdata){
+				#if ($rk ne 'Subject' and $rk ne 'Date'){
+				push @rep_arr, '"'.$rk.'":"'.${$mrdata}{$rk}.'"';
+				#}
+			}
+			$rep_body .= join ',', @rep_arr;
+			$rep_body .= '}]}}';
+			my $tvrf = mktemp($tmp_dir.'/rvr_data.XXXXX');
+			open TDF, ">$tvrf";
+			print TDF "$rep_body\n";
+			close TDF;
+			xput_rvr($xconf{'HOST'}, $jid, $vrdata{${$mrdata}{'Subject'}}, $tvrf);
+			unlink $tvrf;
+		}
+	}
+} else {
+	die "Should supply CSV file!\n" unless $vrfile;
 	my $ref_vr = csv(in => $vrfile, headers => "auto");
 	foreach my $mrdata (@$ref_vr){
 		my $rep_body = '{"ResultSet":{"Result":[{';
 		my @rep_arr;
 		foreach my $rk (sort keys %$mrdata){
-			#if ($rk ne 'Subject' and $rk ne 'Date'){
 			push @rep_arr, '"'.$rk.'":"'.${$mrdata}{$rk}.'"';
-			#}
 		}
 		$rep_body .= join ',', @rep_arr;
 		$rep_body .= '}]}}';
@@ -55,7 +75,8 @@ if ($vrfile) {
 		open TDF, ">$tvrf";
 		print TDF "$rep_body\n";
 		close TDF;
-		xput_rvr($xconf{'HOST'}, $jid, $vrdata{${$mrdata}{'Subject'}}, $tvrf);
+		my $esbj = xget_mri($xconf{'HOST'}, $jid, $xprj, ${$mrdata}{'Subject'}); 
+		xput_rvr($xconf{'HOST'}, $jid, $esbj, $tvrf);
 		unlink $tvrf;
 	}
 }
