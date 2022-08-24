@@ -53,8 +53,8 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
 
 # Mira, hay que meter el proyecto de XNAT con alguno de los dos switch
 if ($prj and not $xprj) {
-	%pdata = load_project($prj);
-	$xprj = %pdata{'XNAME'};
+	my %pdata = load_project($prj);
+	$xprj = $pdata{'XNAME'};
 }
 # O te vas a tomar por culo
 die "Should supply XNAT project name or define it at local project config!\n" unless $xprj;
