@@ -4,13 +4,13 @@
 #
 use strict;
 use warnings;
-use XNATACE qw(xget_conf xget_session xget_fs_stats);
+use XNATACE qw(xget_conf xget_session xget_fs_qc);
 use Data::Dump qw(dump);
 
-my $xprj = 'f5cehbi';
-my $xpx = 'XNAT_E00105';
-my $sbj = 'XNAT_S00086';
+my $xprj = 'mriface';
+my $xpx = 'XNAT_E00565';
 
 my %conn = xget_session();
-my $xdata = xget_fs_stats($conn{'HOST'}, $conn{'JSESSION'}, $xpx, 'aseg.stats', '/nas/osotolongo/tmp/kakakaka.txt');
-print "$xdata\n";
+my %xdata = xget_fs_qc($conn{'HOST'}, $conn{'JSESSION'}, $xpx);
+dump %xdata;
+#print "$xdata\n";

@@ -310,8 +310,10 @@ Output is a hash with I<rating> and I<notes>
 sub xget_fs_qc {
 	my @xdata = @_;
 	my %qc;
+	my %empty = ('rating' => 0);
 	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/fsqc/files/rating.json" 2>/dev/null';
 	my $json_res = qx/$crd/;
+	return %empty unless $json_res;
 	my $qc_data = decode_json $json_res;
 	foreach my $var_data (@{$qc_data->{'ResultSet'}{'Result'}}){
 		foreach my $kdata (sort keys %{$var_data}){

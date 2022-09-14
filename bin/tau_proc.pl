@@ -26,11 +26,13 @@ my $style = "";
 my $tracer = "";
 my $ror = "";
 my $slices_file = 'cuts.csv';
+my $metric = 'cc';
 
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
+    if (/^-m/) {$metric = shift; chomp($metric);}
     if (/^-o/) {$ror = shift; chomp($ror);}
     if (/^-s/) {$slices_file = shift; chomp($slices_file);}
     if (/^-cut/) { $cfile = shift; chomp($cfile);}
@@ -82,9 +84,9 @@ foreach my $subject (@pets){
 		#Registro de PET a T1w
 		$ptask{'job_name'} = 'tau_reg_'.$study;
 		if(exists $slices{$subject} and $slices{$subject}){
-			$ptask{'command'} = $ENV{'PIPEDIR'}."/bin/tau_reg.sh ".$study." ".$subject." ".$w_dir." ".$spet{'tau'}." ".$slices{$subject};
+			$ptask{'command'} = $ENV{'PIPEDIR'}."/bin/tau_reg_".$metric.".sh ".$study." ".$subject." ".$w_dir." ".$spet{'tau'}." ".$slices{$subject};
 		}else{
-			$ptask{'command'} = $ENV{'PIPEDIR'}."/bin/tau_reg.sh ".$study." ".$subject." ".$w_dir." ".$spet{'tau'}." 0";
+			$ptask{'command'} = $ENV{'PIPEDIR'}."/bin/tau_reg_".$metric.".sh ".$study." ".$subject." ".$w_dir." ".$spet{'tau'}." 0";
 		}
 		$ptask{'filename'} = $outdir.'/'.$subject.'_tau_reg.sh';
 		$ptask{'output'} = $outdir.'/tau_reg_'.$subject;

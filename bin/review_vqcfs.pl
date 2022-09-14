@@ -153,6 +153,7 @@ if ($ifile and -f $ifile){
 	system($order);
 }
 #por ultimo subimos los resultados que haya
+%xconf = xget_session();
 my $imgdir = $vqcd.'/annot_visualizations';
 my $ratings = $vqcd.'/ratings/cortical_contour_rate_freesurfer_orig.mgz_ratings.all.csv';
 my $qc_template = '{"ResultSet":{"Result":[{"rating":"<QC>", "notes":"<NOTE>"}]}}';
