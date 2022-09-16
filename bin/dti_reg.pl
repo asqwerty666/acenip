@@ -17,7 +17,7 @@ use File::Slurp qw(read_file);
 use File::Find::Rule;
 use File::Basename qw(basename);
 use Data::Dump qw(dump);
-use SLURM qw(send2slurm);
+use SLURMACE qw(send2slurm);
 use File::Copy::Recursive qw(dirmove);
 
 use NEURO4 qw(get_subjects check_subj load_project print_help get_list check_or_make cut_shit);

@@ -16,7 +16,7 @@ use strict; use warnings;
 use File::Find::Rule;
 use NEURO4 qw(print_help load_project check_or_make cut_shit);
 use FSMetrics qw(fs_fbb_rois);
-use SLURM qw(send2slurm);
+use SLURMACE qw(send2slurm);
 use Data::Dump qw(dump);
 use File::Remove 'remove';
 use File::Basename qw(basename);

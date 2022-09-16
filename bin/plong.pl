@@ -37,7 +37,7 @@
 use strict; use warnings;
 use File::Basename qw(basename);
 use Data::Dump qw(dump);
-use SLURM qw(send2slurm);
+use SLURMACE qw(send2slurm);
 use NEURO4 qw(populate check_subj load_project print_help check_or_make get_subjects get_list);
 
 my $ifile;

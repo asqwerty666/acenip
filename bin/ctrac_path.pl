@@ -29,7 +29,7 @@ use strict; use warnings;
 use File::Find::Rule;
 use NEURO4 qw(print_help load_project cut_shit check_subj check_or_make);
 use Data::Dump qw(dump);
-use SLURM qw(send2slurm);
+use SLURMACE qw(send2slurm);
 use File::Remove 'remove';
 use File::Basename qw(basename);
 use File::Copy::Recursive qw(dircopy);

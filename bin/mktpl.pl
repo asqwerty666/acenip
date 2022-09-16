@@ -16,7 +16,7 @@ use strict; use warnings;
 use File::Temp qw(tempdir);
 use File::Find::Rule;
 use Cwd qw(getcwd);
-use SLURM qw(send2slurm);
+use SLURMACE qw(send2slurm);
 use File::Basename qw(basename);
 use Data::Dump qw(dump);
 ######################################

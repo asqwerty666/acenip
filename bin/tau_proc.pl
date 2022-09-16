@@ -17,7 +17,7 @@ use Data::Dump qw(dump);
 use File::Find::Rule;
 use File::Copy::Recursive qw(dirmove);
 use NEURO4 qw(check_pet check_subj load_project print_help check_or_make cut_shit);
-use SLURM qw(send2slurm);
+use SLURMACE qw(send2slurm);
 use FSMetrics qw(tau_rois);
 
 my $cfile="";

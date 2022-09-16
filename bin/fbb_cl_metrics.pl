@@ -17,7 +17,7 @@
 use strict; use warnings;
  
 use File::Find::Rule;
-use SLURM qw(send2slurm);
+use SLURMACE qw(send2slurm);
 use NEURO4 qw(print_help load_project check_or_make centiloid_fbb cut_shit);
 use Data::Dump qw(dump);
 use File::Remove 'remove';

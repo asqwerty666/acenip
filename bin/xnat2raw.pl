@@ -15,7 +15,7 @@
 use strict; use warnings;
 use NEURO4 qw(load_project print_help);
 use XNATACE qw(xget_session xget_subjects xget_mri xget_pet xget_dicom);
-use SLURM qw(send2slurm);
+use SLURMACE qw(send2slurm);
 use File::Temp qw(:mktemp tempdir);
 use Data::Dump qw(dump);
 my $mode = 'MRI';

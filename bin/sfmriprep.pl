@@ -24,7 +24,7 @@ use Data::Dump qw(dump);
 use File::Remove 'remove';
 use File::Basename qw(basename);
 use File::Copy::Recursive qw(dircopy);
-use SLURM qw(send2slurm);
+use SLURMACE qw(send2slurm);
 my $fslic = '/nas/usr/local/opt/freesurfer/.license';
 my $fmriprep_version = '1.5.8';
 my $fmriprep_simg = '/usr/local/bin/fmriprep-latest.simg';

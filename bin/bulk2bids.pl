@@ -14,7 +14,7 @@
 
 use strict; use warnings;
 use NEURO4 qw(load_project print_help populate check_or_make);
-use SLURM qw(send2slurm);
+use SLURMACE qw(send2slurm);
 my $cfile = 'bids/conversion.json';
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
