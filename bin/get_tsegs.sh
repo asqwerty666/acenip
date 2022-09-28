@@ -8,6 +8,8 @@ shift
 roifile=$1
 shift
 
+a=''
+
 if [ ! -f ${tmp_dir}/fsrois/register.dat ]; then 
 	mkdir -p ${tmp_dir}/fsrois/;
 	tkregister2 --mov $SUBJECTS_DIR/${subject}/mri/rawavg.mgz --noedit --s ${subject} --regheader --reg ${tmp_dir}/fsrois/register.dat;
@@ -22,10 +24,11 @@ for x in `cat ${roifile}`; do
 	rlabel=$(echo ${x} | awk -F"," '{print $1}');
 	nlabel=$(echo ${x} | awk -F"," '{print $2}');
 	${FSLDIR}/bin/fslmaths ${tmp_dir}/all_aseg.nii.gz -uthr ${rlabel} -thr ${rlabel} -div ${rlabel} ${tmp_dir}/fsrois/${nlabel};
+	a=${a}" ${tmp_dir}/fsrois/${nlabel}.nii.gz"
 	echo "${nlabel} --> ${rlabel}"
 	sleep 2
 done
-a=$(for x in ${tmp_dir}/fsrois/*.nii.gz; do echo "${x} "; done) 
+#a=$(for x in ${tmp_dir}/fsrois/*.nii.gz; do echo "${x} "; done) 
 #a=$(echo ${a} | sed 's/\(.*\)-add$/\1/')
 echo ${a}
 ${FSLDIR}/bin/fslmerge -t ${tmp_dir}/fsrois/segrois.nii.gz ${a} 
