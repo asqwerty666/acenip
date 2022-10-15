@@ -18,14 +18,26 @@ use File::Find::Rule;
 use File::Basename qw(basename);
 use Data::Dump qw(dump);
 use File::Copy::Recursive qw(dirmove);
-
 use NEURO4 qw(load_project);
+
+my $owd = '';
+@ARGV = ("-h") unless @ARGV;
+while (@ARGV and $ARGV[0] =~ /^-/) {
+    $_ = shift;
+    last if /^--$/;
+    if (/^-wd/) {$owd = shift; chomp($owd);}
+}
 my $study = shift;
 die "Should provide project name\n" unless $study;
 
 my %std = load_project($study);
 
-my $w_dir=$std{'WORKING'};
+my $w_dir;
+if ($owd) {
+        $w_dir = $owd;
+}else{
+        $w_dir = $std{'WORKING'};
+}
 my $d_dir=$std{'DATA'};
 
 # Redirect ouput to logfile (do it only when everything is fine)

@@ -27,12 +27,14 @@ my $tracer = "";
 my $ror = "";
 my $slices_file = 'cuts.csv';
 my $metric = 'cc';
+my $owd = ''; 
 
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
     if (/^-m/) {$metric = shift; chomp($metric);}
+    if (/^-wd/) {$owd = shift; chomp($owd);}
     if (/^-o/) {$ror = shift; chomp($ror);}
     if (/^-s/) {$slices_file = shift; chomp($slices_file);}
     if (/^-cut/) { $cfile = shift; chomp($cfile);}
@@ -48,7 +50,12 @@ my %std = load_project($study);
 
 my $subj_dir = $ENV{'SUBJECTS_DIR'};
 
-my $w_dir=$std{'WORKING'};
+my $w_dir;
+if ($owd) {
+	$w_dir = $owd;
+}else{
+	$w_dir = $std{'WORKING'};
+}
 my $db = $std{'DATA'}.'/'.$study.'_pet.csv';
 my $data_dir=$std{'DATA'};
 my $outdir = "$std{'DATA'}/slurm";
@@ -83,10 +90,14 @@ foreach my $subject (@pets){
 		if(exists($ptask{'dependency'})){ delete($ptask{'dependency'}) };
 		#Registro de PET a T1w
 		$ptask{'job_name'} = 'tau_reg_'.$study;
-		if(exists $slices{$subject} and $slices{$subject}){
-			$ptask{'command'} = $ENV{'PIPEDIR'}."/bin/tau_reg_".$metric.".sh ".$study." ".$subject." ".$w_dir." ".$spet{'tau'}." ".$slices{$subject};
+		unless ($owd){
+			if(exists $slices{$subject} and $slices{$subject}){
+				$ptask{'command'} = $ENV{'PIPEDIR'}."/bin/tau_reg_".$metric.".sh ".$study." ".$subject." ".$w_dir." ".$spet{'tau'}." ".$slices{$subject};
+			}else{
+				$ptask{'command'} = $ENV{'PIPEDIR'}."/bin/tau_reg_".$metric.".sh ".$study." ".$subject." ".$w_dir." ".$spet{'tau'}." 0";
+			}
 		}else{
-			$ptask{'command'} = $ENV{'PIPEDIR'}."/bin/tau_reg_".$metric.".sh ".$study." ".$subject." ".$w_dir." ".$spet{'tau'}." 0";
+			$ptask{'command'} = $ENV{'PIPEDIR'}."/bin/tau_maskit.sh ".$study." ".$subject." ".$w_dir;
 		}
 		$ptask{'filename'} = $outdir.'/'.$subject.'_tau_reg.sh';
 		$ptask{'output'} = $outdir.'/tau_reg_'.$subject;
@@ -100,7 +111,7 @@ foreach my $subject (@pets){
 		foreach my $roi (@rois){
 			$ptask{'output'} = $outdir.'/tau_roi_'.$roi.'_'.$subject;
 			$ptask{'filename'} = $outdir.'/'.$subject.'_roi_'.$roi.'.sh';	
-			$ptask{'command'} = $ENV{'PIPEDIR'}.'/bin/get_troi.sh '.$study.'_'.$subject.' '.$w_dir.'/.tmp_'.$subject.' '.$roi;
+			$ptask{'command'} = 'hostname; echo '.$subject.'; '.$ENV{'PIPEDIR'}.'/bin/get_troi.sh '.$study.'_'.$subject.' '.$w_dir.'/.tmp_'.$subject.' '.$roi;
 			$mask_chain.= $w_dir.'/.tmp_'.$subject.'/rois/'.$roi.'.nii.gz ';
 			send2slurm(\%ptask);
 		}
@@ -147,7 +158,7 @@ foreach my $subject (@pets){
 }
 # Generating report
 my %warn;
-$warn{'command'} = $ENV{'PIPEDIR'}."/bin/make_tau_report.pl ".$study;
+$warn{'command'} = $ENV{'PIPEDIR'}."/bin/make_tau_report.pl ".($owd?" -wd $owd ":"").$study;
 $warn{'filename'} = $outdir.'/tau_report.sh';
 $warn{'job_name'} = 'tau_reg_'.$study;
 $warn{'time'} = '2:0:0'; #si no ha terminado en X horas matalo
@@ -156,7 +167,7 @@ $warn{'output'} = $outdir.'/tau_report';
 $warn{'dependency'} = 'afterok:'.join(',',@r_jobs);
 send2slurm(\%warn);
 # Calculating Metrics
-$warn{'command'} = $ENV{'PIPEDIR'}."/bin/tau_metrics.pl -tracer ".$tracer." ".($style?" -r $style ":"").($ror?" -o $ror ":"").$study;
+$warn{'command'} = $ENV{'PIPEDIR'}."/bin/tau_metrics.pl -tracer ".$tracer." ".($style?" -r $style ":"").($ror?" -o $ror ":"").($owd?" -wd $owd ":"").$study;
 $warn{'filename'} = $outdir.'/tau_metrics.sh';
 $warn{'job_name'} = 'tau_metrics_'.$study;
 $warn{'time'} = '2:0:0'; #si no ha terminado en X horas matalo

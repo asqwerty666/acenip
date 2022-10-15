@@ -9,11 +9,13 @@ my @rois = tau_rois();
 my $style = "";
 my $tracer = "";
 my $ror = "icgm";
+my $owd = '';
 @ARGV = ("-h") unless @ARGV;
 
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
+    if (/-wd/) {$owd = shift; chomp($owd);}
     if (/^-cut/) { $cfile = shift; chomp($cfile);}
     if (/^-tracer/) {$tracer = shift; chomp($tracer);}
     if (/^-o/) {$ror = shift; chomp($ror);}
@@ -24,7 +26,12 @@ my $study = shift;
 unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/pet_metrics.hlp'; exit;}
 unless ($tracer) {die "Should supply -tracer RADIOTRACER\n"; }
 my %std = load_project($study);
-my $w_dir=$std{'WORKING'};
+my $w_dir;
+if ($owd) {
+	$w_dir = $owd;
+}else{
+	$w_dir	= $std{'WORKING'};
+}
 my $data_dir=$std{'DATA'};
 my $db = $data_dir.'/'.$study.'_pet.csv';
 our @subjects = cut_shit($db, $data_dir."/".$cfile);
