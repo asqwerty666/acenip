@@ -107,11 +107,6 @@ B<dependency> option could be safely ignored. But notice that, if you are
 reusing a HASH then this key should be deleted from it. 
 
 
-=cut 
-
-=for comment
-Make sure that all the available options are documented!
-
 =cut
 
 sub send2slurm{
@@ -177,6 +172,16 @@ sub send2slurm{
 	chomp $code;
 	return $code;
 }
+
+=item wait4jobs
+
+This function uses slurm to ask if given jobs are running. User should supply an array with all the
+jobs that function should wait for. Once all the jobs have finished, the control is returned to main 
+program
+
+usage: wait4jobs(@jobs_list) 
+
+=cut
 
 sub wait4jobs{
 	my $jlist = join ',',@_;
