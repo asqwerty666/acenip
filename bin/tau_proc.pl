@@ -25,8 +25,9 @@ my $time = '2:0:0';
 my $style = "";
 my $tracer = "";
 my $ror = "";
-my $slices_file = 'cuts.csv';
-my $metric = 'cc';
+#my $slices_file = 'cuts.csv';
+my $slices_file = '';
+my $metric = 'fs';
 my $owd = ''; 
 
 @ARGV = ("-h") unless @ARGV;
@@ -65,12 +66,15 @@ print "Collecting needed files\n";
 my @pets = cut_shit($db, $data_dir.'/'.$cfile);
 my $cut_file = $data_dir.'/'.$slices_file;
 my %slices;
-open IDF, "<$cut_file" or die "No file with cutting slices\n";
-while (<IDF>) {
-	my ($id, $slice) = /(\d*),(\d*)/;
-	$slices{$id} = $slice;
+if ($slices_file){
+	my $cut_file = $data_dir.'/'.$slices_file;
+	open IDF, "<$cut_file" or die "No file with cutting slices\n";
+	while (<IDF>) {
+		my ($id, $slice) = /(\d*),(\d*)/;
+		$slices{$id} = $slice;
+	}
+	close IDF;
 }
-close IDF;
 #defino aqui las propiedades comunes de ejecucion
 my %ptask;
 $ptask{'job_name'} = 'tau_reg_'.$study;
