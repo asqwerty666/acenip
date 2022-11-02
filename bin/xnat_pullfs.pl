@@ -49,8 +49,15 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     if (/^-x/) { $xprj = shift; chomp($xprj);} #nombre del proyecto en XNAT
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/xnat_pullfs.hlp'; exit;}
 }
-$xprj = $prj unless $xprj;
-die "Should supply the XNAT project name\n" unless $xprj;
+if ($prj or $xprj){
+	if ($prj) { 
+		$xprj = $prj;
+	}else{
+		$prj = $xprj;
+	}
+}else{
+	die "Should supply the XNAT or local project name\n"
+}
 my %std = load_project($prj);
 if(exists($std{'XNAME'}) and $std{'XNAME'}){
 	$xprj = $std{'XNAME'};
