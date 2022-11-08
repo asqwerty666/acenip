@@ -44,6 +44,14 @@
 
             $xdata = xget_sbj_data(host, jsession, subject, field);
 
+- xget\_sbj\_demog
+
+    Get demographics variable from given subject, if available
+
+    usage:
+
+            $xdata = xget_sbj_demog(host, jsession, subject, field);
+
 - xget\_exp\_data
 
     Get a data field of an experiment.
@@ -162,6 +170,14 @@
     usage:
 
             xput_res(host, jsession, experiment, type, file, filename)
+
+- xget\_res
+
+    Dowload data from experiment resource given type and json name
+
+    usage:
+
+            xget_res(host, jsession, experiment, type, filename)
 
 - xget\_rvr
 

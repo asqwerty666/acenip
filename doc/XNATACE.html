@@ -7,7 +7,7 @@
 <link rev="made" href="mailto:root@localhost" />
 </head>
 
-<body style="background-color: white">
+<body>
 
 
 
@@ -67,6 +67,16 @@
 <p>usage:</p>
 
 <pre><code>        $xdata = xget_sbj_data(host, jsession, subject, field);</code></pre>
+
+</dd>
+<dt id="xget_sbj_demog">xget_sbj_demog</dt>
+<dd>
+
+<p>Get demographics variable from given subject, if available</p>
+
+<p>usage:</p>
+
+<pre><code>        $xdata = xget_sbj_demog(host, jsession, subject, field);</code></pre>
 
 </dd>
 <dt id="xget_exp_data">xget_exp_data</dt>
@@ -208,6 +218,16 @@
 <p>usage:</p>
 
 <pre><code>        xput_res(host, jsession, experiment, type, file, filename)</code></pre>
+
+</dd>
+<dt id="xget_res">xget_res</dt>
+<dd>
+
+<p>Dowload data from experiment resource given type and json name</p>
+
+<p>usage:</p>
+
+<pre><code>        xget_res(host, jsession, experiment, type, filename)</code></pre>
 
 </dd>
 <dt id="xget_rvr">xget_rvr</dt>
