@@ -16,7 +16,7 @@
 
             %xnat_data = xget_conf()
 
-- xget\_session 
+- xget\_session
 
     Create a new JSESSIONID on XNAT. Return the connection data
     for the server AND the ID of the created session
@@ -165,11 +165,11 @@
 
 - xput\_res 
 
-    Upload data to an experiment resource
+    Upload hash to an experiment resource as a json file
 
     usage:
 
-            xput_res(host, jsession, experiment, type, file, filename)
+            xput_res(host, jsession, experiment, type, file, hash_ref)
 
 - xget\_res
 

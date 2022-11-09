@@ -48,6 +48,6 @@ foreach my $sbj (sort keys %subjects){
 	my $experiment = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
 	my $label = xget_sbj_data($xconf{'HOST'}, $xconf{'JSESSION'}, $sbj, 'label');
 	my %wmh_data = xget_res($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data', 'wmh.json');
-	print "$label,$wmh_data{'wmh'}\n";
+	print "$label,$wmh_data{'WMH'}\n";
 }
 #dump %wmhs;

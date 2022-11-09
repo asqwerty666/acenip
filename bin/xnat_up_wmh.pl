@@ -43,7 +43,6 @@ die "No input data file\n" unless $ifile and -f $ifile;
 my $tmp_dir = $ENV{TMPDIR};
 my %xconf = xget_session();
 my %wmhs;
-my $json_template = '{"ResultSet":{"Result":[{"wmh":"<WMH>"}]}}';
 open IDF, "<$ifile";
 while (<IDF>){
 	if (/.*,\d+\.\d+/){
@@ -51,16 +50,10 @@ while (<IDF>){
 		$wmhs{$sbj} = trim $wmh;
 	}
 }
-my $data_dir = tempdir(TEMPLATE => $tmp_dir.'/wmh_data.XXXXX', CLEANUP => 1);
 foreach my $sbj (sort keys %wmhs){
 	my $experiment = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
-	my $wmh_data = $json_template;
-	$wmh_data =~ s/<WMH>/$wmhs{$sbj}/;
-	my $tfile = $data_dir.'/'.$experiment.'.json';
-	open WOF, ">$tfile" or die "Could not create temp file\n";
-	print WOF "$wmh_data";
-	close WOF;
+	my %wmh_data;
+	$wmh_data{'WMH'} = $wmhs{$sbj};
 	xcreate_res($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data');
-	xput_res($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data', 'wmh.json', $tfile);
+	xput_res($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data', 'wmh.json', \%wmh_data);
 }
-#dump %wmhs;

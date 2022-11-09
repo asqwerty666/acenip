@@ -67,7 +67,7 @@ sub xget_conf {
 	return %xconf;
 }
 
-=item xget_session 
+=item xget_session
 
 Create a new JSESSIONID on XNAT. Return the connection data
 for the server AND the ID of the created session
@@ -464,17 +464,36 @@ sub xcreate_res {
 
 =item xput_res 
 
-Upload data to an experiment resource
+Upload hash to an experiment resource as a json file
 
 usage:
 
-	xput_res(host, jsession, experiment, type, file, filename)
+	xput_res(host, jsession, experiment, type, file, hash_ref)
 
 =cut
 
 sub xput_res {
 	my @xdata = @_;
-	my $crd = 'curl -f -X PUT -b JSESSIONID='.$xdata[1].' "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/'.$xdata[3].'/files/'.$xdata[4].'?overwrite=true" -F file="@'.$xdata[5].'"';
+	# El hash se pasa como referencia en ultimo lugar
+	my %jdata = %{$xdata[5]};
+	# pongo el contenido del hash en un json. Ojo que estoy siguiendo el estilo de XNAT 
+	# o seria mucho mas sencillo,
+	my $json_content = '{"ResultSet":{"Result":[';
+	my $size = keys %jdata;
+	foreach my $jvar (sort keys %jdata){
+		$json_content .= '{"'.$jvar.'":"'.$jdata{$jvar}.'"}';
+		$size--;
+		$json_content .= ',' if $size;
+	}
+	$json_content .= ']}}';
+	#ahora tengo que hacer un file para pasarlo con curl
+	my $tmp_dir = tempdir(TEMPLATE => $ENV{TMPDIR}.'/wmh_data.XXXXX', CLEANUP => 1);
+	my $tmp_file = $tmp_dir.'/'.$xdata[2].'.json';
+	open TDF, ">$tmp_file";
+	print TDF $json_content;
+	close TDF;
+	# y a asubir
+	my $crd = 'curl -f -X PUT -b JSESSIONID='.$xdata[1].' "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/'.$xdata[3].'/files/'.$xdata[4].'?overwrite=true" -F file="@'.$tmp_file.'"';
 	system($crd);
 }
 
