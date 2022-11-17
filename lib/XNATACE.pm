@@ -24,6 +24,7 @@ our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput
 our %EXPORT_TAGS =(all => qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report), usual => qw(xconf xget_conf xget_session));
 
 our $VERSION = 0.1;
+our $default_config_path = $ENV{'HOME'}.'/.xnatapic/xnat.conf';
 
 =head1 XNATACE
 
@@ -40,7 +41,9 @@ usage:
 =cut 
 
 sub xconf {
-	return $ENV{'HOME'}.'/.xnatapic/xnat.conf';
+	my $rpath = shift;
+	$rpath = $default_config_path unless $rpath;
+	return $rpath;
 }
 
 =item xget_conf
@@ -56,7 +59,8 @@ usage:
 sub xget_conf {
 	# Get the XNAT connection data into a HASH
 	# usage %xnat_data = xconf(configuration_file)
-	my $xconf_file = xconf();
+	my $dpath = shift; 
+	my $xconf_file = xconf($dpath);
 	my %xconf;
 	open IDF, "<$xconf_file";
 	while (<IDF>){
@@ -82,7 +86,8 @@ sub xget_session {
 	# Create a new JSESSIONID on XNAT
 	# usage: xget_session(\%xconf);
 	#my %xdata = %{shift()};
-	my %xdata = xget_conf();
+	my $dpath = shift;
+	my %xdata = xget_conf($dpath);
 	my $crd = 'curl -f -u '.$xdata{'USER'}.':'.$xdata{'PASSWORD'}.' -X POST '.$xdata{'HOST'}.'/data/JSESSION 2>/dev/null';
 	$xdata{'JSESSION'} = qx/$crd/;
 	return %xdata;
