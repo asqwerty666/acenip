@@ -115,15 +115,15 @@ foreach my $subject (@pets){
 		foreach my $roi (@rois){
 			$ptask{'output'} = $outdir.'/tau_roi_'.$roi.'_'.$subject;
 			$ptask{'filename'} = $outdir.'/'.$subject.'_roi_'.$roi.'.sh';	
-			$ptask{'command'} = 'hostname; echo '.$subject.'; '.$ENV{'PIPEDIR'}.'/bin/get_troi.sh '.$study.'_'.$subject.' '.$w_dir.'/.tmp_'.$subject.' '.$roi;
+			$ptask{'command'} = 'echo '.$subject.'; '.$ENV{'PIPEDIR'}.'/bin/get_troi.sh '.$study.'_'.$subject.' '.$w_dir.'/.tmp_'.$subject.' '.$roi;
 			$mask_chain.= $w_dir.'/.tmp_'.$subject.'/rois/'.$roi.'.nii.gz ';
 			send2slurm(\%ptask);
 		}
 		#Hacer mascara de Eroded WM
-	        $ptask{'output'} = $outdir.'/tau_ewm_'.$subject;
-	        $ptask{'filename'} = $outdir.'/'.$subject.'_ewm.sh';
-	        $ptask{'command'} = $ENV{'PIPEDIR'}.'/bin/get_tref_ewm.sh '.$study.'_'.$subject.' '.$w_dir.'/.tmp_'.$subject;
-	        $mask_chain.= $w_dir.'/.tmp_'.$subject.'/rois/ewm.nii.gz ';
+		#$ptask{'output'} = $outdir.'/tau_ewm_'.$subject;
+		#$ptask{'filename'} = $outdir.'/'.$subject.'_ewm.sh';
+		#$ptask{'command'} = $ENV{'PIPEDIR'}.'/bin/get_tref_ewm.sh '.$study.'_'.$subject.' '.$w_dir.'/.tmp_'.$subject;
+		#$mask_chain.= $w_dir.'/.tmp_'.$subject.'/rois/ewm.nii.gz ';
 	        send2slurm(\%ptask);
 		#Hacer mascara de cerebelo
 	        $ptask{'output'} = $outdir.'/tau_cgm_'.$subject;

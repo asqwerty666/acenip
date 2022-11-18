@@ -40,9 +40,9 @@ my @subs = ("pvc", "unc");
 if($style){@rois = tau_rois($style);}
 my $norm = @rois;
 my $asize = $norm;
-if ($ror ne "ewm") {
-	$norm++;
-}
+#if ($ror ne "ewm") {
+#	$norm++;
+#}
 my %measures;
 foreach my $subject (@subjects){
 	my %spet = check_pet($std{'DATA'},$subject,$tracer);
@@ -72,6 +72,7 @@ foreach my $msub (@subs){
 	}
 	print ODF "\n";
 	foreach my $subject (@subjects){
+		#print "$subject -> $measures{$subject}{$msub}[$norm]\n";
 		if(exists($measures{$subject}) && exists($measures{$subject}{$msub}) && exists($measures{$subject}{$msub}[$norm]) && $measures{$subject}{$msub}[$norm]){
 			print ODF "$subject";
 			for (my $i=0; $i<$asize; $i++){

@@ -47,6 +47,6 @@ foreach my $imask (@files){
 	print OF "$tag\t$mean\n";
 }
 close OF;
-(my $suvr = $ifile) =~ s/_tau.nii.gz/_suvr.nii.gz/;
+(my $suvr = $ifile) =~ s/_tau/_suvr/;
 my $ord = "fslmaths $ifile -div $mean $suvr";
 system($ord);

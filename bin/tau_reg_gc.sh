@@ -18,6 +18,16 @@ fi
 debug=0
 # Clean the shit first
 rm -rf ${td}/*_piece_*
+# Get FS register data
+if [ ! -f ${tmp_dir}/rois/register.dat ]; then
+        mkdir -p ${tmp_dir}/rois/;
+        ${FREESURFER_HOME}/bin/tkregister2 --mov $SUBJECTS_DIR/${subject}/mri/rawavg.mgz --noedit --s ${subject} --regheader --reg ${tmp_dir}/rois/register.dat;
+        sleep 5;
+fi
+if [ ! -f ${tmp_dir}/all_aseg.nii.gz ]; then
+        ${FREESURFER_HOME}/bin/mri_label2vol --seg $SUBJECTS_DIR/${subject}/mri/aparc+aseg.mgz --temp $SUBJECTS_DIR/${subject}/mri/rawavg.mgz --o ${tmp_dir}/all_aseg.nii.gz --reg ${tmp_dir}/rois/register.dat;
+        sleep 5;
+fi
 # Go on now
 ${FREESURFER_HOME}/bin/mri_convert --in_type mgz --out_type nii ${SUBJECTS_DIR}/${study}_${id}/mri/rawavg.mgz ${wdir}/${id}_struc.nii.gz
 ${FSLDIR}/bin/fslsplit ${src} ${td}/${id}_piece_ -t
