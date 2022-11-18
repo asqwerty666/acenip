@@ -19,20 +19,39 @@ use SLURMACE qw(send2slurm);
 use File::Temp qw(:mktemp tempdir);
 use Data::Dump qw(dump);
 my $mode = 'MRI';
+my $ifile = '';
 my $prj;
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
 	$_ = shift;
 	last if /^--$/;
 	if (/^-p/) { $prj = shift; chomp $prj;}
+	if (/^-i/) { $ifile = shift; chomp($ifile);}
 	if (/^-m/) { $mode = shift; chomp $mode;}
 }
 die "Should supply project name" unless $prj;
 my $tmp_dir = $ENV{'TMPDIR'};
 my %prj_data = load_project($prj);
+my @cuts;
+if ($ifile){
+	open IDF, "<$ifile" or die "No such input file!\n";
+	@cuts = <IDF>;
+	chomp @cuts;
+	close IDF;
+}
 my %xconf = xget_session();
 my %subjects = xget_subjects($xconf{'HOST'}, $xconf{'JSESSION'}, $prj_data{'XNAME'});
 foreach my $sbj (sort keys %subjects){
+	if ($ifile) {
+		if (grep {/$subjects{$sbj}{'label'}/} @cuts){
+			$subjects{$sbj}{'download'} = 1;
+		}else{
+			$subjects{$sbj}{'download'} = 0;
+			next;
+		}
+	}else{
+		$subjects{$sbj}{'download'} = 1;
+	}
 	if ($mode eq 'MRI'){
 		$subjects{$sbj}{'experiment'} = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $prj_data{'XNAME'}, $sbj);
 	}elsif ($mode eq 'PET') {
@@ -44,7 +63,7 @@ foreach my $sbj (sort keys %subjects){
 }
 my $count_id = 0;
 foreach my $sbj (sort keys %subjects){
-	if(exists($subjects{$sbj}{'experiment'}) and $subjects{$sbj}{'experiment'}){
+	if(exists($subjects{$sbj}{'experiment'}) and $subjects{$sbj}{'experiment'} and $subjects{$sbj}{'download'}){
 		my $src_dir = $prj_data{'SRC'}.'/'.$subjects{$sbj}{'label'};
 		mkdir $src_dir;
 		xget_dicom($xconf{'HOST'}, $xconf{'JSESSION'}, $subjects{$sbj}{'experiment'}, $src_dir);
@@ -55,6 +74,9 @@ foreach my $sbj (sort keys %subjects){
 my $ofile = $prj_data{'DATA'}.'/'.$prj.'_'.$mode.'.csv';
 open ODF, ">$ofile";
 foreach my $sbj (sort keys %subjects){
-	print ODF "$subjects{$sbj}{'strID'},$subjects{$sbj}{'label'}\n";
+	if ($subjects{$sbj}{'download'}) {
+		print ODF "$subjects{$sbj}{'strID'},$subjects{$sbj}{'label'}\n";
+	}
 }
+
 close ODF;
