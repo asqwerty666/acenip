@@ -16,7 +16,7 @@
 #
 use strict; use warnings;
 use NEURO4 qw(load_project trim);
-use XNATACE qw(xget_session xget_mri xget_subjects xget_res xget_sbj_data);
+use XNATACE qw(xget_session xget_mri xget_subjects xget_res_data xget_sbj_data);
 use Data::Dump qw(dump);
 use File::Temp qw(:mktemp tempdir);
 my $prj;
@@ -47,7 +47,7 @@ open STDOUT, ">$ofile" unless not $ofile;
 foreach my $sbj (sort keys %subjects){
 	my $experiment = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
 	my $label = xget_sbj_data($xconf{'HOST'}, $xconf{'JSESSION'}, $sbj, 'label');
-	my %wmh_data = xget_res($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data', 'wmh.json');
+	my %wmh_data = xget_res_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data', 'wmh.json');
 	print "$label,$wmh_data{'WMH'}\n";
 }
 #dump %wmhs;

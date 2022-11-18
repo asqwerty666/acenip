@@ -19,8 +19,8 @@ use JSON qw(decode_json);
 use File::Temp qw(:mktemp tempdir);
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
-our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res xcreate_res xget_res xget_dicom xget_sbj_demog);
-our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res xcreate_res xget_res xget_dicom xget_sbj_demog);
+our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_dicom xget_sbj_demog);
+our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_dicom xget_sbj_demog);
 our %EXPORT_TAGS =(all => qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report), usual => qw(xconf xget_conf xget_session));
 
 our $VERSION = 0.1;
@@ -467,7 +467,23 @@ sub xcreate_res {
 	system($crd);
 }
 
-=item xput_res 
+=item xput_res_file
+
+Upload file to an experiment resource
+
+usage:
+
+        xput_res(host, jsession, experiment, type, file, filename)
+
+=cut
+
+sub xput_res_file {
+	my @xdata = @_;
+	my $crd = 'curl -f -X PUT -b JSESSIONID='.$xdata[1].' "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/'.$xdata[3].'/files/'.$xdata[4].'?overwrite=true" -F file="@'.$xdata[5].'"';
+	system($crd);
+}
+
+=item xput_res_data 
 
 Upload hash to an experiment resource as a json file
 
@@ -502,17 +518,17 @@ sub xput_res {
 	system($crd);
 }
 
-=item xget_res
+=item xget_res_data
 
 Dowload data from experiment resource given type and json name
 
 usage:
 
-        xget_res(host, jsession, experiment, type, filename)
+        xget_res_data(host, jsession, experiment, type, filename)
 
 =cut
 
-sub xget_res {
+sub xget_res_data {
         my @xdata = @_;
         my $crd = 'curl -f -X GET -b JSESSIONID='.$xdata[1].' "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/'.$xdata[3].'/files/'.$xdata[4].'" 2>/dev/null';
 	my $json_res = qx/$crd/;
