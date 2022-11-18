@@ -25,7 +25,7 @@
 use strict; use warnings;
 use Cwd qw(cwd);
 use NEURO4 qw(load_project print_help populate check_or_make getLoggingTime);
-use XNATACE qw(xget_session xget_mri xget_fs_data xget_subjects xcreate_res xput_res);
+use XNATACE qw(xget_session xget_mri xget_fs_data xget_subjects xcreate_res xput_res_file);
 use File::Temp qw(:mktemp tempdir);
 use File::Find::Rule;
 use File::Basename qw(basename);
@@ -170,11 +170,11 @@ while(<RDF>){
 	print QCF "$rqc";
 	close QCF;
 	xcreate_res($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'fsqc');
-	xput_res($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'fsqc', 'rating.json', $rfile);
+	xput_res_file($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'fsqc', 'rating.json', $rfile);
 	my @tifs = find(file => 'name' => "$experiment*.tif", in => $imgdir);
 	foreach my $tifimg (@tifs){
 		my $iname = basename $tifimg;
-		xput_res($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'fsqc', $iname, $tifimg);
+		xput_res_file($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'fsqc', $iname, $tifimg);
 	}
 }
 close RDF;

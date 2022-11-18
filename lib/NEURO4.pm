@@ -382,7 +382,7 @@ sub populate {
 =item get_subjects
 
 Parse a project database taking only the subjects and storing them into an array.
-The databse is expected to be build as,
+The database is expected to be build as,
 
 	0000;name 
 
