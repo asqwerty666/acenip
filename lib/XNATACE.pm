@@ -489,11 +489,11 @@ Upload hash to an experiment resource as a json file
 
 usage:
 
-	xput_res(host, jsession, experiment, type, file, hash_ref)
+	xput_res_data(host, jsession, experiment, type, file, hash_ref)
 
 =cut
 
-sub xput_res {
+sub xput_res_data {
 	my @xdata = @_;
 	# El hash se pasa como referencia en ultimo lugar
 	my %jdata = %{$xdata[5]};
@@ -533,11 +533,13 @@ sub xget_res_data {
         my $crd = 'curl -f -X GET -b JSESSIONID='.$xdata[1].' "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/'.$xdata[3].'/files/'.$xdata[4].'" 2>/dev/null';
 	my $json_res = qx/$crd/;
 	my %out_data;
-	my $data_prop = decode_json $json_res;
-	foreach my $data_res (@{$data_prop->{'ResultSet'}{'Result'}}){
-		foreach my $kdata (sort keys %{$data_res}){
-                        $out_data{$kdata} = ${$data_res}{$kdata};
-                }
+	if ($json_res) {
+		my $data_prop = decode_json $json_res;
+		foreach my $data_res (@{$data_prop->{'ResultSet'}{'Result'}}){
+			foreach my $kdata (sort keys %{$data_res}){
+               			$out_data{$kdata} = ${$data_res}{$kdata};
+                	}
+		}
 	}
 	return %out_data;
 }

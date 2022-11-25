@@ -44,10 +44,15 @@ my %xconf = xget_session();
 my %wmhs;
 my %subjects = xget_subjects($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj);
 open STDOUT, ">$ofile" unless not $ofile;
+print "Subject_ID,WMH\n";
 foreach my $sbj (sort keys %subjects){
 	my $experiment = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
 	my $label = xget_sbj_data($xconf{'HOST'}, $xconf{'JSESSION'}, $sbj, 'label');
 	my %wmh_data = xget_res_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data', 'wmh.json');
-	print "$label,$wmh_data{'WMH'}\n";
+	if (exists($wmh_data{'WMH'}) and $wmh_data{'WMH'}){
+		print "$label,$wmh_data{'WMH'}\n";
+	}else{
+		print "$label,NA\n";
+	}
 }
 #dump %wmhs;
