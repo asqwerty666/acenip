@@ -15,8 +15,10 @@ base$Entorhinal = base$lh.entorhinal.GrayVol + base$rh.entorhinal.GrayVol
 base$Ventricles <- base$Left.Inf.Lat.Vent + base$Right.Inf.Lat.Vent + base$Left.Lateral.Ventricle + base$Right.Lateral.Ventricle
 base$MidTemp = base$lh.middletemporal.GrayVol + base$rh.middletemporal.GrayVol
 base$ICV = base$eTIV
-base$ND <- predict(classifier_cl, newdata = base)
-base2e = base[, c("Subject_ID", "ND")]
+base$ND <- predict(classifier_cl, newdata = base, type = "class")
+base$post <- predict(classifier_cl, newdata = base, type = "raw")
+base$Nprob <- base$post[,2]
+base2e = base[, c("Subject_ID", "ND", "Nprob")]
 write.csv(base2e, file=output_file, row.names=FALSE, quote=FALSE)
 a <- lm(base$Hippocampus ~ base$ICV)
 base$aHV = base$Hippocampus - a$coefficients[[2]]*(base$ICV - mean(base$ICV, na.rm=TRUE))
