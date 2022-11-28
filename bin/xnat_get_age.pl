@@ -30,6 +30,7 @@ foreach my $sbj (sort keys %subjects){
 	$subjects{$sbj}{'experiment'} = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
 	my $mri_date = xget_exp_data($xconf{'HOST'}, $xconf{'JSESSION'}, $subjects{$sbj}{'experiment'}, 'date');
 	my $dob = xget_sbj_demog($xconf{'HOST'}, $xconf{'JSESSION'}, $sbj, 'dob');
+	#print "$sbj -> $mri_date -> $dob\n";
 		if ($mri_date and $dob){
 			my $ddif = Delta_Format(DateCalc(ParseDate($dob),ParseDate($mri_date)),2,"%hh")/(24*365.2425);
 			$subjects{$sbj}{'age'} = nearest(0.1, $ddif);

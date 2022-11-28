@@ -50,6 +50,7 @@ while (<IDF>){
 		$wmhs{$sbj} = trim $wmh;
 	}
 }
+close IDF;
 foreach my $sbj (sort keys %wmhs){
 	my $experiment = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
 	my %wmh_data;

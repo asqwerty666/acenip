@@ -155,11 +155,15 @@ usage:
 
 sub xget_sbj_demog {
 	my @xdata = @_;
-        my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/subjects/'.$xdata[2].'?format=json" 2>/dev/null';
+        my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/subjects/'.$xdata[2].'?format=json&columns=label,dob" 2>/dev/null | jq \'.\' | grep '.$xdata[3];
         my $jres = qx/$crd/;
-        my $xfres = decode_json $jres;
-	#dump $xfres->{items}[0];
-        return $xfres->{items}[0]{children}[0]{items}[0]{data_fields}{$xdata[3]};
+	#my $xfres = decode_json $jres;
+	# This is the fucking slowest way to do this shit 
+	# but the website with XNAT docs is down right now
+	$jres =~ s/.*(\d{4}-\d{2}-\d{2}).*$/$1/;
+	chomp $jres;
+	return $jres;
+        #return $xfres->{items}[0]{children}[0]{items}[0]{data_fields}{$xdata[3]};
 }
 
 =item xget_exp_data

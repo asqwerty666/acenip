@@ -12,21 +12,21 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-# Main idea here is to get WMH stored values as XNAT resources
+# Main idea here is to storage some external calculated values as XNAT resources
 #
 use strict; use warnings;
 use NEURO4 qw(load_project trim);
-use XNATACE qw(xget_session xget_mri xget_subjects xget_res_data xget_sbj_data);
+use XNATACE qw(xget_session xget_mri xget_subjects xcreate_res xput_res_data);
 use Data::Dump qw(dump);
 use File::Temp qw(:mktemp tempdir);
 my $prj;
 my $xprj;
-my $ofile;
+my $ifile;
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
         $_ = shift;
         last if /^--$/;
-        if (/^-o/) { $ofile = shift; chomp($ofile);}
+        if (/^-i/) { $ifile = shift; chomp($ifile);}
         if (/^-x/) { $xprj = shift; chomp($xprj);} #nombre del proyecto en XNAT
         if (/^-p/) { $prj = shift; chomp($prj);} #nombre local del proyecto
 }
@@ -39,21 +39,22 @@ if ($prj and not $xprj) {
 # O te vas a tomar por culo
 die "Should supply XNAT project name or define it at local project config!\n" unless $xprj;
 # tambien el input file porque si no no hago nada
-my $tmp_dir = $ENV{TMPDIR};
-my %xconf = xget_session();
-my %wmhs;
-my %subjects = xget_subjects($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj);
-open STDOUT, ">$ofile" unless not $ofile;
-print "Subject_ID,WMH\n";
-foreach my $sbj (sort keys %subjects){
-	my $experiment = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
-	my $label = xget_sbj_data($xconf{'HOST'}, $xconf{'JSESSION'}, $sbj, 'label');
-	my %wmh_data = xget_res_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data', 'wmh.json');
-	if (exists($wmh_data{'WMH'}) and $wmh_data{'WMH'}){
-		print "$label,$wmh_data{'WMH'}\n";
-	}else{
-		print "$label,NA\n";
+die "No input data file\n" unless $ifile and -f $ifile;
+my %nass;
+open IDF, "<$ifile";
+while (<IDF>){
+	if (/.*,\d,\d+\.\d+/){
+		my ($sbj, $n, $p) = /(.*),(.*),(.*)/;
+		$nass{$sbj}{'N'} = $n;
+		$nass{$sbj}{'Nprob'} = $p;
 	}
 }
-close STDOUT;
-#dump %wmhs;
+close IDF;
+# Here comes the magic ;-P
+my %xconf = xget_session();
+foreach my $sbj (sort keys %nass){
+	my $experiment = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
+	my %ass_data = ('N' => $nass{$sbj}{'N'}, 'Nprob' => $nass{$sbj}{'Nprob'});
+	xcreate_res($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data');
+	xput_res_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data', 'neuroass.json', \%ass_data);
+}

@@ -44,16 +44,18 @@ my %xconf = xget_session();
 my %wmhs;
 my %subjects = xget_subjects($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj);
 open STDOUT, ">$ofile" unless not $ofile;
-print "Subject_ID,WMH\n";
+print "Subject_ID,N,Nprob\n";
 foreach my $sbj (sort keys %subjects){
 	my $experiment = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
 	my $label = xget_sbj_data($xconf{'HOST'}, $xconf{'JSESSION'}, $sbj, 'label');
-	my %wmh_data = xget_res_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data', 'wmh.json');
-	if (exists($wmh_data{'WMH'}) and $wmh_data{'WMH'}){
-		print "$label,$wmh_data{'WMH'}\n";
+	my %nass_data = xget_res_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data', 'neuroass.json');
+	#dump %nass_data;
+	if (exists($nass_data{'N'}) and exists($nass_data{'Nprob'})){
+		print "$label,$nass_data{'N'},$nass_data{'Nprob'}\n";
 	}else{
-		print "$label,NA\n";
+		print "$label,NA,NA\n";
 	}
 }
+
 close STDOUT;
 #dump %wmhs;
