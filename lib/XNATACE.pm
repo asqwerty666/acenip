@@ -158,12 +158,14 @@ usage:
 
 sub xget_sbj_demog {
 	my @xdata = @_;
-	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/subjects/'.$xdata[2].'?format=json&columns=label,dob" 2>/dev/null | jq \'.items[].children[] | select (.field=="demographics")\' | grep "'.$xdata[3].'"';
+	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/subjects/'.$xdata[2].'?format=json&columns=label,dob" 2>/dev/null | jq \'.items[].children[] | select (.field=="demographics")\' | jq \'.items[].data_fields["'.$xdata[3].'"]\'';
         my $jres = qx/$crd/;
 	#my $xfres = decode_json $jres;
 	# This is the fucking slowest way to do this shit 
 	# but the website with XNAT docs is down right now
-	$jres =~ s/^\s*\".*\":\s*\"(.*)\".*/$1/;
+	#$jres =~ s/^\s*\".*\":\s*\"(.*)\".*/$1/;
+	# get dequotified answer :-o FSM Help me!!!!!
+	$jres =~ s/"//g;
 	chomp $jres;
 	return $jres;
 }
@@ -193,10 +195,13 @@ usage:
 sub xget_exp_data {
 	# usage $xdata = xget_exp_data(host, jsession, experiment, field);	
 	my @xdata = @_;
-	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/experiments/'.$xdata[2].'?format=json" 2>/dev/null';
+	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/experiments/'.$xdata[2].'?format=json" 2>/dev/null | jq \'.items[].data_fields.'.$xdata[3].'\'';
 	my $jres = qx/$crd/;
-	my $xfres = decode_json $jres;
-	return $xfres->{items}[0]{data_fields}{$xdata[3]};
+	#my $xfres = decode_json $jres;
+	#return $xfres->{items}[0]{data_fields}{$xdata[3]};
+	$jres =~ s/\"//g;
+	chomp $jres;
+	return $jres;
 }
 
 =item xget_mri
