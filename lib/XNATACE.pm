@@ -136,10 +136,13 @@ usage:
 sub xget_sbj_data {
 	# usage $xdata = xget_sbj_data(host, jsession, subject, field);
 	my @xdata = @_;
-	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/subjects/'.$xdata[2].'?format=json" 2>/dev/null';
+	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/subjects/'.$xdata[2].'?format=json" 2>/dev/null | jq \'.items[].data_fields.'.$xdata[3].'\'';
 	my $jres = qx/$crd/;
-	my $xfres = decode_json $jres;
-	return $xfres->{items}[0]{data_fields}{$xdata[3]};
+	$jres =~ s/\"//g;
+	chomp $jres;
+	#my $xfres = decode_json $jres;
+	#return $xfres->{items}[0]{data_fields}{$xdata[3]};
+	return $jres;
 }
 
 
@@ -149,21 +152,20 @@ Get demographics variable from given subject, if available
 
 usage:
 
-	$xdata = xget_sbj_demog(host, jsession, subject, field);
+	$xdata = xget_sbj_demog(host, jsession, project, subject, field);
 
 =cut 
 
 sub xget_sbj_demog {
 	my @xdata = @_;
-        my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/subjects/'.$xdata[2].'?format=json&columns=label,dob" 2>/dev/null | jq \'.\' | grep '.$xdata[3];
+	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/subjects/'.$xdata[2].'?format=json&columns=label,dob" 2>/dev/null | jq \'.items[].children[] | select (.field=="demographics")\' | grep "'.$xdata[3].'"';
         my $jres = qx/$crd/;
 	#my $xfres = decode_json $jres;
 	# This is the fucking slowest way to do this shit 
 	# but the website with XNAT docs is down right now
-	$jres =~ s/.*(\d{4}-\d{2}-\d{2}).*$/$1/;
+	$jres =~ s/^\s*\".*\":\s*\"(.*)\".*/$1/;
 	chomp $jres;
 	return $jres;
-        #return $xfres->{items}[0]{children}[0]{items}[0]{data_fields}{$xdata[3]};
 }
 
 =item xget_exp_data
