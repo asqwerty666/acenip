@@ -510,14 +510,14 @@ sub xput_res_data {
 	my %jdata = %{$xdata[5]};
 	# pongo el contenido del hash en un json. Ojo que estoy siguiendo el estilo de XNAT 
 	# o seria mucho mas sencillo,
-	my $json_content = '{"ResultSet":{"Result":[';
+	my $json_content = '{"ResultSet":{"Result":[{';
 	my $size = keys %jdata;
 	foreach my $jvar (sort keys %jdata){
-		$json_content .= '{"'.$jvar.'":"'.$jdata{$jvar}.'"}';
+		$json_content .= '"'.$jvar.'":"'.$jdata{$jvar}.'"';
 		$size--;
 		$json_content .= ',' if $size;
 	}
-	$json_content .= ']}}';
+	$json_content .= '}]}}';
 	#ahora tengo que hacer un file para pasarlo con curl
 	my $tmp_dir = tempdir(TEMPLATE => $ENV{TMPDIR}.'/wmh_data.XXXXX', CLEANUP => 1);
 	my $tmp_file = $tmp_dir.'/'.$xdata[2].'.json';
