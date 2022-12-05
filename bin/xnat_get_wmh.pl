@@ -48,9 +48,9 @@ print "Subject_ID,WMH\n";
 foreach my $sbj (sort keys %subjects){
 	my $experiment = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
 	my $label = xget_sbj_data($xconf{'HOST'}, $xconf{'JSESSION'}, $sbj, 'label');
-	my %wmh_data = xget_res_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data', 'wmh.json');
-	if (exists($wmh_data{'WMH'}) and $wmh_data{'WMH'}){
-		print "$label,$wmh_data{'WMH'}\n";
+	my %wmh_data = xget_res_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'WMH', 'wmh.json');
+	if (exists($wmh_data{'WMH mm3'}) and $wmh_data{'WMH mm3'}){
+		print "$label,$wmh_data{'WMH mm3'}\n";
 	}else{
 		print "$label,NA\n";
 	}
