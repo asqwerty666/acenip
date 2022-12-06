@@ -19,8 +19,8 @@ use JSON qw(decode_json);
 use File::Temp qw(:mktemp tempdir);
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
-our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_dicom xget_sbj_demog);
-our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_dicom xget_sbj_demog);
+our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xput_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_dicom xget_sbj_demog);
+our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xput_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_dicom xget_sbj_demog);
 our %EXPORT_TAGS =(all => qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report), usual => qw(xconf xget_conf xget_session));
 
 our $VERSION = 0.1;
@@ -143,6 +143,35 @@ sub xget_sbj_data {
 	#my $xfres = decode_json $jres;
 	#return $xfres->{items}[0]{data_fields}{$xdata[3]};
 	return $jres;
+}
+
+=item xput_sbj_data 
+
+Set a parameter for given subject
+
+usage:
+
+	xput_sbj_data(host, jsession, subject, field, value)
+
+This is the same as 
+	curl -f -b "JSESSIONID=57B615F6F6AEDC93E604B252772F3043" -X PUT "http://detritus.fundacioace.com:8088/data/subjects/XNAT_S00823?gender=female,dob=1947-06-07"
+
+but is intended to offer a Perl interface to updating subject data
+
+=cut
+
+sub xput_sbj_data {
+	my @xdata = @_;
+	my @svars = split /,/, $xdata[3];
+	my @svals = split /,/, $xdata[4];
+	my $qcad = ''; # Esto seguro que con map se puede hacer en una linea pero vamos que asi tampoco esta mal
+	for (my $i=0; $i<scalar(@svars); $i++){
+		$qcad .= $svars[$i].'='.$svals[$i].'&';
+	}
+	$qcad =~ s/\&$//;	
+	my $crd = 'curl -f -X PUT -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/subjects/'.$xdata[2].'?'.$qcad.'" 2>/dev/null';
+	my $res = qx/$crd/;
+	return $res;
 }
 
 

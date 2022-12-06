@@ -69,6 +69,20 @@
 <pre><code>        $xdata = xget_sbj_data(host, jsession, subject, field);</code></pre>
 
 </dd>
+<dt id="xput_sbj_data">xput_sbj_data</dt>
+<dd>
+
+<p>Set a parameter for given subject</p>
+
+<p>usage:</p>
+
+<pre><code>        xput_sbj_data(host, jsession, subject, field, value)</code></pre>
+
+<p>This is the same as curl -f -b &quot;JSESSIONID=57B615F6F6AEDC93E604B252772F3043&quot; -X PUT &quot;http://detritus.fundacioace.com:8088/data/subjects/XNAT_S00823?gender=female,dob=1947-06-07&quot;</p>
+
+<p>but is intended to offer a Perl interface to updating subject data</p>
+
+</dd>
 <dt id="xget_sbj_demog">xget_sbj_demog</dt>
 <dd>
 
@@ -76,7 +90,7 @@
 
 <p>usage:</p>
 
-<pre><code>        $xdata = xget_sbj_demog(host, jsession, subject, field);</code></pre>
+<pre><code>        $xdata = xget_sbj_demog(host, jsession, project, subject, field);</code></pre>
 
 </dd>
 <dt id="xget_exp_data">xget_exp_data</dt>
@@ -210,24 +224,34 @@
 <pre><code>        xcreate_res(host, jsession, experiment, res_name)</code></pre>
 
 </dd>
-<dt id="xput_res">xput_res</dt>
+<dt id="xput_res_file">xput_res_file</dt>
+<dd>
+
+<p>Upload file to an experiment resource</p>
+
+<p>usage:</p>
+
+<pre><code>        xput_res(host, jsession, experiment, type, file, filename)</code></pre>
+
+</dd>
+<dt id="xput_res_data">xput_res_data</dt>
 <dd>
 
 <p>Upload hash to an experiment resource as a json file</p>
 
 <p>usage:</p>
 
-<pre><code>        xput_res(host, jsession, experiment, type, file, hash_ref)</code></pre>
+<pre><code>        xput_res_data(host, jsession, experiment, type, file, hash_ref)</code></pre>
 
 </dd>
-<dt id="xget_res">xget_res</dt>
+<dt id="xget_res_data">xget_res_data</dt>
 <dd>
 
 <p>Dowload data from experiment resource given type and json name</p>
 
 <p>usage:</p>
 
-<pre><code>        xget_res(host, jsession, experiment, type, filename)</code></pre>
+<pre><code>        xget_res_data(host, jsession, experiment, type, filename)</code></pre>
 
 </dd>
 <dt id="xget_rvr">xget_rvr</dt>

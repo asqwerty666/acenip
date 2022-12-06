@@ -44,13 +44,26 @@
 
             $xdata = xget_sbj_data(host, jsession, subject, field);
 
+- xput\_sbj\_data 
+
+    Set a parameter for given subject
+
+    usage:
+
+            xput_sbj_data(host, jsession, subject, field, value)
+
+    This is the same as 
+    	curl -f -b "JSESSIONID=57B615F6F6AEDC93E604B252772F3043" -X PUT "http://detritus.fundacioace.com:8088/data/subjects/XNAT\_S00823?gender=female,dob=1947-06-07"
+
+    but is intended to offer a Perl interface to updating subject data
+
 - xget\_sbj\_demog
 
     Get demographics variable from given subject, if available
 
     usage:
 
-            $xdata = xget_sbj_demog(host, jsession, subject, field);
+            $xdata = xget_sbj_demog(host, jsession, project, subject, field);
 
 - xget\_exp\_data
 
@@ -163,21 +176,29 @@
 
             xcreate_res(host, jsession, experiment, res_name)
 
-- xput\_res 
+- xput\_res\_file
+
+    Upload file to an experiment resource
+
+    usage:
+
+            xput_res(host, jsession, experiment, type, file, filename)
+
+- xput\_res\_data 
 
     Upload hash to an experiment resource as a json file
 
     usage:
 
-            xput_res(host, jsession, experiment, type, file, hash_ref)
+            xput_res_data(host, jsession, experiment, type, file, hash_ref)
 
-- xget\_res
+- xget\_res\_data
 
     Dowload data from experiment resource given type and json name
 
     usage:
 
-            xget_res(host, jsession, experiment, type, filename)
+            xget_res_data(host, jsession, experiment, type, filename)
 
 - xget\_rvr
 
