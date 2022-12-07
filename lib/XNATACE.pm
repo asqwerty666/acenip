@@ -19,8 +19,8 @@ use JSON qw(decode_json);
 use File::Temp qw(:mktemp tempdir);
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
-our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xput_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_dicom xget_sbj_demog);
-our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_data xput_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_dicom xget_sbj_demog);
+our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_dicom xget_sbj_demog);
+our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_dicom xget_sbj_demog);
 our %EXPORT_TAGS =(all => qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report), usual => qw(xconf xget_conf xget_session));
 
 our $VERSION = 0.1;
@@ -121,10 +121,29 @@ sub xget_subjects {
 	return %sbjs;
 }
 
+=item xget_sbj_id
+
+Get the subject's ID if the subject label inside a project is known.
+Sometimes I need to do this and is not difficult to implement
+
+usage:
+
+	$sbj_id = xget(host, jsession, project, subject_label);
+
+=cut
+
+sub xget_sbj_id {
+	my @xdata = @_;
+	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/projects/'.$xdata[2].'/subjects/'.$xdata[3].'?format=json" 2>/dev/null | jq \'.items[].data_fields.ID\'';
+	my $jres = qx/$crd/;
+        $jres =~ s/\"//g;
+        chomp $jres;
+	return $jres;
+} 
+
 =item xget_sbj_data
 
-Get the subjects metadata. Not too
-much interesting but to extract
+Get the subject's metadata. Not too much interesting but to extract
 the subject label.
 
 usage:

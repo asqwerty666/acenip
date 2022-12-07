@@ -34,10 +34,18 @@
 
             %sbjs = xget_subjects(host, jsession, project);
 
+- xget\_sbj\_id
+
+    Get the subject's ID if the subject label inside a project is known.
+    Sometimes I need to do this and is not difficult to implement
+
+    usage:
+
+            $sbj_id = xget(host, jsession, project, subject_label);
+
 - xget\_sbj\_data
 
-    Get the subjects metadata. Not too
-    much interesting but to extract
+    Get the subject's metadata. Not too much interesting but to extract
     the subject label.
 
     usage:
