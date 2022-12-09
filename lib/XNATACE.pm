@@ -173,9 +173,9 @@ usage:
 	xput_sbj_data(host, jsession, subject, field, value)
 
 This is the same as 
-`` 
+	
 	curl -f -b "JSESSIONID=57B615F6F6AEDC93E604B252772F3043" -X PUT "http://detritus.fundacioace.com:8088/data/subjects/XNAT_S00823?gender=female,dob=1947-06-07"
-``
+
 but is intended to offer a Perl interface to updating subject data
 
 =cut
