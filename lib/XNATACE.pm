@@ -78,7 +78,7 @@ for the server AND the ID of the created session
 
 usage: 
 
-	xget_session();
+	%conn = xget_session();
 
 =cut
 
@@ -170,13 +170,13 @@ Set a parameter for given subject
 
 usage:
 
-	xput_sbj_data(host, jsession, subject, field, value)
+	$xdata = xput_sbj_data(host, jsession, subject, field, value)
 
 This is the same as 
 	
 	curl -f -b "JSESSIONID=57B615F6F6AEDC93E604B252772F3043" -X PUT "http://detritus.fundacioace.com:8088/data/subjects/XNAT_S00823?gender=female,dob=1947-06-07"
 
-but is intended to offer a Perl interface to updating subject data.
+but is intended to offer a Perl interface to updating subject data. If everything is OK, it returns the subject ID or nothing if somethign  goes wrong. So you could check your own disaster.
 
 Notice that I<field> could be a comma separated list but you should fill I<value> with the correpondent list.
 
@@ -261,7 +261,7 @@ Get the XNAT MRI experiment ID
 
 usage: 
 
-	xget_mri(host, jsession, project, subject)
+	$experiment_ID = xget_mri(host, jsession, project, subject)
 
 =cut
 
@@ -285,8 +285,9 @@ Get the full Freesurfer directory in a tar.gz file
 
 usage: 
 
-	xget_fs_data(host, jsession, project, experiment, output_path)
-	
+	$result = xget_fs_data(host, jsession, project, experiment, output_path);
+
+Return 1 if OK, 0 otherwise.
 =cut
 
 sub xget_fs_data {
@@ -315,7 +316,9 @@ Get a single stats file from Freesurfer segmentation
 
 usage:
 
-	xget_fs_stats(host, jsession, experiment, stats_file, output_file) 
+	$result = xget_fs_stats(host, jsession, experiment, stats_file, output_file) 
+
+Returns 1 if OK, 0 otherwise.
 
 =cut
 
@@ -368,7 +371,7 @@ Get Freeesurfer QC info
 
 usage:
 
-	xget_fs_qc(host, jsession, experiment);
+	%fsqc = xget_fs_qc(host, jsession, experiment);
 
 Output is a hash with I<rating> and I<notes>
 
@@ -396,7 +399,9 @@ Get the XNAT PET experiment ID
 
 usage: 
 
-	xget_pet(host, jsession, project, subject)
+	$experiment_id = xget_pet(host, jsession, project, subject)
+
+Returns experiment ID.
 
 =cut
 
@@ -421,7 +426,9 @@ Download de pet registered into native space in nifti format
 
 usage: 
 
-	xget_pet_reg(host, jsession, experiment, nifti_output);
+	$result = xget_pet_reg(host, jsession, experiment, nifti_output);
+
+Returns 1 if OK, 0 otherwise.
 
 =cut
 
@@ -454,6 +461,8 @@ Get the PET FBB analysis results into a HASH
 usage:
 
 	%xresult = xget_pet_data(host, jsession, experiment);
+
+Returns a hash with the results of the PET analysis
 
 =cut
 
@@ -582,11 +591,13 @@ sub xput_res_data {
 
 =item xget_res_data
 
-Dowload data from experiment resource given type and json name
+Download data from experiment resource given type and json name
 
 usage:
 
-        xget_res_data(host, jsession, experiment, type, filename)
+        %xdata = xget_res_data(host, jsession, experiment, type, filename)
+
+Returns a hash with the JSON elements
 
 =cut
 
@@ -609,13 +620,15 @@ sub xget_res_data {
 
 =item xget_rvr
 
-Get VR results into a HASH. Output is a hash with filenames and URI of each element stored at RVR
+Get VR results into a HASH. 
+Output is a hash with filenames and URI of each element stored at RVR.
 
-usage: 
+usage:
 
-	xget_rvr(host, jsession, project, experiment);
+	%xdata = xget_rvr(host, jsession, project, experiment); 
 
 =cut
+
 
 sub xget_rvr {
 	# Get the list of VR results into a HASH
@@ -640,7 +653,7 @@ Get RVR JSON data into a hash
 
 usage: 
 
-	xget_rvr_data(host, jsession, URI);
+	%xdata = xget_rvr_data(host, jsession, URI);
 
 =cut
 
@@ -662,7 +675,7 @@ sub xget_rvr_data {
 
 =item xget_dicom
 
-Get the full DICOM for a given experiment
+Download the full DICOM for a given experiment into the desired output directory.
 
 usage:
 
@@ -682,4 +695,5 @@ sub xget_dicom {
 	my $zrd = '7za x -o'.$xdata[3].' '.$zipfile;
 	system($zrd);
 }
+
 =back

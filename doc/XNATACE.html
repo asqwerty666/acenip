@@ -46,7 +46,7 @@
 
 <p>usage:</p>
 
-<pre><code>        xget_session();</code></pre>
+<pre><code>        %conn = xget_session();</code></pre>
 
 </dd>
 <dt id="xget_subjects">xget_subjects</dt>
@@ -86,13 +86,13 @@
 
 <p>usage:</p>
 
-<pre><code>        xput_sbj_data(host, jsession, subject, field, value)</code></pre>
+<pre><code>        $xdata = xput_sbj_data(host, jsession, subject, field, value)</code></pre>
 
 <p>This is the same as</p>
 
 <pre><code>        curl -f -b &quot;JSESSIONID=57B615F6F6AEDC93E604B252772F3043&quot; -X PUT &quot;http://detritus.fundacioace.com:8088/data/subjects/XNAT_S00823?gender=female,dob=1947-06-07&quot;</code></pre>
 
-<p>but is intended to offer a Perl interface to updating subject data.</p>
+<p>but is intended to offer a Perl interface to updating subject data. If everything is OK, it returns the subject ID or nothing if somethign goes wrong. So you could check your own disaster.</p>
 
 <p>Notice that <i>field</i> could be a comma separated list but you should fill <i>value</i> with the correpondent list.</p>
 
@@ -132,7 +132,7 @@
 
 <p>usage:</p>
 
-<pre><code>        xget_mri(host, jsession, project, subject)</code></pre>
+<pre><code>        $experiment_ID = xget_mri(host, jsession, project, subject)</code></pre>
 
 </dd>
 <dt id="xget_fs_data">xget_fs_data</dt>
@@ -142,8 +142,9 @@
 
 <p>usage:</p>
 
-<pre><code>        xget_fs_data(host, jsession, project, experiment, output_path)
-        </code></pre>
+<pre><code>        $result = xget_fs_data(host, jsession, project, experiment, output_path);</code></pre>
+
+<p>Return 1 if OK, 0 otherwise.</p>
 
 </dd>
 <dt id="xget_fs_stats">xget_fs_stats</dt>
@@ -153,7 +154,9 @@
 
 <p>usage:</p>
 
-<pre><code>        xget_fs_stats(host, jsession, experiment, stats_file, output_file) </code></pre>
+<pre><code>        $result = xget_fs_stats(host, jsession, experiment, stats_file, output_file) </code></pre>
+
+<p>Returns 1 if OK, 0 otherwise.</p>
 
 </dd>
 <dt id="xget_fs_allstats">xget_fs_allstats</dt>
@@ -173,7 +176,7 @@
 
 <p>usage:</p>
 
-<pre><code>        xget_fs_qc(host, jsession, experiment);</code></pre>
+<pre><code>        %fsqc = xget_fs_qc(host, jsession, experiment);</code></pre>
 
 <p>Output is a hash with <i>rating</i> and <i>notes</i></p>
 
@@ -185,7 +188,9 @@
 
 <p>usage:</p>
 
-<pre><code>        xget_pet(host, jsession, project, subject)</code></pre>
+<pre><code>        $experiment_id = xget_pet(host, jsession, project, subject)</code></pre>
+
+<p>Returns experiment ID.</p>
 
 </dd>
 <dt id="xget_pet_reg">xget_pet_reg</dt>
@@ -195,7 +200,9 @@
 
 <p>usage:</p>
 
-<pre><code>        xget_pet_reg(host, jsession, experiment, nifti_output);</code></pre>
+<pre><code>        $result = xget_pet_reg(host, jsession, experiment, nifti_output);</code></pre>
+
+<p>Returns 1 if OK, 0 otherwise.</p>
 
 </dd>
 <dt id="xget_pet_data">xget_pet_data</dt>
@@ -206,6 +213,8 @@
 <p>usage:</p>
 
 <pre><code>        %xresult = xget_pet_data(host, jsession, experiment);</code></pre>
+
+<p>Returns a hash with the results of the PET analysis</p>
 
 </dd>
 <dt id="xput_report">xput_report</dt>
@@ -261,21 +270,23 @@
 <dt id="xget_res_data">xget_res_data</dt>
 <dd>
 
-<p>Dowload data from experiment resource given type and json name</p>
+<p>Download data from experiment resource given type and json name</p>
 
 <p>usage:</p>
 
-<pre><code>        xget_res_data(host, jsession, experiment, type, filename)</code></pre>
+<pre><code>        %xdata = xget_res_data(host, jsession, experiment, type, filename)</code></pre>
+
+<p>Returns a hash with the JSON elements</p>
 
 </dd>
 <dt id="xget_rvr">xget_rvr</dt>
 <dd>
 
-<p>Get VR results into a HASH. Output is a hash with filenames and URI of each element stored at RVR</p>
+<p>Get VR results into a HASH. Output is a hash with filenames and URI of each element stored at RVR.</p>
 
 <p>usage:</p>
 
-<pre><code>        xget_rvr(host, jsession, project, experiment);</code></pre>
+<pre><code>        %xdata = xget_rvr(host, jsession, project, experiment); </code></pre>
 
 </dd>
 <dt id="xget_rvr_data">xget_rvr_data</dt>
@@ -285,13 +296,13 @@
 
 <p>usage:</p>
 
-<pre><code>        xget_rvr_data(host, jsession, URI);</code></pre>
+<pre><code>        %xdata = xget_rvr_data(host, jsession, URI);</code></pre>
 
 </dd>
 <dt id="xget_dicom">xget_dicom</dt>
 <dd>
 
-<p>Get the full DICOM for a given experiment</p>
+<p>Download the full DICOM for a given experiment into the desired output directory.</p>
 
 <p>usage:</p>
 

@@ -23,7 +23,7 @@
 
     usage: 
 
-            xget_session();
+            %conn = xget_session();
 
 - xget\_subjects
 
@@ -58,13 +58,13 @@
 
     usage:
 
-            xput_sbj_data(host, jsession, subject, field, value)
+            $xdata = xput_sbj_data(host, jsession, subject, field, value)
 
     This is the same as 
 
             curl -f -b "JSESSIONID=57B615F6F6AEDC93E604B252772F3043" -X PUT "http://detritus.fundacioace.com:8088/data/subjects/XNAT_S00823?gender=female,dob=1947-06-07"
 
-    but is intended to offer a Perl interface to updating subject data.
+    but is intended to offer a Perl interface to updating subject data. If everything is OK, it returns the subject ID or nothing if somethign  goes wrong. So you could check your own disaster.
 
     Notice that _field_ could be a comma separated list but you should fill _value_ with the correpondent list.
 
@@ -102,7 +102,7 @@
 
     usage: 
 
-            xget_mri(host, jsession, project, subject)
+            $experiment_ID = xget_mri(host, jsession, project, subject)
 
 - xget\_fs\_data
 
@@ -110,8 +110,9 @@
 
     usage: 
 
-            xget_fs_data(host, jsession, project, experiment, output_path)
-            
+            $result = xget_fs_data(host, jsession, project, experiment, output_path);
+
+    Return 1 if OK, 0 otherwise.
 
 - xget\_fs\_stats
 
@@ -119,7 +120,9 @@
 
     usage:
 
-            xget_fs_stats(host, jsession, experiment, stats_file, output_file) 
+            $result = xget_fs_stats(host, jsession, experiment, stats_file, output_file) 
+
+    Returns 1 if OK, 0 otherwise.
 
 - xget\_fs\_allstats
 
@@ -135,7 +138,7 @@
 
     usage:
 
-            xget_fs_qc(host, jsession, experiment);
+            %fsqc = xget_fs_qc(host, jsession, experiment);
 
     Output is a hash with _rating_ and _notes_
 
@@ -145,7 +148,9 @@
 
     usage: 
 
-            xget_pet(host, jsession, project, subject)
+            $experiment_id = xget_pet(host, jsession, project, subject)
+
+    Returns experiment ID.
 
 - xget\_pet\_reg
 
@@ -153,7 +158,9 @@
 
     usage: 
 
-            xget_pet_reg(host, jsession, experiment, nifti_output);
+            $result = xget_pet_reg(host, jsession, experiment, nifti_output);
+
+    Returns 1 if OK, 0 otherwise.
 
 - xget\_pet\_data
 
@@ -162,6 +169,8 @@
     usage:
 
             %xresult = xget_pet_data(host, jsession, experiment);
+
+    Returns a hash with the results of the PET analysis
 
 - xput\_report
 
@@ -205,19 +214,22 @@
 
 - xget\_res\_data
 
-    Dowload data from experiment resource given type and json name
+    Download data from experiment resource given type and json name
 
     usage:
 
-            xget_res_data(host, jsession, experiment, type, filename)
+            %xdata = xget_res_data(host, jsession, experiment, type, filename)
+
+    Returns a hash with the JSON elements
 
 - xget\_rvr
 
-    Get VR results into a HASH. Output is a hash with filenames and URI of each element stored at RVR
+    Get VR results into a HASH. 
+    Output is a hash with filenames and URI of each element stored at RVR.
 
-    usage: 
+    usage:
 
-            xget_rvr(host, jsession, project, experiment);
+            %xdata = xget_rvr(host, jsession, project, experiment); 
 
 - xget\_rvr\_data
 
@@ -225,11 +237,11 @@
 
     usage: 
 
-            xget_rvr_data(host, jsession, URI);
+            %xdata = xget_rvr_data(host, jsession, URI);
 
 - xget\_dicom
 
-    Get the full DICOM for a given experiment
+    Download the full DICOM for a given experiment into the desired output directory.
 
     usage:
 
