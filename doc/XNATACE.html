@@ -88,9 +88,13 @@
 
 <pre><code>        xput_sbj_data(host, jsession, subject, field, value)</code></pre>
 
-<p>This is the same as curl -f -b &quot;JSESSIONID=57B615F6F6AEDC93E604B252772F3043&quot; -X PUT &quot;http://detritus.fundacioace.com:8088/data/subjects/XNAT_S00823?gender=female,dob=1947-06-07&quot;</p>
+<p>This is the same as</p>
 
-<p>but is intended to offer a Perl interface to updating subject data</p>
+<pre><code>        curl -f -b &quot;JSESSIONID=57B615F6F6AEDC93E604B252772F3043&quot; -X PUT &quot;http://detritus.fundacioace.com:8088/data/subjects/XNAT_S00823?gender=female,dob=1947-06-07&quot;</code></pre>
+
+<p>but is intended to offer a Perl interface to updating subject data.</p>
+
+<p>Notice that <i>field</i> could be a comma separated list but you should fill <i>value</i> with the correpondent list.</p>
 
 </dd>
 <dt id="xget_sbj_demog">xget_sbj_demog</dt>

@@ -176,7 +176,9 @@ This is the same as
 	
 	curl -f -b "JSESSIONID=57B615F6F6AEDC93E604B252772F3043" -X PUT "http://detritus.fundacioace.com:8088/data/subjects/XNAT_S00823?gender=female,dob=1947-06-07"
 
-but is intended to offer a Perl interface to updating subject data
+but is intended to offer a Perl interface to updating subject data.
+
+Notice that I<field> could be a comma separated list but you should fill I<value> with the correpondent list.
 
 =cut
 
