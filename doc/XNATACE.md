@@ -1,4 +1,5 @@
 # XNATACE
+=over
 
 - xconf
 
@@ -107,6 +108,7 @@
 - xget\_fs\_data
 
     Get the full Freesurfer directory in a tar.gz file
+    DEPRECATED
 
     usage: 
 
@@ -117,6 +119,7 @@
 - xget\_fs\_stats
 
     Get a single stats file from Freesurfer segmentation
+    This is deprecated by xget\_res\_file() and should disapear soon :-(
 
     usage:
 
@@ -127,6 +130,7 @@
 - xget\_fs\_allstats
 
     Get all stats files from Freesurfer segmentation and write it down at selected directory
+    DEPRECATED, should be removed
 
     usage:
 
@@ -135,6 +139,7 @@
 - xget\_fs\_qc
 
     Get Freeesurfer QC info
+    I'm sure this could be deprecated by xget\_res\_data(), so better do not use it.
 
     usage:
 
@@ -175,6 +180,7 @@
 - xput\_report
 
     Upload a pdf report to XNAT
+    I should see if I could substitute this by a call to xcreate\_res() and xput\_res\_file() 
 
     usage: 
 
@@ -183,6 +189,7 @@
 - xput\_rvr
 
     Upload a JSON file with VR data
+    This is deprecated by xput\_res\_file()
 
     usage: 
 
@@ -198,7 +205,7 @@
 
 - xput\_res\_file
 
-    Upload file to an experiment resource
+    Upload file as experiment resource
 
     usage:
 
@@ -222,18 +229,26 @@
 
     Returns a hash with the JSON elements
 
-- xget\_rvr
+- xget\_res\_file
 
-    Get VR results into a HASH. 
-    Output is a hash with filenames and URI of each element stored at RVR.
+    Download file from experiment resource
+
+    usage:
+    	$result = xget\_res\_file(host, jsession, experiment, type, filename, output)
+
+- xlist\_res
+
+    Put the resources files into a HASH. 
+    Output is a hash with filenames and URI of each element stored at the resource.
 
     usage:
 
-            %xdata = xget_rvr(host, jsession, project, experiment); 
+            %xdata = xlist_res(host, jsession, project, experiment, resource); 
 
 - xget\_rvr\_data
 
     Get RVR JSON data into a hash
+    Give me a break. Deprecated by xget\_res\_data()
 
     usage: 
 
@@ -246,3 +261,11 @@
     usage:
 
             xget_dicom(host, jsession, experiment, output_dir)
+
+# POD ERRORS
+
+Hey! **The above document had some coding errors, which are explained below:**
+
+- Around line 32:
+
+    '=item' outside of any '=over'

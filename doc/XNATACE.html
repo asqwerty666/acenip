@@ -12,10 +12,11 @@
 
 
 <ul id="index">
-  <li><a href="#XNATACE">XNATACE</a></li>
+  <li><a href="#XNATACE-over">XNATACE =over</a></li>
+  <li><a href="#POD-ERRORS">POD ERRORS</a></li>
 </ul>
 
-<h1 id="XNATACE">XNATACE</h1>
+<h1 id="XNATACE-over">XNATACE =over</h1>
 
 <dl>
 
@@ -138,7 +139,7 @@
 <dt id="xget_fs_data">xget_fs_data</dt>
 <dd>
 
-<p>Get the full Freesurfer directory in a tar.gz file</p>
+<p>Get the full Freesurfer directory in a tar.gz file DEPRECATED</p>
 
 <p>usage:</p>
 
@@ -150,7 +151,7 @@
 <dt id="xget_fs_stats">xget_fs_stats</dt>
 <dd>
 
-<p>Get a single stats file from Freesurfer segmentation</p>
+<p>Get a single stats file from Freesurfer segmentation This is deprecated by xget_res_file() and should disapear soon :-(</p>
 
 <p>usage:</p>
 
@@ -162,7 +163,7 @@
 <dt id="xget_fs_allstats">xget_fs_allstats</dt>
 <dd>
 
-<p>Get all stats files from Freesurfer segmentation and write it down at selected directory</p>
+<p>Get all stats files from Freesurfer segmentation and write it down at selected directory DEPRECATED, should be removed</p>
 
 <p>usage:</p>
 
@@ -172,7 +173,7 @@
 <dt id="xget_fs_qc">xget_fs_qc</dt>
 <dd>
 
-<p>Get Freeesurfer QC info</p>
+<p>Get Freeesurfer QC info I&#39;m sure this could be deprecated by xget_res_data(), so better do not use it.</p>
 
 <p>usage:</p>
 
@@ -220,7 +221,7 @@
 <dt id="xput_report">xput_report</dt>
 <dd>
 
-<p>Upload a pdf report to XNAT</p>
+<p>Upload a pdf report to XNAT I should see if I could substitute this by a call to xcreate_res() and xput_res_file()</p>
 
 <p>usage:</p>
 
@@ -230,7 +231,7 @@
 <dt id="xput_rvr">xput_rvr</dt>
 <dd>
 
-<p>Upload a JSON file with VR data</p>
+<p>Upload a JSON file with VR data This is deprecated by xput_res_file()</p>
 
 <p>usage:</p>
 
@@ -250,7 +251,7 @@
 <dt id="xput_res_file">xput_res_file</dt>
 <dd>
 
-<p>Upload file to an experiment resource</p>
+<p>Upload file as experiment resource</p>
 
 <p>usage:</p>
 
@@ -279,20 +280,28 @@
 <p>Returns a hash with the JSON elements</p>
 
 </dd>
-<dt id="xget_rvr">xget_rvr</dt>
+<dt id="xget_res_file">xget_res_file</dt>
 <dd>
 
-<p>Get VR results into a HASH. Output is a hash with filenames and URI of each element stored at RVR.</p>
+<p>Download file from experiment resource</p>
+
+<p>usage: $result = xget_res_file(host, jsession, experiment, type, filename, output)</p>
+
+</dd>
+<dt id="xlist_res">xlist_res</dt>
+<dd>
+
+<p>Put the resources files into a HASH. Output is a hash with filenames and URI of each element stored at the resource.</p>
 
 <p>usage:</p>
 
-<pre><code>        %xdata = xget_rvr(host, jsession, project, experiment); </code></pre>
+<pre><code>        %xdata = xlist_res(host, jsession, project, experiment, resource); </code></pre>
 
 </dd>
 <dt id="xget_rvr_data">xget_rvr_data</dt>
 <dd>
 
-<p>Get RVR JSON data into a hash</p>
+<p>Get RVR JSON data into a hash Give me a break. Deprecated by xget_res_data()</p>
 
 <p>usage:</p>
 
@@ -307,6 +316,20 @@
 <p>usage:</p>
 
 <pre><code>        xget_dicom(host, jsession, experiment, output_dir)</code></pre>
+
+</dd>
+</dl>
+
+<h1 id="POD-ERRORS">POD ERRORS</h1>
+
+<p>Hey! <b>The above document had some coding errors, which are explained below:</b></p>
+
+<dl>
+
+<dt id="Around-line-32">Around line 32:</dt>
+<dd>
+
+<p>&#39;=item&#39; outside of any &#39;=over&#39;</p>
 
 </dd>
 </dl>
