@@ -1,5 +1,4 @@
 # XNATACE
-=over
 
 - xconf
 
@@ -261,11 +260,3 @@
     usage:
 
             xget_dicom(host, jsession, experiment, output_dir)
-
-# POD ERRORS
-
-Hey! **The above document had some coding errors, which are explained below:**
-
-- Around line 32:
-
-    '=item' outside of any '=over'
