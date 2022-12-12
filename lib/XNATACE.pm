@@ -19,15 +19,14 @@ use JSON qw(decode_json);
 use File::Temp qw(:mktemp tempdir);
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
-our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_dicom xget_sbj_demog);
-our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_dicom xget_sbj_demog);
+our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog);
+our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog);
 our %EXPORT_TAGS =(all => qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report), usual => qw(xconf xget_conf xget_session));
 
 our $VERSION = 0.1;
 our $default_config_path = $ENV{'HOME'}.'/.xnatapic/xnat.conf';
 
 =head1 XNATACE
-
 =over
 
 =item xconf
@@ -313,6 +312,7 @@ sub xget_fs_data {
 =item xget_fs_stats
 
 Get a single stats file from Freesurfer segmentation
+This is deprecated by xget_res_file() and should disapear soon :-(
 
 usage:
 
@@ -368,6 +368,7 @@ sub xget_fs_allstats {
 =item xget_fs_qc
 
 Get Freeesurfer QC info
+I'm sure this could be deprecated by xget_res_data(), so better do not use it.
 
 usage:
 
@@ -487,6 +488,7 @@ sub xget_pet_data {
 =item xput_report
 
 Upload a pdf report to XNAT
+I should see if I could substitute this by a call to xcreate_res() and xput_res_file() 
 
 usage: 
 
@@ -507,6 +509,7 @@ sub xput_report{
 =item xput_rvr
 
 Upload a JSON file with VR data
+This is deprecated by xput_res_file()
 
 usage: 
 
@@ -540,7 +543,7 @@ sub xcreate_res {
 
 =item xput_res_file
 
-Upload file to an experiment resource
+Upload file as experiment resource
 
 usage:
 
@@ -617,11 +620,28 @@ sub xget_res_data {
 	return %out_data;
 }
 
+=item xget_res_file
+
+Download file from experiment resource
+
+usage:
+	$result = xget_res_file(host, jsession, experiment, type, filename, output)
+
+=cut
+
+sub xget_res_file {
+	my @xdata = @_;
+	my $crd = 'curl -f -X GET -b JSESSIONID='.$xdata[1].' "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/'.$xdata[3].'/files/'.$xdata[4].'" -o '.$xdata[5].' 2>/dev/null';
+	my $res = qx/$crd/;
+	return $res;
+}
+
 
 =item xget_rvr
 
 Get VR results into a HASH. 
 Output is a hash with filenames and URI of each element stored at RVR.
+Not sure why i need this
 
 usage:
 
@@ -650,6 +670,7 @@ sub xget_rvr {
 =item xget_rvr_data
 
 Get RVR JSON data into a hash
+Give me a break. Deprecated by xget_res_data()
 
 usage: 
 
