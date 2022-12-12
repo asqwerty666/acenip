@@ -106,7 +106,7 @@
 
 - xget\_fs\_data
 
-    Get the full Freesurfer directory in a tar.gz file
+    Get the full Freesurfer directory in a tar.gz file.
     DEPRECATED
 
     usage: 
@@ -118,6 +118,7 @@
 - xget\_fs\_stats
 
     Get a single stats file from Freesurfer segmentation
+
     This is deprecated by xget\_res\_file() and should disapear soon :-(
 
     usage:
@@ -128,7 +129,7 @@
 
 - xget\_fs\_allstats
 
-    Get all stats files from Freesurfer segmentation and write it down at selected directory
+    Get all stats files from Freesurfer segmentation and write it down at selected directory.
     DEPRECATED, should be removed
 
     usage:
@@ -137,7 +138,8 @@
 
 - xget\_fs\_qc
 
-    Get Freeesurfer QC info
+    Get Freeesurfer QC info.
+
     I'm sure this could be deprecated by xget\_res\_data(), so better do not use it.
 
     usage:
@@ -178,8 +180,9 @@
 
 - xput\_report
 
-    Upload a pdf report to XNAT
-    I should see if I could substitute this by a call to xcreate\_res() and xput\_res\_file() 
+    Upload a pdf report to XNAT.
+
+    Deprecated. Use a call to xcreate\_res() and xput\_res\_file() instead.
 
     usage: 
 
@@ -187,7 +190,8 @@
 
 - xput\_rvr
 
-    Upload a JSON file with VR data
+    Upload a JSON file with VR data.
+
     This is deprecated by xput\_res\_file()
 
     usage: 
@@ -247,6 +251,7 @@
 - xget\_rvr\_data
 
     Get RVR JSON data into a hash
+
     Give me a break. Deprecated by xget\_res\_data()
 
     usage: 

@@ -27,6 +27,7 @@ our $VERSION = 0.1;
 our $default_config_path = $ENV{'HOME'}.'/.xnatapic/xnat.conf';
 
 =head1 XNATACE
+
 =over
 
 =item xconf
@@ -280,7 +281,7 @@ sub xget_mri {
 
 =item xget_fs_data
 
-Get the full Freesurfer directory in a tar.gz file
+Get the full Freesurfer directory in a tar.gz file.
 DEPRECATED
 
 usage: 
@@ -313,6 +314,7 @@ sub xget_fs_data {
 =item xget_fs_stats
 
 Get a single stats file from Freesurfer segmentation
+
 This is deprecated by xget_res_file() and should disapear soon :-(
 
 usage:
@@ -345,7 +347,7 @@ sub xget_fs_stats {
 
 =item xget_fs_allstats
 
-Get all stats files from Freesurfer segmentation and write it down at selected directory
+Get all stats files from Freesurfer segmentation and write it down at selected directory.
 DEPRECATED, should be removed
 
 usage:
@@ -369,7 +371,8 @@ sub xget_fs_allstats {
 
 =item xget_fs_qc
 
-Get Freeesurfer QC info
+Get Freeesurfer QC info.
+
 I'm sure this could be deprecated by xget_res_data(), so better do not use it.
 
 usage:
@@ -489,8 +492,9 @@ sub xget_pet_data {
 
 =item xput_report
 
-Upload a pdf report to XNAT
-I should see if I could substitute this by a call to xcreate_res() and xput_res_file() 
+Upload a pdf report to XNAT.
+
+Deprecated. Use a call to xcreate_res() and xput_res_file() instead.
 
 usage: 
 
@@ -510,7 +514,8 @@ sub xput_report{
 
 =item xput_rvr
 
-Upload a JSON file with VR data
+Upload a JSON file with VR data.
+
 This is deprecated by xput_res_file()
 
 usage: 
@@ -671,6 +676,7 @@ sub xlist_res {
 =item xget_rvr_data
 
 Get RVR JSON data into a hash
+
 Give me a break. Deprecated by xget_res_data()
 
 usage: 
