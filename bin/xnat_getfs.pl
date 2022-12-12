@@ -12,14 +12,14 @@
 # GNU General Public License for more details
 
 # Este script captura los resultados de Freesurfer obtenidos en XNAT 
-# y los copia localmente en una nativa de Freesurfer.
+# y los copia localmente en una ruta nativa de Freesurfer.
 # Esto es util para realizar procedimientos posteriores 
 # como los analisis FSGA o longitudinales, o simplemente un QC
 
 use strict;
 use warnings;
 use NEURO4 qw(load_project print_help populate check_or_make);
-use XNATACE qw(xconf xget_conf xget_session xget_subjects xget_mri xget_fs_data);
+use XNATACE qw(xconf xget_conf xget_session xget_subjects xget_mri xlist_res xget_res_file);
 use File::Temp qw(tempdir);
 use Data::Dump qw(dump);
 my $prj;
@@ -78,7 +78,12 @@ foreach my $xsbj (sort keys %psubjects){
 		my $tfsdir = $tmpdir."/".$prj."_".$psubjects{$xsbj}{'PSubject'};
 		mkdir $tfsdir;
 		my $tfsout = $tfsdir.'/'.$xsbj.'.tar.gz';
-		xget_fs_data($xconfig{'HOST'}, $jid, $xprj,$psubjects{$xsbj}{'MRI'}, $tfsout);
+		my %fs_files = xlist_res($xconfig{'HOST'}, $jid, $xprj,$psubjects{$xsbj}{'MRI'}, 'FS');
+		foreach my $fsfile (sort keys %fs_files){
+			if ($fsfile =~ /.*\.tar\.gz$/){
+				xget_res_file($xconfig{'HOST'}, $jid, $xprj,$psubjects{$xsbj}{'MRI'}, 'FS', $fsfile,  $tfsout);
+			}
+		}
 		mkdir $fsdir;
 		my $order = "tar xzf ".$tfsout." -C ".$fsdir."/ --transform=\'s/".$xsbj."//\' --exclude=\'fsaverage\' 2>/dev/null";
 		system($order);

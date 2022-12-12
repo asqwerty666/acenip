@@ -25,7 +25,7 @@
 use strict; use warnings;
 use Cwd qw(cwd);
 use NEURO4 qw(load_project print_help populate check_or_make getLoggingTime);
-use XNATACE qw(xget_session xget_mri xget_fs_data xget_subjects xcreate_res xput_res_file);
+use XNATACE qw(xget_session xget_mri xlist_res xget_res_file xget_subjects xcreate_res xput_res_file);
 use File::Temp qw(:mktemp tempdir);
 use File::Find::Rule;
 use File::Basename qw(basename);
@@ -104,7 +104,12 @@ unless ($odir and -d $odir) {
 		my $tsdir = tempdir(TEMPLATE => $tmp_dir.'/tars_data.XXXXX', CLEANUP => 1);
 		foreach my $pollo (@pollos){
 			my $otfile = $tsdir.'/'.$pollo.'.tar.gz';
-			xget_fs_data($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $epollos{$pollo}, $otfile);
+			my %fs_files = xlist_res($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $epollos{$pollo}, 'FS');
+			foreach my $fsfile (sort keys %fs_files){
+				if ($fsfile =~ /.*\.tar\.gz$/){
+					xget_res_file($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $epollos{$pollo}, 'FS', $fsfile, $otfile);
+				}
+			}
 			my $otdir = $odir.'/'.$epollos{$pollo};
 			mkdir $otdir;
 			my $pre = 'tar xzf '.$otfile.' --strip-components=1 -C '.$otdir.' */mri/{orig,aparc+aseg}.mgz */label/*.aparc.annot */surf/*.pial* */stats/*.aparc.stats';
@@ -119,7 +124,12 @@ unless ($odir and -d $odir) {
 		foreach  my $pollo (sort keys %allchicks){
 			$epollos{$pollo} = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $pollo);
 			my $otfile = $tsdir.'/'.$pollo.'.tar.gz';
-			xget_fs_data($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $epollos{$pollo}, $otfile);
+			my %fs_files = xlist_res($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $epollos{$pollo}, 'FS');
+			foreach my $fsfile (sort keys %fs_files){
+                                if ($fsfile =~ /.*\.tar\.gz$/){
+                                        xget_res_file($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $epollos{$pollo}, 'FS', $fsfile, $otfile);
+                                }
+                        }
 			if (-e $otfile) { 
 				my $otdir = $odir.'/'.$epollos{$pollo};
 				mkdir $otdir;

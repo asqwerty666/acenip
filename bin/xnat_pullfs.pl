@@ -24,7 +24,7 @@
 use strict; use warnings;
 use NEURO4 qw(populate get_subjects check_fs_subj load_project print_help check_or_make cut_shit);
 use FSMetrics qw(fs_file_metrics);
-use XNATACE qw(xget_conf xget_session xget_subjects xget_mri xget_sbj_data xget_fs_stats xget_exp_data);
+use XNATACE qw(xget_conf xget_session xget_subjects xget_mri xget_sbj_data xget_res_file xget_exp_data);
 use File::Basename qw(basename);
 use File::Slurp qw(read_file);
 use File::Temp qw(tempdir);
@@ -87,10 +87,10 @@ foreach my $subject (sort keys %psubjects){
 	my $order = 'mkdir -p '.$fsout.'/'.$subject.'/stats';
 	system($order);
 	# ahora voy a intentar sacar las estadisticas
-	if($stats eq "aseg"){
+	if($stats eq "aseg" or $stats eq "wmparc"){
 		# y guardo el archivo de stats
 		my $tmp_out = $fsout.'/'.$subject.'/stats/'.$stats.'.stats';
-		xget_fs_stats($xconfig{'HOST'}, $jid, $psubjects{$subject}{'MRI'}, 'aseg.stats' , $tmp_out);
+		xget_res_file($xconfig{'HOST'}, $jid, $psubjects{$subject}{'MRI'}, 'FS', $stats.'.stats' , $tmp_out);
 		# Aqui voy a sacar los volumenes porque son distintos a los demas
 		if( -f $tmp_out){
 			my @tdata = `grep -v "^#" $tmp_out | awk '{print \$5","\$4}'`;
@@ -127,7 +127,7 @@ foreach my $subject (sort keys %psubjects){
 		my $go=0;
 		foreach my $hemi (@hemis){
 			my $tmp_out = $fsout.'/'.$subject.'/stats/'.$hemi.'.'.$stats.'.stats';
-			xget_fs_stats($xconfig{'HOST'}, $jid, $psubjects{$subject}{'MRI'}, $hemi.'.'.$stats.'.stats' , $tmp_out);
+			xget_res_file($xconfig{'HOST'}, $jid, $psubjects{$subject}{'MRI'}, 'FS', $hemi.'.'.$stats.'.stats' , $tmp_out);
 			if (-f $tmp_out) {
 				my @tdata = `grep -v "^#" $tmp_out | awk '{print \$1","\$3","\$4","\$5}'`;
 				chomp @tdata;

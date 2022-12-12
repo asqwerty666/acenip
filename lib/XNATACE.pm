@@ -19,9 +19,9 @@ use JSON qw(decode_json);
 use File::Temp qw(:mktemp tempdir);
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
-our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog);
-our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report xget_rvr xget_rvr_data xget_subjects xget_pet_reg xget_fs_data xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog);
-our %EXPORT_TAGS =(all => qw(xconf xget_conf xget_pet xget_session xget_mri xput_rvr xput_report), usual => qw(xconf xget_conf xget_session));
+our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog);
+our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog);
+our %EXPORT_TAGS =(all => qw(xget_session xget_pet xget_mri), usual => qw(xget_session));
 
 our $VERSION = 0.1;
 our $default_config_path = $ENV{'HOME'}.'/.xnatapic/xnat.conf';
@@ -281,6 +281,7 @@ sub xget_mri {
 =item xget_fs_data
 
 Get the full Freesurfer directory in a tar.gz file
+DEPRECATED
 
 usage: 
 
@@ -345,6 +346,7 @@ sub xget_fs_stats {
 =item xget_fs_allstats
 
 Get all stats files from Freesurfer segmentation and write it down at selected directory
+DEPRECATED, should be removed
 
 usage:
 
@@ -637,25 +639,24 @@ sub xget_res_file {
 }
 
 
-=item xget_rvr
+=item xlist_res
 
-Get VR results into a HASH. 
-Output is a hash with filenames and URI of each element stored at RVR.
-Not sure why i need this
+Put the resources files into a HASH. 
+Output is a hash with filenames and URI of each element stored at the resource.
 
 usage:
 
-	%xdata = xget_rvr(host, jsession, project, experiment); 
+	%xdata = xlist_res(host, jsession, project, experiment, resource); 
 
 =cut
 
 
-sub xget_rvr {
+sub xlist_res {
 	# Get the list of VR results into a HASH
-	# usage: xget_rvr(host, jsession, project, experiment);
+	# usage: xget_list(host, jsession, project, experiment, resource);
 	# output is a hash with filenames and URI of each element stored at RVR
 	my @xdata = @_;
-	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/projects/'.$xdata[2].'/experiments/'.$xdata[3].'/resources/RVR/files?format=json" 2>/dev/null';
+	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/projects/'.$xdata[2].'/experiments/'.$xdata[3].'/resources/'.$xdata[4].'/files?format=json" 2>/dev/null';
 	my $json_res = qx/$crd/;
 	my $rvr_prop = decode_json $json_res;
 	my %report_data;

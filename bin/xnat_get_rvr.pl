@@ -9,7 +9,7 @@ use strict;
 use warnings;
 use File::Temp qw(:mktemp tempdir);
 use JSON qw(decode_json);
-use XNATACE qw(xget_session xget_subjects xget_mri xget_rvr xget_rvr_data);
+use XNATACE qw(xget_session xget_subjects xget_mri xlist_res xget_res_data);
 use Data::Dump qw(dump);
 my $xprj;
 my $oxfile;
@@ -31,11 +31,11 @@ my $dbody="";
 foreach my $sid (sort keys %subjects){
 	$subjects{$sid}{'experimentID'} = xget_mri($xconf{'HOST'}, $jid, $xprj, $sid);
 	if (exists($subjects{$sid}{'experimentID'}) and $subjects{$sid}{'experimentID'}){
-		my %rvr = xget_rvr($xconf{'HOST'}, $jid, $xprj, $subjects{$sid}{'experimentID'});
+		my %rvr = xlist_res($xconf{'HOST'}, $jid, $xprj, $subjects{$sid}{'experimentID'}, 'RVR');
 		my %rvr_data;
 		foreach my $rfile (sort keys %rvr){
 			if ($rfile =~ /.*\.json$/){
-				%rvr_data = xget_rvr_data($xconf{'HOST'}, $jid, $rvr{$rfile});
+				%rvr_data = xget_res_data($xconf{'HOST'}, $jid, 'RVR',$rfile);
 			}
 		}
 		my @akeys;

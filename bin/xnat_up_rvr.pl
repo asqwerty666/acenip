@@ -7,7 +7,7 @@
 # 
 use strict;
 use warnings;
-use XNATACE qw(xget_conf xget_session xget_mri xput_report xput_rvr);
+use XNATACE qw(xget_conf xget_session xget_mri xcreate_res xput_res_file);
 use File::Find::Rule;
 use File::Basename qw(basename);
 use Text::CSV qw(csv);
@@ -38,7 +38,8 @@ if ($rep_dir) {
 		my $bnreport = basename $report;
 		(my $xsbj = $bnreport) =~ s/.pdf//;
 		$vrdata{$xsbj} = xget_mri($xconf{'HOST'}, $jid, $xprj, $xsbj);
-		xput_report($xconf{'HOST'}, $jid, $xsbj, $vrdata{$xsbj}, $report);
+		xcreate_res($xconf{'HOST'}, $jid, $vrdata{$xsbj}, 'RVR');
+		xput_res_file($xconf{'HOST'}, $jid, $vrdata{$xsbj}, 'RVR', 'report_'.$xsbj.'.pdf', $report);
 	}
 	if ($vrfile) {
 		my $ref_vr = csv(in => $vrfile, headers => "auto");
@@ -56,7 +57,7 @@ if ($rep_dir) {
 			open TDF, ">$tvrf";
 			print TDF "$rep_body\n";
 			close TDF;
-			xput_rvr($xconf{'HOST'}, $jid, $vrdata{${$mrdata}{'Subject'}}, $tvrf);
+			xput_res_file($xconf{'HOST'}, $jid, $vrdata{${$mrdata}{'Subject'}}, 'RVR', 'report_data.json', $tvrf);
 			unlink $tvrf;
 		}
 	}
@@ -76,7 +77,7 @@ if ($rep_dir) {
 		print TDF "$rep_body\n";
 		close TDF;
 		my $esbj = xget_mri($xconf{'HOST'}, $jid, $xprj, ${$mrdata}{'Subject'}); 
-		xput_rvr($xconf{'HOST'}, $jid, $esbj, $tvrf);
+		xput_res_file($xconf{'HOST'}, $jid, $esbj, 'RVR', 'report_data.json', $tvrf);
 		unlink $tvrf;
 	}
 }
