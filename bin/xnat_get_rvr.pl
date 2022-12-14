@@ -35,7 +35,7 @@ foreach my $sid (sort keys %subjects){
 		my %rvr_data;
 		foreach my $rfile (sort keys %rvr){
 			if ($rfile =~ /.*\.json$/){
-				%rvr_data = xget_res_data($xconf{'HOST'}, $jid, 'RVR',$rfile);
+				%rvr_data = xget_res_data($xconf{'HOST'}, $jid, $subjects{$sid}{'experimentID'},'RVR',$rfile);
 			}
 		}
 		my @akeys;
