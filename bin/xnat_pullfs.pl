@@ -49,19 +49,14 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     if (/^-x/) { $xprj = shift; chomp($xprj);} #nombre del proyecto en XNAT
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/xnat_pullfs.hlp'; exit;}
 }
-if ($prj or $xprj){
-	if ($prj) { 
-		$xprj = $prj;
-	}else{
-		$prj = $xprj;
+my %std;
+if ($prj and not $xprj) {
+        %std = load_project($prj);
+	if(exists($std{'XNAME'}) and $std{'XNAME'}){
+	        $xprj = $std{'XNAME'};
 	}
-}else{
-	die "Should supply the XNAT or local project name\n"
 }
-my %std = load_project($prj);
-if(exists($std{'XNAME'}) and $std{'XNAME'}){
-	$xprj = $std{'XNAME'};
-}
+die "Should supply XNAT project name or define it at local project config!\n" unless $xprj;
 # Saco los sujetos del proyecto 
 my %xconfig = xget_session();
 my $jid = $xconfig{'JSESSION'};
