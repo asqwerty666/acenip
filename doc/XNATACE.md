@@ -237,7 +237,8 @@
     Download file from experiment resource
 
     usage:
-    	$result = xget\_res\_file(host, jsession, experiment, type, filename, output)
+
+            $result = xget_res_file(host, jsession, experiment, type, filename, output)
 
 - xlist\_res
 

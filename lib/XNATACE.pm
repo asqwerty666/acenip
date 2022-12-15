@@ -632,6 +632,7 @@ sub xget_res_data {
 Download file from experiment resource
 
 usage:
+
 	$result = xget_res_file(host, jsession, experiment, type, filename, output)
 
 =cut
