@@ -74,7 +74,7 @@
 
     usage:
 
-            $xdata = xget_sbj_demog(host, jsession, project, subject, field);
+            $xdata = xget_sbj_demog(host, jsession, subject, field);
 
 - xget\_exp\_data
 
@@ -261,8 +261,12 @@
 
 - xget\_dicom
 
-    Download the full DICOM for a given experiment into the desired output directory.
+    Download DICOM for a given experiment into the desired output directory.
+
+    You can download the full experiment or just a list of series enumerated with a comma separated list of _series\_description_ tag
 
     usage:
 
-            xget_dicom(host, jsession, experiment, output_dir)
+            xget_dicom(host, jsession, experiment, output_dir, series_description)
+
+    If _series\_description_ is ommited then is assumed equal to 'ALL' and the full DICOM will be downloaded

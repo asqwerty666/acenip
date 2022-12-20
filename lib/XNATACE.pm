@@ -19,8 +19,8 @@ use JSON qw(decode_json);
 use File::Temp qw(:mktemp tempdir);
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
-our @EXPORT = qw(xconf xget_conf xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog);
-our @EXPORT_OK = qw(xconf xget_conf xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog);
+our @EXPORT = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog);
+our @EXPORT_OK = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog);
 our %EXPORT_TAGS =(all => qw(xget_session xget_pet xget_mri), usual => qw(xget_session));
 
 our $VERSION = 0.1;
@@ -203,13 +203,13 @@ Get demographics variable from given subject, if available
 
 usage:
 
-	$xdata = xget_sbj_demog(host, jsession, project, subject, field);
+	$xdata = xget_sbj_demog(host, jsession, subject, field);
 
 =cut 
 
 sub xget_sbj_demog {
 	my @xdata = @_;
-	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/subjects/'.$xdata[2].'?format=json&columns=label,dob" 2>/dev/null | jq \'.items[].children[] | select (.field=="demographics")\' | jq \'.items[].data_fields["'.$xdata[3].'"]\'';
+	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/subjects/'.$xdata[2].'?format=json&columns=label,dob" 2>/dev/null | jq \'.items[].children[] | select (.field=="demographics") | .items[].data_fields["'.$xdata[3].'"]\'';
         my $jres = qx/$crd/;
 	#my $xfres = decode_json $jres;
 	# This is the fucking slowest way to do this shit 
@@ -704,11 +704,15 @@ sub xget_rvr_data {
 
 =item xget_dicom
 
-Download the full DICOM for a given experiment into the desired output directory.
+Download DICOM for a given experiment into the desired output directory.
+
+You can download the full experiment or just a list of series enumerated with a comma separated list of I<series_description> tag
 
 usage:
 
-	xget_dicom(host, jsession, experiment, output_dir)
+	xget_dicom(host, jsession, experiment, output_dir, series_description)
+
+If I<series_description> is ommited then is assumed equal to 'ALL' and the full DICOM will be downloaded
 
 =cut 
 	
@@ -719,10 +723,26 @@ sub xget_dicom {
 	my $tmp_dir = $ENV{'TMPDIR'};
 	my $zdir = tempdir(TEMPLATE => ($tmp_dir?$tmp_dir:'.').'/zipdir.XXXXX', CLEANUP => 1);
 	my $zipfile = $zdir.'/'.$xdata[2].'.zip';
-	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/scans/ALL/files?format=zip" -o '.$zipfile;
+	my $crd; my $all_types = 'ALL';
+	unless (@xdata < 4 or $xdata[4] ne 'ALL') {
+		$crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/scans/ALL/files?format=zip" -o '.$zipfile.' 2>/dev/null';
+	}else{
+		my @series = split ',', $xdata[4];
+		my @types;
+		foreach my $serie (@series){
+			my $icrd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/scans?format=json" 2>/dev/null | jq \'.ResultSet.Result[] | select (.series_description == "'.$serie.'") | .ID\'';
+			my $ires = qx/$icrd/;
+			$ires =~ s/\"//g;
+			chomp $ires;
+			push @types, $ires if $ires;
+		}
+		$all_types = join ',', @types;
+	       $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/scans/'.$all_types.'/files?format=zip" -o '.$zipfile.' 2>/dev/null';	
+	}
 	system($crd);
-	my $zrd = '7za x -o'.$xdata[3].' '.$zipfile;
+	my $zrd = '7za x -y -o'.$xdata[3].' '.$zipfile.' 1>/dev/null' ;
 	system($zrd);
+	return $all_types;
 }
 
 =back

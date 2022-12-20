@@ -104,7 +104,7 @@
 
 <p>usage:</p>
 
-<pre><code>        $xdata = xget_sbj_demog(host, jsession, project, subject, field);</code></pre>
+<pre><code>        $xdata = xget_sbj_demog(host, jsession, subject, field);</code></pre>
 
 </dd>
 <dt id="xget_exp_data">xget_exp_data</dt>
@@ -322,11 +322,15 @@
 <dt id="xget_dicom">xget_dicom</dt>
 <dd>
 
-<p>Download the full DICOM for a given experiment into the desired output directory.</p>
+<p>Download DICOM for a given experiment into the desired output directory.</p>
+
+<p>You can download the full experiment or just a list of series enumerated with a comma separated list of <i>series_description</i> tag</p>
 
 <p>usage:</p>
 
-<pre><code>        xget_dicom(host, jsession, experiment, output_dir)</code></pre>
+<pre><code>        xget_dicom(host, jsession, experiment, output_dir, series_description)</code></pre>
+
+<p>If <i>series_description</i> is ommited then is assumed equal to &#39;ALL&#39; and the full DICOM will be downloaded</p>
 
 </dd>
 </dl>
