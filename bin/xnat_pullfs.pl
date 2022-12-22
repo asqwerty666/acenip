@@ -24,7 +24,7 @@
 use strict; use warnings;
 use NEURO4 qw(populate get_subjects check_fs_subj load_project print_help check_or_make cut_shit);
 use FSMetrics qw(fs_file_metrics);
-use XNATACE qw(xget_conf xget_session xget_subjects xget_mri xget_sbj_data xget_res_file xget_exp_data);
+use XNATACE qw(xget_session xget_subjects xget_mri xget_sbj_data xget_res_file xget_exp_data);
 use File::Basename qw(basename);
 use File::Slurp qw(read_file);
 use File::Temp qw(tempdir);
