@@ -19,15 +19,18 @@
 use strict;
 use warnings;
 use NEURO4 qw(load_project print_help populate check_or_make);
-use XNATACE qw(xconf xget_conf xget_session xget_subjects xget_mri xlist_res xget_res_file);
+use XNATACE qw(xget_session xget_subjects xget_mri xlist_res xget_res_file_tr);
+use SLURMACE qw(send2slurm);
 use File::Temp qw(tempdir);
 use Data::Dump qw(dump);
 my $prj;
 my $xprj;
 my $tmpdir;
 my $cfile="";
+my $overwrite = 0;
 my $tmp_path = $ENV{'TMPDIR'};
-$tmpdir = tempdir(TEMPLATE => $tmp_path.'/fstar.XXXXXX', CLEANUP => 1);
+$tmpdir = $tmp_path; # Esto para poder compartir en el cluster el directorio temporal
+#$tmpdir = tempdir(TEMPLATE => $tmp_path.'/fstar.XXXXXX', CLEANUP => 1);
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
@@ -35,6 +38,7 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
     if (/^-p/) { $prj = shift; chomp($prj);} #nombre local del proyecto
     if (/^-x/) { $xprj = shift; chomp($xprj);} #nombre del proyecto en XNAT
     if (/^-cut/) { $cfile = shift; chomp($cfile);}
+    if (/^-ovw/) {$overwrite = 1;}
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/xnat_getfs.hlp'; exit;}
 }
 $xprj = $prj unless $xprj;
@@ -72,22 +76,38 @@ foreach my $xsbj (sort keys %psubjects){
 # pipeline local. A partir de aqui se pueden ejecutar las operaciones que se deseen, como si
 # se hubiera hecho todo el procesamiento localmente.
 print "OK, now I'm going on\nDownloading and extracting\n";
+my $outdir = $std{'DATA'}.'/slurm';
+mkdir $outdir;
+my %ptask = ('job_name' => 'fake_FS_'.$prj);
+my @jobs;
 foreach my $xsbj (sort keys %psubjects){
 	my $fsdir = $ENV{'SUBJECTS_DIR'}."/".$prj."_".$psubjects{$xsbj}{'PSubject'};
-	unless ( -d $fsdir){
+	unless ( -d $fsdir and not $overwrite){
 		my $tfsdir = $tmpdir."/".$prj."_".$psubjects{$xsbj}{'PSubject'};
-		mkdir $tfsdir;
+		#mkdir $tfsdir;
+		mkdir $fsdir;
 		my $tfsout = $tfsdir.'/'.$xsbj.'.tar.gz';
 		my %fs_files = xlist_res($xconfig{'HOST'}, $jid, $xprj,$psubjects{$xsbj}{'MRI'}, 'FS');
 		foreach my $fsfile (sort keys %fs_files){
 			if ($fsfile =~ /.*\.tar\.gz$/){
-				xget_res_file($xconfig{'HOST'}, $jid, $xprj,$psubjects{$xsbj}{'MRI'}, 'FS', $fsfile,  $tfsout);
+				$ptask{'output'} = $outdir.'/'.$psubjects{$xsbj}{'PSubject'}.'.out';
+				$ptask{'filename'} = $outdir.'/'.$psubjects{$xsbj}{'PSubject'}.'.sh';
+				print "$fsfile -> $fsdir\n";
+				$ptask{'command'} = 'mkdir '.$tfsdir."\n";
+				$ptask{'command'} .= xget_res_file_tr($xconfig{'HOST'}, $jid, $psubjects{$xsbj}{'MRI'}, 'FS', $fsfile,  $tfsout);
+				$ptask{'command'} .= "\n";
+				$ptask{'command'} .= "tar xzf ".$tfsout." -C ".$fsdir."/ --transform=\'s/".$xsbj."//\' --exclude=\'fsaverage\' \n";
+				$ptask{'command'} .='rm -rf '.$tfsdir."\n";
+				#dump %ptask;
+				send2slurm(\%ptask);
 			}
 		}
-		mkdir $fsdir;
-		my $order = "tar xzf ".$tfsout." -C ".$fsdir."/ --transform=\'s/".$xsbj."//\' --exclude=\'fsaverage\' 2>/dev/null";
-		system($order);
 	}
 }
-my $order = "rm -rf ".$tmpdir;
-system($order);
+my %warn = ('job_name' => 'fake_FS_'.$prj, 
+	'filename' => $outdir.'/fake_FS_end.sh', 
+	'mailtype' => 'END',
+	'output' => $outdir.'/fakefs_end',
+	'dependency' => 'singleton'
+);
+send2slurm(\%warn);
