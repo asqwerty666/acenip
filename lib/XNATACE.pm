@@ -734,10 +734,10 @@ sub xget_dicom {
 		foreach my $serie (@series){
 			my $icrd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/scans?format=json" 2>/dev/null | jq \'.ResultSet.Result[] | select (.series_description == "'.$serie.'") | .ID\'';
 			my $ires = qx/$icrd/;
-			$ires = (split /\n/, $ires)[0];
 			$ires =~ s/\"//g;
-			chomp $ires;
-			push @types, $ires if $ires;
+			my @ares = split /\n/, $ires;
+			chomp @ares;
+			push @types, @ares if @ares;
 		}
 		$all_types = join ',', @types;
 	       $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/scans/'.$all_types.'/files?format=zip" -o '.$zipfile.' 2>/dev/null';	
