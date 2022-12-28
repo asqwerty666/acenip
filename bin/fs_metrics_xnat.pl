@@ -15,7 +15,7 @@
 use strict; use warnings;
 use NEURO4 qw(get_subjects check_fs_subj load_project print_help shit_done check_or_make getLoggingTime);
 use FSMetrics qw(fs_file_metrics);
-use XNATACE qw(xget_session xget_subjects xget_mri xget_exp_data xget_fs_qc xget_fs_allstats);
+use XNATACE qw(xget_session xget_subjects xget_mri xget_exp_data xget_res_data xlist_res xget_res_file);
 use File::Basename qw(basename);
 use File::Temp qw( :mktemp tempdir);
 use File::Path qw(make_path);
@@ -70,8 +70,14 @@ my @fspnames;
 foreach my $plab (sort keys %inbreed){
 	push @fspnames, $plab;
 	my $outdir = $fsoutput.'/'.$plab.'/stats';
-	make_path $outdir; 
-	xget_fs_allstats($xconf{'HOST'}, $xconf{'JSESSION'}, $subjects{$inbreed{$plab}}{'experiment'}, $outdir);
+	make_path $outdir;
+        my %res = xlist_res($xconf{'HOST'}, $xconf{'JSESSION'}, $subjects{$inbreed{$plab}}{'experiment'}, 'FS');
+	foreach my $fres (sort keys %res){
+		if ($fres =~ /\.stats$/){
+			my $outfile = $outdir.'/'.$fres;
+			xget_res_file($xconf{'HOST'}, $xconf{'JSESSION'}, $subjects{$inbreed{$plab}}{'experiment'}, 'FS', $fres, $outfile);
+		}
+	}	
 }
 
 my %stats = fs_file_metrics();
@@ -125,7 +131,8 @@ unless ($guide) {
 my $fsqcfile = $fsoutput.'/fsqc.csv';
 foreach my $sbj (sort keys %subjects){
 	if(exists($subjects{$sbj}{'experiment'}) and $subjects{$sbj}{'experiment'}){
-		my %tmp_hash = xget_fs_qc($xconf{'HOST'}, $xconf{'JSESSION'}, $subjects{$sbj}{'experiment'});
+		#my %tmp_hash = xget_fs_qc($xconf{'HOST'}, $xconf{'JSESSION'}, $subjects{$sbj}{'experiment'});
+		my %tmp_hash = xget_res_data($xconf{'HOST'}, $xconf{'JSESSION'}, $subjects{$sbj}{'experiment'}, 'fsqc', 'rating.json');
 		$tmp_hash{'rating'} =~ tr/ODILg/odilG/;
 		$subjects{$sbj}{'FSQC'} = $tmp_hash{'rating'};
 		$subjects{$sbj}{'Notes'} = $tmp_hash{'notes'};

@@ -20,25 +20,21 @@ use File::Temp qw(:mktemp tempdir);
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
 our @EXPORT = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_res_file_tr xget_dicom xget_sbj_demog);
-our @EXPORT_OK = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xget_fs_stats xget_fs_qc xget_fs_allstats xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog);
+our @EXPORT_OK = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog);
 our %EXPORT_TAGS =(all => qw(xget_session xget_pet xget_mri), usual => qw(xget_session));
 
 our $VERSION = 0.2;
 our $default_config_path = $ENV{'HOME'}.'/.xnatapic/xnat.conf';
 
-=head1 XNATACE
-
-=over
-
-=item xconf
-
-Publish path of xnatapic configuration file
-
-usage: 
-
-	$path = xconf();
-
-=cut 
+#=item xconf
+#
+#Publish path of xnatapic configuration file
+#
+#usage: 
+#
+#	$path = xconf();
+#
+#=cut 
 
 sub xconf {
 	my $rpath = shift;
@@ -46,15 +42,15 @@ sub xconf {
 	return $rpath;
 }
 
-=item xget_conf
-
-Get the XNAT connection data into a HASH
-
-usage: 
-
-	%xnat_data = xget_conf()
-
-=cut
+#=item xget_conf
+#
+#Get the XNAT connection data into a HASH
+#
+#usage: 
+#
+#	%xnat_data = xget_conf()
+#
+#=cut
 
 sub xget_conf {
 	# Get the XNAT connection data into a HASH
@@ -70,6 +66,10 @@ sub xget_conf {
 	}
 	return %xconf;
 }
+
+=head1 XNATACE
+
+=over
 
 =item xget_session
 
@@ -279,125 +279,36 @@ sub xget_mri {
 	return $xlab;
 }
 
-=item xget_fs_data
 
-Get the full Freesurfer directory in a tar.gz file.
-DEPRECATED
-
-usage: 
-
-	$result = xget_fs_data(host, jsession, project, experiment, output_path);
-
-Return 1 if OK, 0 otherwise.
-=cut
-
-sub xget_fs_data {
-	my @xdata = @_;
-	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/projects/'.$xdata[2].'/experiments/'.$xdata[3].'/resources/FS/files?format=json"  2>/dev/null';
-	my $json_res = qx/$crd/;
-	my $file_uri;
-	my $fs_data = decode_json $json_res;
-	foreach my $var_data (@{$fs_data->{'ResultSet'}{'Result'}}){
-		if (${$var_data}{'file_content'} eq 'FSresults'){
-			$file_uri = ${$var_data}{'URI'};
-		}
-	}
-	if($file_uri){
-		$crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].$file_uri.'" -o '.$xdata[4].' 2>/dev/null';
-		system($crd);
-		return 1;
-	}else{
-		return 0;
-	}
-}
-
-=item xget_fs_stats
-
-Get a single stats file from Freesurfer segmentation
-
-This is deprecated by xget_res_file() and should disapear soon :-(
-
-usage:
-
-	$result = xget_fs_stats(host, jsession, experiment, stats_file, output_file) 
-
-Returns 1 if OK, 0 otherwise.
-
-=cut
-
-sub xget_fs_stats {
-	my @xdata = @_;
-	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/FS/files?format=json" 2>/dev/null';
-	my $json_res = qx/$crd/;
-	my $fs_data = decode_json $json_res;
-	my $file_uri;
-	foreach my $var_data (@{$fs_data->{'ResultSet'}{'Result'}}){
-		if ((${$var_data}{'file_content'} eq 'FSstats') and (${$var_data}{'Name'} eq $xdata[3])){
-			$file_uri = ${$var_data}{'URI'};
-		}
-	}
-	if($file_uri){
-                $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].$file_uri.'" -o '.$xdata[4].' 2>/dev/null';
-		system($crd);
-		return 1;
-	}else{
-		return 0;
-	}
-}
-
-=item xget_fs_allstats
-
-Get all stats files from Freesurfer segmentation and write it down at selected directory.
-DEPRECATED, should be removed
-
-usage:
-
-        xget_fs_allstats(host, jsession, experiment, output_dir)
-
-=cut
-
-sub xget_fs_allstats {
-	my @xdata = @_;
-	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/FS/files?format=json" 2>/dev/null';
-	my $json_res = qx/$crd/;
-	my $fs_data = decode_json $json_res;
-	foreach my $var_data (@{$fs_data->{'ResultSet'}{'Result'}}){
-		if ((${$var_data}{'file_content'} eq 'FSstats') and (${$var_data}{'Name'} =~ /.*\.stats$/)){
-			$crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].${$var_data}{'URI'}.'" -o '.$xdata[3].'/'.${$var_data}{'Name'}.' 2>/dev/null';
-			system($crd);
-		}
-	}
-}
-
-=item xget_fs_qc
-
-Get Freeesurfer QC info.
-
-I'm sure this could be deprecated by xget_res_data(), so better do not use it.
-
-usage:
-
-	%fsqc = xget_fs_qc(host, jsession, experiment);
-
-Output is a hash with I<rating> and I<notes>
-
-=cut 
-
-sub xget_fs_qc {
-	my @xdata = @_;
-	my %qc;
-	my %empty = ('rating' => 0);
-	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/fsqc/files/rating.json" 2>/dev/null';
-	my $json_res = qx/$crd/;
-	return %empty unless $json_res;
-	my $qc_data = decode_json $json_res;
-	foreach my $var_data (@{$qc_data->{'ResultSet'}{'Result'}}){
-		foreach my $kdata (sort keys %{$var_data}){
-			$qc{$kdata} = ${$var_data}{$kdata};
-		}
-	}
-	return %qc;
-}
+#=item xget_fs_qc
+#
+#Get Freeesurfer QC info.
+#
+#I'm sure this could be deprecated by xget_res_data(), so better do not use it.
+#
+#usage:
+#
+#	%fsqc = xget_fs_qc(host, jsession, experiment);
+#
+#Output is a hash with I<rating> and I<notes>
+#
+#=cut 
+#
+#sub xget_fs_qc {
+#	my @xdata = @_;
+#	my %qc;
+#	my %empty = ('rating' => 0);
+#	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/fsqc/files/rating.json" 2>/dev/null';
+#	my $json_res = qx/$crd/;
+#	return %empty unless $json_res;
+#	my $qc_data = decode_json $json_res;
+#	foreach my $var_data (@{$qc_data->{'ResultSet'}{'Result'}}){
+#		foreach my $kdata (sort keys %{$var_data}){
+#			$qc{$kdata} = ${$var_data}{$kdata};
+#		}
+#	}
+#	return %qc;
+#}
 
 =item xget_pet
 
@@ -490,47 +401,6 @@ sub xget_pet_data {
 	return %xresult;
 }
 
-=item xput_report
-
-Upload a pdf report to XNAT.
-
-Deprecated. Use a call to xcreate_res() and xput_res_file() instead.
-
-usage: 
-
-	xput_report(host, jsession, subject, experiment, pdf_file);
-
-=cut
-
-sub xput_report{
-	# upload a pdf report to XNAT
-	# usage: xput_report(host, jsession, subject, experiment, pdf_file);
-	my @xdata = @_;
-	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X PUT "'.$xdata[0].'/data/experiments/'.$xdata[3].'/resources/RVR" 2>/dev/null';
-	system($crd);
-	$crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X PUT "'.$xdata[0].'/data/experiments/'.$xdata[3].'/resources/RVR/files/report_'.$xdata[2].'.pdf?overwrite=true" -F file="@'.$xdata[4].'"';
-       system($crd);       
-}
-
-=item xput_rvr
-
-Upload a JSON file with VR data.
-
-This is deprecated by xput_res_file()
-
-usage: 
-
-	xput_rvr(host, jsession, experiment, json_file);
-
-=cut
-
-sub xput_rvr {
-	# Upload a JSON file with VR data
-	# usage: xput_rvr(host, jsession, experiment, json_file);
-	my @xdata = @_;
-	my $crd = 'curl -f -X PUT -b JSESSIONID='.$xdata[1].' "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/RVR/files/report_data.json?overwrite=true" -F file="@'.$xdata[3].'"';
-	system($crd);
-}
 
 =item xcreate_res 
 
@@ -633,21 +503,17 @@ Download file from experiment resource
 
 usage:
 
-	$result = xget_res_file(host, jsession, experiment, type, filename, output)
+	$result = xget_res_file(host, jsession, experiment, type, filename, output, just_print)
 
 =cut
 
 sub xget_res_file {
 	my @xdata = @_;
+	my $jp = $xdata[6] if defined $xdata[6];
 	my $crd = 'curl -f -X GET -b JSESSIONID='.$xdata[1].' "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/'.$xdata[3].'/files/'.$xdata[4].'" -o '.$xdata[5].' 2>/dev/null';
+	return $crd if $jp;
 	my $res = qx/$crd/;
 	return $res;
-}
-
-sub xget_res_file_tr{
-        my @xdata = @_;
-        my $crd = 'curl -f -X GET -b JSESSIONID='.$xdata[1].' "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/'.$xdata[3].'/files/'.$xdata[4].'" -o '.$xdata[5];
-        return $crd;
 }
 
 
@@ -658,17 +524,17 @@ Output is a hash with filenames and URI of each element stored at the resource.
 
 usage:
 
-	%xdata = xlist_res(host, jsession, project, experiment, resource); 
+	%xdata = xlist_res(host, jsession, project, resource); 
 
 =cut
 
 
 sub xlist_res {
-	# Get the list of VR results into a HASH
+	# Get the list of resources into a HASH
 	# usage: xget_list(host, jsession, project, experiment, resource);
 	# output is a hash with filenames and URI of each element stored at RVR
 	my @xdata = @_;
-	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/projects/'.$xdata[2].'/experiments/'.$xdata[3].'/resources/'.$xdata[4].'/files?format=json" 2>/dev/null';
+	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/'.$xdata[3].'/files?format=json" 2>/dev/null';
 	my $json_res = qx/$crd/;
 	my $rvr_prop = decode_json $json_res;
 	my %report_data;
@@ -678,34 +544,6 @@ sub xlist_res {
 		}
 	}
 	return %report_data;
-}
-
-=item xget_rvr_data
-
-Get RVR JSON data into a hash
-
-Give me a break. Deprecated by xget_res_data()
-
-usage: 
-
-	%xdata = xget_rvr_data(host, jsession, URI);
-
-=cut
-
-sub xget_rvr_data {
-	# Get single RVR JSON data into a hash
-	# usage: xget_rvr_data(host, jsession, URI);  
-	my @xdata = @_;
-	my %rvr_data;
-	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].$xdata[2].'" 2>/dev/null';
-	my $json_res = qx/$crd/;
-	my $report_data = decode_json $json_res;
-	foreach my $var_data (@{$report_data->{'ResultSet'}{'Result'}}){
-		foreach my $kdata (sort keys %{$var_data}){
-			$rvr_data{$kdata} = ${$var_data}{$kdata};
-		}
-	}
-	return %rvr_data;
 }
 
 =item xget_dicom

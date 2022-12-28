@@ -19,26 +19,6 @@
 
 <dl>
 
-<dt id="xconf">xconf</dt>
-<dd>
-
-<p>Publish path of xnatapic configuration file</p>
-
-<p>usage:</p>
-
-<pre><code>        $path = xconf();</code></pre>
-
-</dd>
-<dt id="xget_conf">xget_conf</dt>
-<dd>
-
-<p>Get the XNAT connection data into a HASH</p>
-
-<p>usage:</p>
-
-<pre><code>        %xnat_data = xget_conf()</code></pre>
-
-</dd>
 <dt id="xget_session">xget_session</dt>
 <dd>
 
@@ -135,56 +115,6 @@
 <pre><code>        $experiment_ID = xget_mri(host, jsession, project, subject)</code></pre>
 
 </dd>
-<dt id="xget_fs_data">xget_fs_data</dt>
-<dd>
-
-<p>Get the full Freesurfer directory in a tar.gz file. DEPRECATED</p>
-
-<p>usage:</p>
-
-<pre><code>        $result = xget_fs_data(host, jsession, project, experiment, output_path);</code></pre>
-
-<p>Return 1 if OK, 0 otherwise.</p>
-
-</dd>
-<dt id="xget_fs_stats">xget_fs_stats</dt>
-<dd>
-
-<p>Get a single stats file from Freesurfer segmentation</p>
-
-<p>This is deprecated by xget_res_file() and should disapear soon :-(</p>
-
-<p>usage:</p>
-
-<pre><code>        $result = xget_fs_stats(host, jsession, experiment, stats_file, output_file) </code></pre>
-
-<p>Returns 1 if OK, 0 otherwise.</p>
-
-</dd>
-<dt id="xget_fs_allstats">xget_fs_allstats</dt>
-<dd>
-
-<p>Get all stats files from Freesurfer segmentation and write it down at selected directory. DEPRECATED, should be removed</p>
-
-<p>usage:</p>
-
-<pre><code>        xget_fs_allstats(host, jsession, experiment, output_dir)</code></pre>
-
-</dd>
-<dt id="xget_fs_qc">xget_fs_qc</dt>
-<dd>
-
-<p>Get Freeesurfer QC info.</p>
-
-<p>I&#39;m sure this could be deprecated by xget_res_data(), so better do not use it.</p>
-
-<p>usage:</p>
-
-<pre><code>        %fsqc = xget_fs_qc(host, jsession, experiment);</code></pre>
-
-<p>Output is a hash with <i>rating</i> and <i>notes</i></p>
-
-</dd>
 <dt id="xget_pet">xget_pet</dt>
 <dd>
 
@@ -219,30 +149,6 @@
 <pre><code>        %xresult = xget_pet_data(host, jsession, experiment);</code></pre>
 
 <p>Returns a hash with the results of the PET analysis</p>
-
-</dd>
-<dt id="xput_report">xput_report</dt>
-<dd>
-
-<p>Upload a pdf report to XNAT.</p>
-
-<p>Deprecated. Use a call to xcreate_res() and xput_res_file() instead.</p>
-
-<p>usage:</p>
-
-<pre><code>        xput_report(host, jsession, subject, experiment, pdf_file);</code></pre>
-
-</dd>
-<dt id="xput_rvr">xput_rvr</dt>
-<dd>
-
-<p>Upload a JSON file with VR data.</p>
-
-<p>This is deprecated by xput_res_file()</p>
-
-<p>usage:</p>
-
-<pre><code>        xput_rvr(host, jsession, experiment, json_file);</code></pre>
 
 </dd>
 <dt id="xcreate_res">xcreate_res</dt>
@@ -294,7 +200,7 @@
 
 <p>usage:</p>
 
-<pre><code>        $result = xget_res_file(host, jsession, experiment, type, filename, output)</code></pre>
+<pre><code>        $result = xget_res_file(host, jsession, experiment, type, filename, output, just_print)</code></pre>
 
 </dd>
 <dt id="xlist_res">xlist_res</dt>
@@ -304,19 +210,7 @@
 
 <p>usage:</p>
 
-<pre><code>        %xdata = xlist_res(host, jsession, project, experiment, resource); </code></pre>
-
-</dd>
-<dt id="xget_rvr_data">xget_rvr_data</dt>
-<dd>
-
-<p>Get RVR JSON data into a hash</p>
-
-<p>Give me a break. Deprecated by xget_res_data()</p>
-
-<p>usage:</p>
-
-<pre><code>        %xdata = xget_rvr_data(host, jsession, URI);</code></pre>
+<pre><code>        %xdata = xlist_res(host, jsession, project, resource); </code></pre>
 
 </dd>
 <dt id="xget_dicom">xget_dicom</dt>

@@ -7,7 +7,7 @@
 # 
 use strict;
 use warnings;
-use XNATACE qw(xget_conf xget_session xget_mri xcreate_res xput_res_file);
+use XNATACE qw(xget_session xget_mri xcreate_res xput_res_file);
 use File::Find::Rule;
 use File::Basename qw(basename);
 use Text::CSV qw(csv);

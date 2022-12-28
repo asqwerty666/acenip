@@ -15,6 +15,7 @@ use warnings;
 use NEURO4 qw(load_project);
 use SLURMACE qw(send2slurm);
 use XNATACE qw(xget_session xget_dicom xget_subjects xget_mri);
+use JSON;
 use Data::Dump qw(dump);
 my $prj;
 my $ifile;
@@ -84,10 +85,17 @@ $ptask{'mem_per_cpu'} = '4G';
 my $outdir = "$prj_data{'DATA'}/slurm";
 mkdir $outdir unless -d $outdir;
 my $ofile = $prj_data{'DATA'}.'/'.$prj.'_'.$mode.'.csv';
+my $tfile = $prj_data{'BIDS'}.'/participants.tsv';
 open ODF, ">$ofile";
+open TDF, ">$tfile";
+my %participants;
 foreach my $sbj (sort keys %subjects){
 	if ($subjects{$sbj}{'download'}) {
+		$participants{$subjects{$sbj}{'strID'}}{'XNAT_ID'} = $sbj;
+		$participants{$subjects{$sbj}{'strID'}}{'XNAT_'.$mode.'_ID'} = $subjects{$sbj}{'experiment'};
+		$participants{$subjects{$sbj}{'strID'}}{'XNAT_label'} = $subjects{$sbj}{'label'};
 		print ODF "$subjects{$sbj}{'strID'};$subjects{$sbj}{'label'}\n";
+		print TDF "$subjects{$sbj}{'strID'}\t$subjects{$sbj}{'label'}\n";
 		$ptask{'command'} = "mkdir -p $prj_data{'BIDS'}/tmp_dcm2bids/sub-$subjects{$sbj}{'strID'}; dcm2niix -i y -d 9 -b y -ba y -z y -f '%3s_%f_%p_%t' -o $prj_data{'BIDS'}/tmp_dcm2bids/sub-$subjects{$sbj}{'strID'} $prj_data{'SRC'}/$subjects{$sbj}{'label'}/; dcm2bids -d $prj_data{'SRC'}/$subjects{$sbj}{'label'}/ -p $subjects{$sbj}{'strID'} -c $jfile -o $prj_data{'BIDS'}/";
 		$ptask{'filename'} = $outdir.'/'.$subjects{$sbj}{'label'}.'_dcm2bids.sh';
 		$ptask{'output'} = $outdir.'/dcm2bids_'.$subjects{$sbj}{'label'};
@@ -95,6 +103,7 @@ foreach my $sbj (sort keys %subjects){
 	}
 }
 close ODF;
+close TDF;
 my %warn;
 $warn{'filename'} = $outdir.'/dcm2bids_end.sh';
 $warn{'job_name'} = 'dcm2bids_'.$prj;
@@ -102,3 +111,8 @@ $warn{'mailtype'} = 'END'; #email cuando termine
 $warn{'output'} = $outdir.'/dmc2bids_end';
 $warn{'dependency'} = 'singleton';
 send2slurm(\%warn);
+my $jdata = to_json \%participants;
+my $jpfile = $prj_data{'BIDS'}.'/participants.json';
+open JPF, ">$jpfile";
+print JPF $jdata;
+close JPF;

@@ -19,7 +19,7 @@
 use strict;
 use warnings;
 use NEURO4 qw(load_project print_help populate check_or_make);
-use XNATACE qw(xget_session xget_subjects xget_mri xlist_res xget_res_file_tr);
+use XNATACE qw(xget_session xget_subjects xget_mri xlist_res xget_res_file);
 use SLURMACE qw(send2slurm);
 use File::Temp qw(tempdir);
 use Data::Dump qw(dump);
@@ -94,7 +94,7 @@ foreach my $xsbj (sort keys %psubjects){
 				$ptask{'filename'} = $outdir.'/'.$psubjects{$xsbj}{'PSubject'}.'.sh';
 				print "$fsfile -> $fsdir\n";
 				$ptask{'command'} = 'mkdir '.$tfsdir."\n";
-				$ptask{'command'} .= xget_res_file_tr($xconfig{'HOST'}, $jid, $psubjects{$xsbj}{'MRI'}, 'FS', $fsfile,  $tfsout);
+				$ptask{'command'} .= xget_res_file($xconfig{'HOST'}, $jid, $psubjects{$xsbj}{'MRI'}, 'FS', $fsfile,  $tfsout, 1);
 				$ptask{'command'} .= "\n";
 				$ptask{'command'} .= "tar xzf ".$tfsout." -C ".$fsdir."/ --transform=\'s/".$xsbj."//\' --exclude=\'fsaverage\' \n";
 				$ptask{'command'} .='rm -rf '.$tfsdir."\n";

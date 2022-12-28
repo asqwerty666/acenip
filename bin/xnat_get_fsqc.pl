@@ -9,7 +9,7 @@ use strict;
 use warnings;
 use File::Temp qw(:mktemp tempdir);
 use JSON qw(decode_json);
-use XNATACE qw(xget_session xget_subjects xget_mri xget_fs_qc);
+use XNATACE qw(xget_session xget_subjects xget_mri xget_res_data);
 use Data::Dump qw(dump);
 my $xprj;
 my $oxfile;
@@ -33,7 +33,7 @@ foreach my $sbj (sort keys %subjects) { $inbreed{$subjects{$sbj}{'label'}} = $sb
 foreach my $sid (sort keys %subjects){
 	$subjects{$sid}{'experimentID'} = xget_mri($xconf{'HOST'}, $jid, $xprj, $sid);
 	if (exists($subjects{$sid}{'experimentID'}) and $subjects{$sid}{'experimentID'}){
-		my %tmp_hash = xget_fs_qc($xconf{'HOST'}, $jid, $subjects{$sid}{'experimentID'});
+		my %tmp_hash = xget_res_data($xconf{'HOST'}, $jid, $subjects{$sid}{'experimentID'}, 'fsqc', 'rating.json');
 		if(exists($tmp_hash{'rating'}) and $tmp_hash{'rating'}){
 			$tmp_hash{'rating'} =~ tr/ODILgR/odilGr/;
 			$subjects{$sid}{'FSQC'} = $tmp_hash{'rating'};

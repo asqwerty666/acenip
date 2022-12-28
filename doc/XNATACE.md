@@ -1,21 +1,5 @@
 # XNATACE
 
-- xconf
-
-    Publish path of xnatapic configuration file
-
-    usage: 
-
-            $path = xconf();
-
-- xget\_conf
-
-    Get the XNAT connection data into a HASH
-
-    usage: 
-
-            %xnat_data = xget_conf()
-
 - xget\_session
 
     Create a new JSESSIONID on XNAT. Return the connection data
@@ -104,50 +88,6 @@
 
             $experiment_ID = xget_mri(host, jsession, project, subject)
 
-- xget\_fs\_data
-
-    Get the full Freesurfer directory in a tar.gz file.
-    DEPRECATED
-
-    usage: 
-
-            $result = xget_fs_data(host, jsession, project, experiment, output_path);
-
-    Return 1 if OK, 0 otherwise.
-
-- xget\_fs\_stats
-
-    Get a single stats file from Freesurfer segmentation
-
-    This is deprecated by xget\_res\_file() and should disapear soon :-(
-
-    usage:
-
-            $result = xget_fs_stats(host, jsession, experiment, stats_file, output_file) 
-
-    Returns 1 if OK, 0 otherwise.
-
-- xget\_fs\_allstats
-
-    Get all stats files from Freesurfer segmentation and write it down at selected directory.
-    DEPRECATED, should be removed
-
-    usage:
-
-            xget_fs_allstats(host, jsession, experiment, output_dir)
-
-- xget\_fs\_qc
-
-    Get Freeesurfer QC info.
-
-    I'm sure this could be deprecated by xget\_res\_data(), so better do not use it.
-
-    usage:
-
-            %fsqc = xget_fs_qc(host, jsession, experiment);
-
-    Output is a hash with _rating_ and _notes_
-
 - xget\_pet
 
     Get the XNAT PET experiment ID
@@ -177,26 +117,6 @@
             %xresult = xget_pet_data(host, jsession, experiment);
 
     Returns a hash with the results of the PET analysis
-
-- xput\_report
-
-    Upload a pdf report to XNAT.
-
-    Deprecated. Use a call to xcreate\_res() and xput\_res\_file() instead.
-
-    usage: 
-
-            xput_report(host, jsession, subject, experiment, pdf_file);
-
-- xput\_rvr
-
-    Upload a JSON file with VR data.
-
-    This is deprecated by xput\_res\_file()
-
-    usage: 
-
-            xput_rvr(host, jsession, experiment, json_file);
 
 - xcreate\_res 
 
@@ -238,7 +158,7 @@
 
     usage:
 
-            $result = xget_res_file(host, jsession, experiment, type, filename, output)
+            $result = xget_res_file(host, jsession, experiment, type, filename, output, just_print)
 
 - xlist\_res
 
@@ -247,17 +167,7 @@
 
     usage:
 
-            %xdata = xlist_res(host, jsession, project, experiment, resource); 
-
-- xget\_rvr\_data
-
-    Get RVR JSON data into a hash
-
-    Give me a break. Deprecated by xget\_res\_data()
-
-    usage: 
-
-            %xdata = xget_rvr_data(host, jsession, URI);
+            %xdata = xlist_res(host, jsession, project, resource); 
 
 - xget\_dicom
 

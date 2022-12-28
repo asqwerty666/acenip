@@ -20,7 +20,7 @@ use JSON qw(decode_json);
 use NEURO4 qw(check_pet check_subj load_project print_help check_or_make cut_shit get_pair);
 use SLURMACE qw(send2slurm);
 use FSMetrics qw(tau_rois);
-use XNATACE qw(xget_conf xget_pet xget_session xget_pet_reg); 
+use XNATACE qw(xget_pet xget_session xget_pet_reg); 
 my $cfile="";
 my $time = '2:0:0';
 my $style = "";
@@ -65,7 +65,7 @@ my @r_jobs;
 my @p_jobs;
 print "Running shit\n";
 my %xconf_data = xget_session();
-my $jsession = %xconf_data{'JSESSION'};
+my $jsession = $xconf_data{'JSESSION'};
 foreach my $subject (@pets){ 
 	my $psubject = $pet_data{$subject};
 	my $fake_tau = $w_dir.'/'.$subject.'_tau.nii.gz';
