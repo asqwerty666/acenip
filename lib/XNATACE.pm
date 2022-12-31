@@ -524,7 +524,7 @@ Output is a hash with filenames and URI of each element stored at the resource.
 
 usage:
 
-	%xdata = xlist_res(host, jsession, project, resource); 
+	%xdata = xlist_res(host, jsession, experiment, resource); 
 
 =cut
 

@@ -31,7 +31,7 @@ my $dbody="";
 foreach my $sid (sort keys %subjects){
 	$subjects{$sid}{'experimentID'} = xget_mri($xconf{'HOST'}, $jid, $xprj, $sid);
 	if (exists($subjects{$sid}{'experimentID'}) and $subjects{$sid}{'experimentID'}){
-		my %rvr = xlist_res($xconf{'HOST'}, $jid, $xprj, $subjects{$sid}{'experimentID'}, 'RVR');
+		my %rvr = xlist_res($xconf{'HOST'}, $jid, $subjects{$sid}{'experimentID'}, 'RVR');
 		my %rvr_data;
 		foreach my $rfile (sort keys %rvr){
 			if ($rfile =~ /.*\.json$/){
