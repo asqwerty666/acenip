@@ -29,6 +29,7 @@ my $tmpdir;
 my $cfile="";
 my $overwrite = 0;
 my $tmp_path = $ENV{'TMPDIR'};
+my $debug = $ENV{'PWD'}.'/subjects.list';
 $tmpdir = $tmp_path; # Esto para poder compartir en el cluster el directorio temporal
 #$tmpdir = tempdir(TEMPLATE => $tmp_path.'/fstar.XXXXXX', CLEANUP => 1);
 @ARGV = ("-h") unless @ARGV;
@@ -50,8 +51,21 @@ if(exists($std{'XNAME'}) and $std{'XNAME'}){
 my $proj_file = $std{'DATA'}.'/'.$prj.'_mri.csv';
 my %guys = populate('^(\d{4});(.*)$', $proj_file);
 my %rguys;
-foreach my $guy (sort keys %guys){
-	$rguys{$guys{$guy}} = $guy;
+my @cuts;
+if ($cfile){
+	open IDF, "<$cfile" or die "No such input file!\n";
+	@cuts = <IDF>;
+	chomp @cuts;
+	close IDF;
+	foreach my $guy (sort keys %guys){
+		if( grep {/$guys{$guy}/} @cuts){
+			$rguys{$guys{$guy}} = $guy;
+		}
+	}
+}else{
+	foreach my $guy (sort keys %guys){
+		$rguys{$guys{$guy}} = $guy;
+	}
 }
 my %xconfig = xget_session();
 # Saco los sujetos del proyecto
@@ -60,15 +74,20 @@ my $jid = $xconfig{'JSESSION'};
 my %subjects = xget_subjects($xconfig{'HOST'}, $jid, $xprj);
 # Lets sort the data;
 my %psubjects;
+open DDF, ">$debug";
 foreach my $xsbj (sort keys %subjects) {
 	if (exists($rguys{$subjects{$xsbj}{'label'}})){
 		$psubjects{$xsbj}{'Subject'} = $subjects{$xsbj}{'label'};
 		$psubjects{$xsbj}{'PSubject'} = $rguys{$subjects{$xsbj}{'label'}};
+		print DDF "$psubjects{$xsbj}{'Subject'},$psubjects{$xsbj}{'PSubject'}\n";
 	}	
 }
+close DDF;
 # Para cada sujeto saco el ID de experimento de la MRI
 foreach my $xsbj (sort keys %psubjects){
-	$psubjects{$xsbj}{'MRI'} = xget_mri($xconfig{'HOST'}, $jid, $xprj, $xsbj);
+	#$psubjects{$xsbj}{'MRI'} 
+	my @list_mri = xget_mri($xconfig{'HOST'}, $jid, $xprj, $xsbj);
+	$psubjects{$xsbj}{'MRI'} = $list_mri[0];
 }
 # Ya teniendo los experimentos emparejo los sujetos segun codigo de proyecto local, codigo de XNAT y experimento de XNAT
 # Y ahora voy a bajar todo el tgz para cada imagen y descomprimirla dentro del directorio
@@ -87,7 +106,7 @@ foreach my $xsbj (sort keys %psubjects){
 		#mkdir $tfsdir;
 		mkdir $fsdir;
 		my $tfsout = $tfsdir.'/'.$xsbj.'.tar.gz';
-		my %fs_files = xlist_res($xconfig{'HOST'}, $jid, $xprj,$psubjects{$xsbj}{'MRI'}, 'FS');
+		my %fs_files = xlist_res($xconfig{'HOST'}, $jid, $psubjects{$xsbj}{'MRI'}, 'FS');
 		foreach my $fsfile (sort keys %fs_files){
 			if ($fsfile =~ /.*\.tar\.gz$/){
 				$ptask{'output'} = $outdir.'/'.$psubjects{$xsbj}{'PSubject'}.'.out';
