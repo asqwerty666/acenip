@@ -58,6 +58,7 @@ my %lsubjects;
 # Aqui lo que hago es meter en un HoA los puntos longitudinales
 open ILF, "<$ifile" or die "Could not open input data file\n";
 while(<ILF>){
+	chomp;
 	my @long_list = split /;/, $_;
 	my $lindex = $long_list[0];
 	splice(@long_list,0,1);
