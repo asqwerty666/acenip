@@ -589,6 +589,7 @@ sub xget_dicom {
 	system($crd);
 	my $zrd = '7za x -y -o'.$xdata[3].' '.$zipfile.' 1>/dev/null' ;
 	system($zrd);
+	unlink $zdir;
 	return $all_types;
 }
 
