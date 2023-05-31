@@ -5,7 +5,7 @@ use File::Basename qw(basename);
 use Data::Dump qw(dump);
 my $ifile = shift;
 my $fname = basename $ifile;
-my ($xn1, $xn2, $sn) = $fname =~ /(\S+)\s*(\S*),\s*(\S+\s*\S*)\.zip/;
+my ($xn1, $xn2, $sn) = $fname =~ /(\S+)\s*(\S*),\s*(\S+\s*\S*)(\.zip|\/)*$/;
 
 #print "$xn1, $xn2, $sn\n";
 
@@ -20,23 +20,17 @@ while (<IDF>){
 my $conn;
 $sn =~ s/(\s)/\\$1/g;
 if($xn2){
-	$conn = 'sqlcmd -U '.$sqlconf{'USER'}.' -P '.$sqlconf{'PASSWORD'}.' -S '.$sqlconf{'HOST'}.' -s "," -W -Q "SELECT xapellido1, xapellido2, xnombre, his_interno FROM [UNIT4_DATA].[imp].[vh_pac_gral] WHERE xapellido1 = \'"'.$xn1.'"\' and xapellido2 = \'"'.$xn2.'"\';" | grep '.$xn1;
+	$conn = 'sqlcmd -U '.$sqlconf{'USER'}.' -P '.$sqlconf{'PASSWORD'}.' -S '.$sqlconf{'HOST'}.' -s "," -W -Q "SELECT dmg.his_interno, dmg.xapellido1, dmg.xapellido2, dmg.xnombre, cts.xdtprogramado, cts.xdtvisitado, cts.xestado_id FROM [UNIT4_DATA].[imp].[vh_pac_gral] as dmg JOIN [UNIT4_DATA].[imp].[his_cites_programa] as cts ON (dmg.his_interno = cts.his_interno) WHERE dmg.xapellido1 = \'"'.$xn1.'"\' and dmg.xapellido2 = \'"'.$xn2.'"\' and  cts.xprestacion_id LIKE \'MRI\';" | grep '.$xn1;
 }else{
-	$conn = 'sqlcmd -U '.$sqlconf{'USER'}.' -P '.$sqlconf{'PASSWORD'}.' -S '.$sqlconf{'HOST'}.' -s "," -W -Q "SELECT xapellido1, xapellido2, xnombre, his_interno FROM [UNIT4_DATA].[imp].[vh_pac_gral] WHERE xapellido1 = \'"'.$xn1.'"\' and xnombre = \'"'.$sn.'"\';" | grep '.$xn1;
+	$conn = 'sqlcmd -U '.$sqlconf{'USER'}.' -P '.$sqlconf{'PASSWORD'}.' -S '.$sqlconf{'HOST'}.' -s "," -W -Q "SELECT dmg.his_interno, dmg.xapellido1, dmg.xapellido2, dmg.xnombre, cts.xdtprogramado, cts.xdtvisitado, cts.xestado_id FROM [UNIT4_DATA].[imp].[vh_pac_gral] as dmg JOIN [UNIT4_DATA].[imp].[his_cites_programa] as cts ON (dmg.his_interno = cts.his_interno) WHERE dmg.xapellido1 = \'"'.$xn1.'"\' and dmg.xnombre = \'"'.$sn.'"\' and  cts.xprestacion_id LIKE \'MRI\';" | grep '.$xn1;
 }
 #print "$conn\n";
 my $tdata = qx/$conn/;
 my @rec = split /\n/, $tdata;
 #dump @rec;
 foreach my $entry (@rec){
-	my ($name, $nhc) = $entry =~ /(.*),(\d+)\s*$/;
+	my ($nhc, $name, $mri) = $entry =~ /(\d+)\s*,(\S*,\S*,\S*\s*\S*),(.*)$/;
 	if ($nhc) {
-		print "$name -->> $nhc\n";
-		$conn =  'sqlcmd -U '.$sqlconf{'USER'}.' -P '.$sqlconf{'PASSWORD'}.' -S '.$sqlconf{'HOST'}.' -s "," -W -Q "SELECT xdtprogramado,xdtvisitado,xestado_id,his_interno FROM [UNIT4_DATA].[imp].[his_cites_programa] WHERE xprestacion_id LIKE \'MRI\' and his_interno = \''.$nhc.'\';" | grep '.$nhc;
-		my $rdata = qx/$conn/;
-		my @rrec = split /\n/, $rdata;
-		foreach my $mri (@rrec){
-			print "-->> $mri -->> $nhc\n";
-		}
+		print "$name -->> $mri -->> $nhc\n";
 	}
 }
