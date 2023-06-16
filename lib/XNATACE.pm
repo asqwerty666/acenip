@@ -19,8 +19,8 @@ use JSON qw(decode_json);
 use File::Temp qw(:mktemp tempdir);
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
-our @EXPORT = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_res_file_tr xget_dicom xget_sbj_demog);
-our @EXPORT_OK = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog);
+our @EXPORT = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_res_file_tr xget_dicom xget_sbj_demog xput_dicom);
+our @EXPORT_OK = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog xput_dicom);
 our %EXPORT_TAGS =(all => qw(xget_session xget_pet xget_mri), usual => qw(xget_session));
 
 our $VERSION = 0.2;
@@ -591,6 +591,28 @@ sub xget_dicom {
 	system($zrd);
 	unlink $zdir;
 	return $all_types;
+}
+
+
+=item xput_dicom
+
+Upload DICOM for a subject
+
+usage:
+	
+	xput_dicom(host, jsession, project, subject, path)
+
+=cut
+
+sub xput_dicom {
+	my @xdata = @_;
+	my $tmp_dir = $ENV{'TMPDIR'};
+	my $zdir = tempdir(TEMPLATE => ($tmp_dir?$tmp_dir:'.').'/zipdir.XXXXX', CLEANUP => 1);
+	my $tzfile = $zdir.'/'.$xdata[3].'.tar.gz';
+	my $crd = 'tar czf '.$tzfile.' '.$xdata[4].' 2>/dev/null';
+	system($crd);
+	$crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X POST "'.$xdata[0].'/data/services/import?import-handler=SI&dest=/archive/projects/'.$xdata[2].'/subjects/'.$xdata[3].'&overwrite=delete" -F file.tar.gz="@'.$tzfile.'" 2>/dev/null';
+	return qx/$crd/;
 }
 
 =back
