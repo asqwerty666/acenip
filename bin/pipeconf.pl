@@ -43,7 +43,7 @@ if ($operation eq "read"){
 	$pconf{$key} = $value;
  	open ODF, ">$ifile";
 	foreach my $key (sort keys %pconf){
-		print ODF "$key = $pconf{$key}\n";
+		print ODF "$key = $pconf{$key}\n" if exists($pconf{$key});
 	}
 	close ODF;	
 }elsif ($operation eq "create"){
