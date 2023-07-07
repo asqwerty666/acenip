@@ -261,7 +261,7 @@ Get the XNAT MRI experiment ID
 
 usage: 
 
-	$experiment_ID = xget_mri(host, jsession, project, subject)
+	@experiment_IDs = xget_mri(host, jsession, project, subject)
 
 =cut
 
@@ -271,12 +271,16 @@ sub xget_mri {
 	my @xdata = @_;
 	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/projects/'.$xdata[2].'/subjects/'.$xdata[3].'/experiments?format=json&xsiType=xnat:mrSessionData" 2>/dev/null';
 	my $json_res = qx/$crd/;
-	my $exp_prop = decode_json $json_res;
-	my $xlab;
-	foreach my $experiment (@{$exp_prop->{'ResultSet'}{'Result'}}){
-		$xlab = $experiment->{'ID'};
+	if ($json_res){
+		my $exp_prop = decode_json $json_res;
+		my @xlab;
+		foreach my $experiment (@{$exp_prop->{'ResultSet'}{'Result'}}){
+			push @xlab, $experiment->{'ID'};
+		}
+		return @xlab;
+	}else{
+		return 0;
 	}
-	return $xlab;
 }
 
 
@@ -329,12 +333,16 @@ sub xget_pet {
 	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/projects/'.$xdata[2].'/subjects/'.$xdata[3].'/experiments?format=json&xsiType=xnat:petSessionData" 2>/dev/null';
 	#print "$crd\n";
 	my $json_res = qx/$crd/;
-	my $exp_prop = decode_json $json_res;
-	my $xlab;
-	foreach my $experiment (@{$exp_prop->{'ResultSet'}{'Result'}}){
-		$xlab = $experiment->{'ID'};
+	if ($json_res){
+		my $exp_prop = decode_json $json_res;
+		my $xlab;
+		foreach my $experiment (@{$exp_prop->{'ResultSet'}{'Result'}}){
+			$xlab = $experiment->{'ID'};
+		}
+		return $xlab;
+	}else{
+		return 0;
 	}
-	return $xlab;
 }
 
 =item xget_pet_reg
