@@ -29,13 +29,15 @@ my %subjects = xget_subjects($xconf{'HOST'}, $jid, $xprj);
 my $dhead ="";
 my $dbody="";
 foreach my $sid (sort keys %subjects){
-	$subjects{$sid}{'experimentID'} = xget_mri($xconf{'HOST'}, $jid, $xprj, $sid);
-	if (exists($subjects{$sid}{'experimentID'}) and $subjects{$sid}{'experimentID'}){
-		my %rvr = xlist_res($xconf{'HOST'}, $jid, $subjects{$sid}{'experimentID'}, 'RVR');
+	#$subjects{$sid}{'experimentID'} = xget_mri($xconf{'HOST'}, $jid, $xprj, $sid);
+	my @experiments = xget_mri($xconf{'HOST'}, $jid, $xprj, $sid);
+	foreach my $experiment (@experiments){
+		my %rvr = xlist_res($xconf{'HOST'}, $jid, $experiment, 'RVR');
 		my %rvr_data;
+		my $date;
 		foreach my $rfile (sort keys %rvr){
 			if ($rfile =~ /.*\.json$/){
-				%rvr_data = xget_res_data($xconf{'HOST'}, $jid, $subjects{$sid}{'experimentID'},'RVR',$rfile);
+				%rvr_data = xget_res_data($xconf{'HOST'}, $jid, $experiment,'RVR',$rfile);
 			}
 		}
 		my @akeys;

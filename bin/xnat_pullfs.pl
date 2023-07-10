@@ -37,13 +37,13 @@ my $xprj;
 my $tmp_dir = $ENV{'TMPDIR'};
 my $tmpdir = tempdir(TEMPLATE => $tmp_dir.'/fs.XXXXX', CLEANUP => 1); 
 my $ofile;
-my $with_date = 0;
+my $with_date = 1;
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
     if (/^-s/) { $stats = shift;}
-    if (/^-d/) { $with_date = 1; }
+    #    if (/^-d/) { $with_date = 1; }
     if (/^-o/) { $ofile = shift; chomp($ofile);}
     if (/^-p/) { $prj = shift; chomp($prj);} #nombre local del proyecto
     if (/^-x/) { $xprj = shift; chomp($xprj);} #nombre del proyecto en XNAT
@@ -63,9 +63,8 @@ my $jid = $xconfig{'JSESSION'};
 my %subjects = xget_subjects($xconfig{'HOST'}, $jid, $xprj);
 my %psubjects;
 foreach my $xsbj (sort keys %subjects){
-	$psubjects{$xsbj}{'MRI'} = xget_mri($xconfig{'HOST'}, $jid, $xprj, $xsbj);
+	$psubjects{$xsbj}{'MRI'} = [ xget_mri($xconfig{'HOST'}, $jid, $xprj, $xsbj) ];
 	$psubjects{$xsbj}{'label'} = xget_sbj_data($xconfig{'HOST'}, $jid, $xsbj, 'label');
-	$psubjects{$xsbj}{'date'} = xget_exp_data($xconfig{'HOST'}, $jid, $psubjects{$xsbj}{'MRI'}, 'date') if $with_date;
 }
 # Ahora voy a bajar el archivo de stats para cada imagen y dentro de un directorio
 # para cada sujeto, con la convencion IDSUJETOXNAT. 
@@ -79,92 +78,95 @@ open STDOUT, ">$ofile" unless not $ofile;
 foreach my $subject (sort keys %psubjects){
 	# Primero voy a ir sacando los IDs de sujeto y experimentos que he capturado
 	# Hago un directorio para cada uno
-	my $order = 'mkdir -p '.$fsout.'/'.$subject.'/stats';
-	system($order);
-	# ahora voy a intentar sacar las estadisticas
-	if($stats eq "aseg" or $stats eq "wmparc"){
-		# y guardo el archivo de stats
-		my $tmp_out = $fsout.'/'.$subject.'/stats/'.$stats.'.stats';
-		xget_res_file($xconfig{'HOST'}, $jid, $psubjects{$subject}{'MRI'}, 'FS', $stats.'.stats' , $tmp_out);
-		# Aqui voy a sacar los volumenes porque son distintos a los demas
-		if( -f $tmp_out){
-			my @tdata = `grep -v "^#" $tmp_out | awk '{print \$5","\$4}'`;
-			chomp @tdata; 
-			my %udata = map { my ($key, $value) = split ","; $key => $value } @tdata;
-			my $etiv = `grep  EstimatedTotalIntraCranialVol $tmp_out | awk -F", " '{print \$4}'`;
-			chomp $etiv;
-			unless($okheader) {
-				print 'Subject_ID';
-				print ',Date' if $with_date;
-				foreach my $dhead (sort keys %udata){
-					print ",$dhead";
-				}
-				$okheader = 1;
-				print ",eTIV\n";
-			}
-			print "$psubjects{$subject}{'label'}";
-			print ",$psubjects{$subject}{'date'}" if $with_date;
-			foreach my $roi (sort keys %udata){
-				print ",$udata{$roi}";
-			}
-			print ",$etiv\n";
-		}
-	}elsif($stats eq "aparc"){
-		# Aqui voy a sacar las aparc. Esto es la parcelacion del cortex
-		# y hay dos archivos distintos lh.aparc.stats y rh.aparc.stats
-		# asi que tengo que sacar los hemisferios por separados
-		my @hemis = ('lh', 'rh');
-		my @meassures = ('SurfArea', 'GrayVol', 'ThickAvg');
-		my $etiv;
-		my $ctx_thick;
-		my $ctx_vol;
-		my %udata;
-		my $go=0;
-		foreach my $hemi (@hemis){
-			my $tmp_out = $fsout.'/'.$subject.'/stats/'.$hemi.'.'.$stats.'.stats';
-			xget_res_file($xconfig{'HOST'}, $jid, $psubjects{$subject}{'MRI'}, 'FS', $hemi.'.'.$stats.'.stats' , $tmp_out);
-			if (-f $tmp_out) {
-				my @tdata = `grep -v "^#" $tmp_out | awk '{print \$1","\$3","\$4","\$5}'`;
-				chomp @tdata;
-				foreach my $chunk (@tdata) {
-					my ($key, $sa, $gv, $tv) = split /,/, $chunk; 
-					$udata{$hemi}{$key}{'SurfArea'} = $sa;
-					$udata{$hemi}{$key}{'GrayVol'} = $gv;
-					$udata{$hemi}{$key}{'ThickAvg'} = $tv;
-				}
-				$etiv = `grep  EstimatedTotalIntraCranialVol $tmp_out | awk -F", " '{print \$4}'`;
-				$ctx_thick = `grep MeanThickness $tmp_out | awk -F", " '{print \$4}'`;
-				$ctx_vol = `grep CortexVol $tmp_out | awk -F", " '{print \$4}'`;
+	foreach my $experiment (@{$psubjects{$subject}{'MRI'}}){
+		my $order = 'mkdir -p '.$fsout.'/'.$subject.'/'.$experiment.'/stats';
+		system($order);
+		my $xdate = xget_exp_data($xconfig{'HOST'}, $jid, $experiment, 'date');
+		# ahora voy a intentar sacar las estadisticas
+		if($stats eq "aseg" or $stats eq "wmparc"){
+			# y guardo el archivo de stats
+			my $tmp_out = $fsout.'/'.$subject.'/'.$experiment.'/stats/'.$stats.'.stats';
+			xget_res_file($xconfig{'HOST'}, $jid, $experiment, 'FS', $stats.'.stats' , $tmp_out);
+			# Aqui voy a sacar los volumenes porque son distintos a los demas
+			if( -f $tmp_out){
+				my @tdata = `grep -v "^#" $tmp_out | awk '{print \$5","\$4}'`;
+				chomp @tdata; 
+				my %udata = map { my ($key, $value) = split ","; $key => $value } @tdata;
+				my $etiv = `grep  EstimatedTotalIntraCranialVol $tmp_out | awk -F", " '{print \$4}'`;
 				chomp $etiv;
-				chomp $ctx_thick;
-				chomp $ctx_vol;
-				$go = 1;
+				unless($okheader) {
+					print 'Subject_ID';
+					print ',Date';
+					foreach my $dhead (sort keys %udata){
+						print ",$dhead";
+					}
+					$okheader = 1;
+					print ",eTIV\n";
+				}
+				print "$psubjects{$subject}{'label'}";
+				print ",$xdate";
+				foreach my $roi (sort keys %udata){
+					print ",$udata{$roi}";
+				}
+				print ",$etiv\n";
 			}
-		}
-		if ($go){
-			unless($okheader) {
-				print "Subject_ID";
-				print ',Date' if $with_date;
+		}elsif($stats eq "aparc"){
+			# Aqui voy a sacar las aparc. Esto es la parcelacion del cortex
+			# y hay dos archivos distintos lh.aparc.stats y rh.aparc.stats
+			# asi que tengo que sacar los hemisferios por separados
+			my @hemis = ('lh', 'rh');
+			my @meassures = ('SurfArea', 'GrayVol', 'ThickAvg');
+			my $etiv;
+			my $ctx_thick;
+			my $ctx_vol;
+			my %udata;
+			my $go=0;
+			foreach my $hemi (@hemis){
+				my $tmp_out = $fsout.'/'.$subject.'/'.$experiment.'/stats/'.$hemi.'.'.$stats.'.stats';
+				xget_res_file($xconfig{'HOST'}, $jid, $experiment, 'FS', $hemi.'.'.$stats.'.stats' , $tmp_out);
+				if (-f $tmp_out) {
+					my @tdata = `grep -v "^#" $tmp_out | awk '{print \$1","\$3","\$4","\$5}'`;
+					chomp @tdata;
+					foreach my $chunk (@tdata) {
+						my ($key, $sa, $gv, $tv) = split /,/, $chunk; 
+						$udata{$hemi}{$key}{'SurfArea'} = $sa;
+						$udata{$hemi}{$key}{'GrayVol'} = $gv;
+						$udata{$hemi}{$key}{'ThickAvg'} = $tv;
+					}
+					$etiv = `grep  EstimatedTotalIntraCranialVol $tmp_out | awk -F", " '{print \$4}'`;
+					$ctx_thick = `grep MeanThickness $tmp_out | awk -F", " '{print \$4}'`;
+					$ctx_vol = `grep CortexVol $tmp_out | awk -F", " '{print \$4}'`;
+					chomp $etiv;
+					chomp $ctx_thick;
+					chomp $ctx_vol;
+					$go = 1;
+				}
+			}
+			if ($go){
+				unless($okheader) {
+					print "Subject_ID";
+					print ',Date';
+					foreach my $hemi (@hemis){
+						foreach my $dhead (sort keys %{$udata{$hemi}}){
+							foreach my $measure (@meassures){
+								print ",$hemi.$dhead.$measure";
+							}
+						}
+					}
+					$okheader = 1;
+					print ",eTIV,Cortex_Thickness,Cortex_Volume\n";
+				}
+				print "$psubjects{$subject}{'label'}";
+				print ",$xdate";
 				foreach my $hemi (@hemis){
 					foreach my $dhead (sort keys %{$udata{$hemi}}){
 						foreach my $measure (@meassures){
-							print ",$hemi.$dhead.$measure";
+							print ",$udata{$hemi}{$dhead}{$measure}";
 						}
 					}
 				}
-				$okheader = 1;
-				print ",eTIV,Cortex_Thickness,Cortex_Volume\n";
+				print ",$etiv,$ctx_thick,$ctx_vol\n";
 			}
-			print "$psubjects{$subject}{'label'}";
-			print ",$psubjects{$subject}{'date'}" if $with_date;
-			foreach my $hemi (@hemis){
-				foreach my $dhead (sort keys %{$udata{$hemi}}){
-					foreach my $measure (@meassures){
-						print ",$udata{$hemi}{$dhead}{$measure}";
-					}
-				}
-			}
-			print ",$etiv,$ctx_thick,$ctx_vol\n";
 		}
 	}
 }

@@ -44,15 +44,18 @@ my %xconf = xget_session();
 my %wmhs;
 my %subjects = xget_subjects($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj);
 open STDOUT, ">$ofile" unless not $ofile;
-print "Subject_ID,WMH\n";
+print "Subject_ID,Date,WMH\n";
 foreach my $sbj (sort keys %subjects){
-	my $experiment = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
+	my @experiments = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
 	my $label = xget_sbj_data($xconf{'HOST'}, $xconf{'JSESSION'}, $sbj, 'label');
-	my %wmh_data = xget_res_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'WMH', 'wmh.json');
-	if (exists($wmh_data{'WMH mm3'}) and $wmh_data{'WMH mm3'}){
-		print "$label,$wmh_data{'WMH mm3'}\n";
-	}else{
-		print "$label,NA\n";
+	foreach my $experiment (@experiments){
+		my %wmh_data = xget_res_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'WMH', 'wmh.json');
+		my $date = xget_exp_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'date');
+		if (exists($wmh_data{'WMH mm3'}) and $wmh_data{'WMH mm3'}){
+			print "$label,$date,$wmh_data{'WMH mm3'}\n";
+		}else{
+			print "$label,$date,NA\n";
+		}
 	}
 }
 close STDOUT;
