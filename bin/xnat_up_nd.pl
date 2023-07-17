@@ -16,7 +16,7 @@
 #
 use strict; use warnings;
 use NEURO4 qw(load_project trim);
-use XNATACE qw(xget_session xget_mri xget_subjects xcreate_res xput_res_data);
+use XNATACE qw(xget_session xget_mri xget_subjects xcreate_res xput_res_data xget_exp_data);
 use Data::Dump qw(dump);
 use File::Temp qw(:mktemp tempdir);
 my $prj;
