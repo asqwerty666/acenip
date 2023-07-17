@@ -18,7 +18,7 @@ base$ICV = base$eTIV
 base$ND <- predict(classifier_cl, newdata = base, type = "class")
 base$post <- predict(classifier_cl, newdata = base, type = "raw")
 base$Nprob <- base$post[,2]
-base2e = base[, c("Subject_ID", "ND", "Nprob")]
+base2e = base[, c("Subject_ID", "Date", "ND", "Nprob")]
 write.csv(base2e, file=output_file, row.names=FALSE, quote=FALSE)
 a <- lm(base$Hippocampus ~ base$ICV)
 base$aHV = base$Hippocampus - a$coefficients[[2]]*(base$ICV - mean(base$ICV, na.rm=TRUE))
