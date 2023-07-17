@@ -43,18 +43,23 @@ die "No input data file\n" unless $ifile and -f $ifile;
 my %nass;
 open IDF, "<$ifile";
 while (<IDF>){
-	if (/.*,\d,\d+\.\d+/){
-		my ($sbj, $n, $p) = /(.*),(.*),(.*)/;
-		$nass{$sbj}{'N'} = $n;
-		$nass{$sbj}{'Nprob'} = $p;
+	if (/.*,\d{4}-\d{2}-\d{2},\d,\d+\.\d+/){
+		my ($sbj, $date, $n, $p) = /(.*),(.*),(.*),(.*)/;
+		$nass{$sbj}{$date}{'N'} = $n;
+		$nass{$sbj}{$date}{'Nprob'} = $p;
 	}
 }
 close IDF;
 # Here comes the magic ;-P
 my %xconf = xget_session();
 foreach my $sbj (sort keys %nass){
-	my $experiment = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
-	my %ass_data = ('N' => $nass{$sbj}{'N'}, 'Nprob' => $nass{$sbj}{'Nprob'});
-	xcreate_res($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data');
-	xput_res_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data', 'neuroass.json', \%ass_data);
+	my @experiments = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
+	foreach my $experiment (@experiments){
+		my $date = xget_exp_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'date');
+		if(exists($nass{$sbj}{$date})) {
+			my %ass_data = ('N' => $nass{$sbj}{$date}{'N'}, 'Nprob' => $nass{$sbj}{$date}{'Nprob'}, 'Date' => $date);
+			xcreate_res($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data');
+			xput_res_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data', 'neuroass.json', \%ass_data);
+		}
+	}
 }

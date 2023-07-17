@@ -27,21 +27,25 @@ my %xconf = xget_session();
 my $jid = $xconf{'JSESSION'};
 my %subjects = xget_subjects($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj);
 foreach my $sbj (sort keys %subjects){
-	$subjects{$sbj}{'experiment'} = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
-	my $mri_date = xget_exp_data($xconf{'HOST'}, $xconf{'JSESSION'}, $subjects{$sbj}{'experiment'}, 'date');
 	my $dob = xget_sbj_demog($xconf{'HOST'}, $xconf{'JSESSION'}, $sbj, 'dob');
-	#print "$sbj -> $mri_date -> $dob\n";
+	my @experiments = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
+	foreach my $experiment (@experiments){
+		my $mri_date = xget_exp_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'date');
+		#print "$sbj -> $mri_date -> $dob\n";
 		if ($mri_date and $dob){
 			my $ddif = Delta_Format(DateCalc(ParseDate($dob),ParseDate($mri_date)),2,"%hh")/(24*365.2425);
-			$subjects{$sbj}{'age'} = nearest(0.1, $ddif);
-			print "$subjects{$sbj}{'label'}, $subjects{$sbj}{'age'}\n";
+			$subjects{$sbj}{$mri_date}{'age'} = nearest(0.1, $ddif);
+			print "$subjects{$sbj}{'label'},$mri_date,$subjects{$sbj}{$mri_date}{'age'}\n";
 		}
+	}
 }
 open ODF, ">$oxfile";
-print ODF "Subject_ID,AGE\n";
+print ODF "Subject_ID,Date,AGE\n";
 foreach my $subject (sort keys %subjects){
-	if(exists($subjects{$subject}{'age'})){
-		print ODF "$subjects{$subject}{'label'},$subjects{$subject}{'age'}\n";
+	foreach my $mdate (sort keys %{$subjects{$subject}}){
+		if($mdate ne 'label' and exists($subjects{$subject}{$mdate}{'age'})){
+			print ODF "$subjects{$subject}{'label'},$mdate,$subjects{$subject}{$mdate}{'age'}\n";
+		}
 	}
 }
 close ODF;
