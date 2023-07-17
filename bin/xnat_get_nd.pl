@@ -16,7 +16,7 @@
 #
 use strict; use warnings;
 use NEURO4 qw(load_project trim);
-use XNATACE qw(xget_session xget_mri xget_subjects xget_res_data xget_sbj_data);
+use XNATACE qw(xget_session xget_mri xget_subjects xget_res_data xget_sbj_data xget_exp_data);
 use Data::Dump qw(dump);
 use File::Temp qw(:mktemp tempdir);
 my $prj;
@@ -48,8 +48,8 @@ print "Subject_ID,Date,N,Nprob\n";
 foreach my $sbj (sort keys %subjects){
 	my @experiments = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
 	my $label = xget_sbj_data($xconf{'HOST'}, $xconf{'JSESSION'}, $sbj, 'label');
-	my $date = xget_exp_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'date');
 	foreach my $experiment (@experiments){
+		my $date = xget_exp_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'date');
 		my %nass_data = xget_res_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data', 'neuroass.json');
 	#dump %nass_data;
 		if (exists($nass_data{'N'}) and exists($nass_data{'Nprob'})){
