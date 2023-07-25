@@ -53,9 +53,9 @@ foreach my $sbj (sort keys %subjects){
 		$subjects{$sbj}{'download'} = 1;
 	}
 	if ($mode eq 'MRI'){
-		$subjects{$sbj}{'experiment'} = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $prj_data{'XNAME'}, $sbj);
+		$subjects{$sbj}{'experiment'} = [xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $prj_data{'XNAME'}, $sbj)];
 	}elsif ($mode eq 'PET') {
-		$subjects{$sbj}{'experiment'} = xget_pet($xconf{'HOST'}, $xconf{'JSESSION'}, $prj_data{'XNAME'}, $sbj);
+		$subjects{$sbj}{'experiment'} = [xget_pet($xconf{'HOST'}, $xconf{'JSESSION'}, $prj_data{'XNAME'}, $sbj)];
 	}else{
 		print "Only MRI and PET type are allowed\n";
 		exit;
@@ -64,18 +64,26 @@ foreach my $sbj (sort keys %subjects){
 my $count_id = 0;
 foreach my $sbj (sort keys %subjects){
 	if(exists($subjects{$sbj}{'experiment'}) and $subjects{$sbj}{'experiment'} and $subjects{$sbj}{'download'}){
-		my $src_dir = $prj_data{'SRC'}.'/'.$subjects{$sbj}{'label'};
-		mkdir $src_dir;
-		xget_dicom($xconf{'HOST'}, $xconf{'JSESSION'}, $subjects{$sbj}{'experiment'}, $src_dir);
-		$count_id++;
-		$subjects{$sbj}{'strID'} = sprintf '%04d', $count_id;
+		my $exp_idx = 0;
+		foreach my $experiment (sort @{$subjects{$sbj}{'experiment'}}){
+			my $src_dir = $prj_data{'SRC'}.'/'.$subjects{$sbj}{'label'}.($exp_idx?'_'.$exp_idx:'');
+			mkdir $src_dir;
+			xget_dicom($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, $src_dir);
+			$count_id++;
+			$subjects{$sbj}{$experiment}{'strID'} = sprintf '%04d', $count_id;
+			$exp_idx++;
+		}
 	}
 }
 my $ofile = $prj_data{'DATA'}.'/'.$prj.'_'.$mode.'.csv';
 open ODF, ">$ofile";
 foreach my $sbj (sort keys %subjects){
 	if ($subjects{$sbj}{'download'}) {
-		print ODF "$subjects{$sbj}{'strID'},$subjects{$sbj}{'label'}\n";
+		my $exp_idx = 0;
+		foreach my $experiment (sort @{$subjects{$sbj}{'experiment'}}){
+			print ODF "$subjects{$sbj}{$experiment}{'strID'},$subjects{$sbj}{'label'}".($exp_idx?'_'.$exp_idx:'')."\n";
+			$exp_idx++;
+		}
 	}
 }
 

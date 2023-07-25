@@ -22,6 +22,7 @@ use NEURO4 qw(load_project print_help populate check_or_make);
 use XNATACE qw(xget_session xget_subjects xget_mri xlist_res xget_res_file);
 use SLURMACE qw(send2slurm);
 use File::Temp qw(tempdir);
+use List::MoreUtils qw(firstidx);
 use Data::Dump qw(dump);
 my $prj;
 my $xprj;
@@ -86,8 +87,7 @@ close DDF;
 # Para cada sujeto saco el ID de experimento de la MRI
 foreach my $xsbj (sort keys %psubjects){
 	#$psubjects{$xsbj}{'MRI'} 
-	my @list_mri = xget_mri($xconfig{'HOST'}, $jid, $xprj, $xsbj);
-	$psubjects{$xsbj}{'MRI'} = $list_mri[0];
+	$psubjects{$xsbj}{'MRI'} = [ xget_mri($xconfig{'HOST'}, $jid, $xprj, $xsbj) ];
 }
 # Ya teniendo los experimentos emparejo los sujetos segun codigo de proyecto local, codigo de XNAT y experimento de XNAT
 # Y ahora voy a bajar todo el tgz para cada imagen y descomprimirla dentro del directorio
@@ -100,25 +100,28 @@ mkdir $outdir;
 my %ptask = ('job_name' => 'fake_FS_'.$prj);
 my @jobs;
 foreach my $xsbj (sort keys %psubjects){
-	my $fsdir = $ENV{'SUBJECTS_DIR'}."/".$prj."_".$psubjects{$xsbj}{'PSubject'};
-	unless ( -d $fsdir and not $overwrite){
-		my $tfsdir = $tmpdir."/".$prj."_".$psubjects{$xsbj}{'PSubject'};
-		#mkdir $tfsdir;
-		mkdir $fsdir;
-		my $tfsout = $tfsdir.'/'.$xsbj.'.tar.gz';
-		my %fs_files = xlist_res($xconfig{'HOST'}, $jid, $psubjects{$xsbj}{'MRI'}, 'FS');
-		foreach my $fsfile (sort keys %fs_files){
-			if ($fsfile =~ /.*\.tar\.gz$/){
-				$ptask{'output'} = $outdir.'/'.$psubjects{$xsbj}{'PSubject'}.'.out';
-				$ptask{'filename'} = $outdir.'/'.$psubjects{$xsbj}{'PSubject'}.'.sh';
-				print "$fsfile -> $fsdir\n";
-				$ptask{'command'} = 'mkdir '.$tfsdir."\n";
-				$ptask{'command'} .= xget_res_file($xconfig{'HOST'}, $jid, $psubjects{$xsbj}{'MRI'}, 'FS', $fsfile,  $tfsout, 1);
-				$ptask{'command'} .= "\n";
-				$ptask{'command'} .= "tar xzf ".$tfsout." -C ".$fsdir."/ --transform=\'s/".$xsbj."//\' --exclude=\'fsaverage\' \n";
-				$ptask{'command'} .='rm -rf '.$tfsdir."\n";
-				#dump %ptask;
-				send2slurm(\%ptask);
+	foreach my $experiment (@{$psubjects{$xsbj}{'MRI'}}){
+		my ($exp_idx) = grep {${$psubjects{$xsbj}{'MRI'}}[$_] ~~ $experiment} 0 .. $#{$psubjects{$xsbj}{'MRI'}} ;
+		print "$exp_idx\n";
+		my $fsdir = $ENV{'SUBJECTS_DIR'}."/".$prj."_".$psubjects{$xsbj}{'PSubject'}.($exp_idx?'_'.$exp_idx:'');
+		unless ( -d $fsdir and not $overwrite){
+			my $tfsdir = $tmpdir."/".$prj."_".$psubjects{$xsbj}{'PSubject'}.($exp_idx?'_'.$exp_idx:'');
+			mkdir $fsdir;
+			my $tfsout = $tfsdir.'/'.$xsbj.'_'.$experiment.'.tar.gz';
+			my %fs_files = xlist_res($xconfig{'HOST'}, $jid, $experiment, 'FS');
+			foreach my $fsfile (sort keys %fs_files){
+				if ($fsfile =~ /.*\.tar\.gz$/){
+					$ptask{'output'} = $outdir.'/'.$experiment.'.out';
+					$ptask{'filename'} = $outdir.'/'.$experiment.'.sh';
+					print "$fsfile -> $fsdir\n";
+					$ptask{'command'} = 'mkdir '.$tfsdir."\n";
+					$ptask{'command'} .= xget_res_file($xconfig{'HOST'}, $jid, $experiment, 'FS', $fsfile,  $tfsout, 1);
+					$ptask{'command'} .= "\n";
+					$ptask{'command'} .= "tar xzf ".$tfsout." -C ".$fsdir."/ --transform=\'s/".$xsbj."//\' --exclude=\'fsaverage\' \n";
+					$ptask{'command'} .='rm -rf '.$tfsdir."\n";
+					#dump %ptask;
+					send2slurm(\%ptask);
+				}
 			}
 		}
 	}

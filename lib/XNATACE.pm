@@ -320,7 +320,7 @@ Get the XNAT PET experiment ID
 
 usage: 
 
-	$experiment_id = xget_pet(host, jsession, project, subject)
+	@experiment_ids = xget_pet(host, jsession, project, subject)
 
 Returns experiment ID.
 
@@ -335,11 +335,11 @@ sub xget_pet {
 	my $json_res = qx/$crd/;
 	if ($json_res){
 		my $exp_prop = decode_json $json_res;
-		my $xlab;
+		my @xlab;
 		foreach my $experiment (@{$exp_prop->{'ResultSet'}{'Result'}}){
-			$xlab = $experiment->{'ID'};
+			push @xlab, $experiment->{'ID'};
 		}
-		return $xlab;
+		return @xlab;
 	}else{
 		return 0;
 	}
@@ -620,6 +620,7 @@ sub xput_dicom {
 	my $crd = 'tar czf '.$tzfile.' '.$xdata[4].' 2>/dev/null';
 	system($crd);
 	$crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X POST "'.$xdata[0].'/data/services/import?import-handler=SI&dest=/archive/projects/'.$xdata[2].'/subjects/'.$xdata[3].'&overwrite=delete" -F file.tar.gz="@'.$tzfile.'" 2>/dev/null';
+	#print "$crd\n";
 	return qx/$crd/;
 }
 

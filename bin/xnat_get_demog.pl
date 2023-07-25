@@ -31,43 +31,52 @@ my %xconf = xget_session();
 my $jid = $xconf{'JSESSION'};
 my %subjects = xget_subjects($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj);
 foreach my $sbj (sort keys %subjects){
-	$subjects{$sbj}{'experiment'} = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
-	print "$subjects{$sbj}{'label'}";
-	foreach my $axvar (@avar){
-		if ($axvar eq 'age'){
-			my $mri_date = xget_exp_data($xconf{'HOST'}, $xconf{'JSESSION'}, $subjects{$sbj}{'experiment'}, 'date');
-			my $dob = xget_sbj_demog($xconf{'HOST'}, $xconf{'JSESSION'}, $sbj, 'dob');
-			if ($mri_date and $dob){
-				my $ddif = Delta_Format(DateCalc(ParseDate($dob),ParseDate($mri_date)),2,"%hh")/(24*365.2425);
-				$subjects{$sbj}{'age'} = nearest(0.1, $ddif);
+	$subjects{$sbj}{'experiment'} = [ xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj) ];
+	foreach my $experiment (sort @{$subjects{$sbj}{'experiment'}}){
+		my $mri_date = xget_exp_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'date');
+		print "$subjects{$sbj}{'label'},$mri_date";
+		$subjects{$sbj}{$experiment}{'date'} = $mri_date;
+		foreach my $axvar (@avar){
+			if ($axvar eq 'age'){
+				my $dob = xget_sbj_demog($xconf{'HOST'}, $xconf{'JSESSION'}, $sbj, 'dob');
+				if ($mri_date and $dob){
+					my $ddif = Delta_Format(DateCalc(ParseDate($dob),ParseDate($mri_date)),2,"%hh")/(24*365.2425);
+					$subjects{$sbj}{$experiment}{'age'} = nearest(0.1, $ddif);
+				}
+			}else{
+				my $foo_var = xget_sbj_demog($xconf{'HOST'}, $xconf{'JSESSION'}, $sbj, $axvar);
+				if ($foo_var){
+					$subjects{$sbj}{$experiment}{$axvar} = $foo_var;
+				}
 			}
-		}else{
-			my $foo_var = xget_sbj_demog($xconf{'HOST'}, $xconf{'JSESSION'}, $sbj, $axvar);
-			if ($foo_var){
-				$subjects{$sbj}{$axvar} = $foo_var;
+			if(exists($subjects{$sbj}{$experiment}{$axvar}) and $subjects{$sbj}{$experiment}{$axvar}){
+				print ",$subjects{$sbj}{$experiment}{$axvar}";
+			}else{
+				print ",NA";
 			}
 		}
-		if(exists($subjects{$sbj}{$axvar}) and $subjects{$sbj}{$axvar}){
-			print ", $subjects{$sbj}{$axvar}";
-		}
+		print "\n";
 	}
-	print "\n";
 }
 (my $nvar = $xvar) =~ s/(\w+)/\u$1/;
 open ODF, ">$oxfile";
-print ODF "Subject_ID";
+print ODF "Subject_ID,Date";
 foreach my $axvar (@avar){
 	(my $nvar = $axvar) =~ s/(\w+)/\u$1/;
 	print ODF ",$nvar";
 }
 print ODF "\n";
 foreach my $subject (sort keys %subjects){
-	print ODF "$subjects{$subject}{'label'}";
-	foreach my $axvar (@avar){
-		if(exists($subjects{$subject}{$axvar})){
-			print ODF ",$subjects{$subject}{$axvar}";
+	foreach my $experiment (sort @{$subjects{$subject}{'experiment'}}){
+		print ODF "$subjects{$subject}{'label'},$subjects{$subject}{$experiment}{'date'}";
+		foreach my $axvar (@avar){
+			if(exists($subjects{$subject}{$experiment}{$axvar})){
+				print ODF ",$subjects{$subject}{$experiment}{$axvar}";
+			}else{
+				print ODF ",NA";
+			}
 		}
+		print ODF "\n";
 	}
-	print ODF "\n";
 }
 close ODF;

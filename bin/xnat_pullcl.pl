@@ -6,6 +6,7 @@ use warnings;
 use NEURO4 qw(load_project print_help populate check_or_make);
 use XNATACE qw(xget_session xget_subjects xget_pet xget_pet_data xget_exp_data xget_sbj_data);
 use File::Temp qw(tempdir);
+use Data::Dump qw(dump);
 my $prj;
 my $xprj;
 my $STDOLD;
@@ -37,36 +38,37 @@ my %subjects = xget_subjects($xconfig{'HOST'}, $jid, $xprj);
 #print "Getting PET data now\n";
 my %spets;
 foreach my $subject (sort keys %subjects){
-	$spets{$subject}{'experiment'} = xget_pet($xconfig{'HOST'}, $jid, $xprj, $subject);
+	$spets{$subject}{'experiments'} = [ xget_pet($xconfig{'HOST'}, $jid, $xprj, $subject) ];
 }
+my %experiments;
 foreach my $subject (sort keys %spets){
 	if(exists($spets{$subject}) and $spets{$subject}){
-		if(exists($spets{$subject}{'experiment'}) and $spets{$subject}{'experiment'}){
+		if(exists($spets{$subject}{'experiments'}) and $spets{$subject}{'experiments'}){
 			$spets{$subject}{'label'} = xget_sbj_data($xconfig{'HOST'}, $jid, $subject, 'label');
-			my %tmp_hash = xget_pet_data($xconfig{'HOST'}, $jid, $spets{$subject}{'experiment'});
-			if (%tmp_hash){
-				foreach my $tmp_var (sort keys %tmp_hash){
-					$spets{$subject}{$tmp_var} = $tmp_hash{$tmp_var} unless $tmp_var eq '_';
+			foreach my $experiment (@{$spets{$subject}{'experiments'}}){
+				my %tmp_hash = xget_pet_data($xconfig{'HOST'}, $jid, $experiment);
+				if (%tmp_hash){
+					foreach my $tmp_var (sort keys %tmp_hash){
+						$experiments{$experiment}{$tmp_var} = $tmp_hash{$tmp_var} unless $tmp_var eq '_';
+					}
 				}
 			}
 		}
 	}		
 }
+#dump %spets;
+#dump %experiments;
 #print "I got the data!\n";
 open STDOUT, ">$ofile" unless not $ofile;
-if($with_date){
-	print "Subject;Date;SUVR;Centiloid\n";
-	foreach my $subject (sort keys %spets) {
-		if(exists($spets{$subject}{'experiment'}) and $spets{$subject}{'experiment'}){
-			$spets{$subject}{'date'} = xget_exp_data($xconfig{'HOST'}, $jid, $spets{$subject}{'experiment'}, 'date');
-			print "$spets{$subject}{'label'};$spets{$subject}{'date'};$spets{$subject}{'surv'};$spets{$subject}{'cl'}\n";
-		}
-	}
-}else{
-	print "Subject;SUVR;Centiloid\n";
-	foreach my $subject (sort keys %spets) {
-		if(exists($spets{$subject}{'experiment'}) and $spets{$subject}{'experiment'}){
-			print "$spets{$subject}{'label'};$spets{$subject}{'surv'};$spets{$subject}{'cl'}\n";
+print "Subject,Date,SUVR,Centiloid\n";
+foreach my $subject (sort keys %spets) {
+	if(exists($spets{$subject}{'experiments'})){
+		foreach my $experiment (@{$spets{$subject}{'experiments'}}){
+			if (exists($experiments{$experiment})) {
+				print STDERR "$subject -> $experiment\n";
+				my $date = xget_exp_data($xconfig{'HOST'}, $jid, $experiment, 'date');
+				print "$spets{$subject}{'label'},$date,$experiments{$experiment}{'surv'},$experiments{$experiment}{'cl'}\n";
+			}
 		}
 	}
 }
