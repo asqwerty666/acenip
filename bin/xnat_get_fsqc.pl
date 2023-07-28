@@ -9,7 +9,7 @@ use strict;
 use warnings;
 use File::Temp qw(:mktemp tempdir);
 use JSON qw(decode_json);
-use XNATACE qw(xget_session xget_subjects xget_mri xget_res_data);
+use XNATACE qw(xget_session xget_subjects xget_mri xget_res_data xget_exp_data);
 use Data::Dump qw(dump);
 my $xprj;
 my $oxfile;
@@ -26,22 +26,23 @@ my %xconf = xget_session();
 my $jid = $xconf{'JSESSION'};
 #get the subjects list
 my %subjects = xget_subjects($xconf{'HOST'}, $jid, $xprj);
-my $dhead ="Subject,FSQC,Notes";
+my $dhead ="Subject,Date,FSQC,Notes";
 my $dbody="";
 my %inbreed;
 foreach my $sbj (sort keys %subjects) { $inbreed{$subjects{$sbj}{'label'}} = $sbj; }
 foreach my $sid (sort keys %subjects){
-	$subjects{$sid}{'experimentID'} = xget_mri($xconf{'HOST'}, $jid, $xprj, $sid);
-	if (exists($subjects{$sid}{'experimentID'}) and $subjects{$sid}{'experimentID'}){
-		my %tmp_hash = xget_res_data($xconf{'HOST'}, $jid, $subjects{$sid}{'experimentID'}, 'fsqc', 'rating.json');
+	$subjects{$sid}{'experimentIDs'} = [ xget_mri($xconf{'HOST'}, $jid, $xprj, $sid) ];
+	foreach my $mri (@{$subjects{$sid}{'experimentIDs'}}) {
+		my %tmp_hash = xget_res_data($xconf{'HOST'}, $jid, $mri, 'fsqc', 'rating.json');
+		$subjects{$sid}{$mri}{'date'} = xget_exp_data($xconf{'HOST'}, $jid, $mri, 'date');
 		if(exists($tmp_hash{'rating'}) and $tmp_hash{'rating'}){
 			$tmp_hash{'rating'} =~ tr/ODILgR/odilGr/;
-			$subjects{$sid}{'FSQC'} = $tmp_hash{'rating'};
-			$subjects{$sid}{'Notes'} = $tmp_hash{'notes'};
+			$subjects{$sid}{$mri}{'FSQC'} = $tmp_hash{'rating'};
+			$subjects{$sid}{$mri}{'Notes'} = $tmp_hash{'notes'};
 		}else{
-			print "$subjects{$sid}{'label'} -> $subjects{$sid}{'experimentID'} --no rated yet--\n";
-			$subjects{$sid}{'FSQC'} = '0';
-			$subjects{$sid}{'Notes'} = '0';
+			print "$subjects{$sid}{'label'} -> $mri --no rated yet--\n";
+			$subjects{$sid}{$mri}{'FSQC'} = '0';
+			$subjects{$sid}{$mri}{'Notes'} = '0';
 		}
 	}
 #	$dbody .= "$sid,$subjects{$sid}{'FSQC'},$subjects{$sid}{'Notes'}\n";
@@ -50,7 +51,9 @@ open ODF, ">$oxfile";
 print ODF "$dhead\n";
 foreach my $sbj (sort keys %inbreed){
 	if (exists($subjects{$inbreed{$sbj}})){
-		print ODF "$sbj,$subjects{$inbreed{$sbj}}{'FSQC'},$subjects{$inbreed{$sbj}}{'Notes'}\n"
+		foreach my $mri (@{$subjects{$inbreed{$sbj}}{'experimentIDs'}}) {
+			print ODF "$sbj,$subjects{$inbreed{$sbj}}{$mri}{'date'},$subjects{$inbreed{$sbj}}{$mri}{'FSQC'},$subjects{$inbreed{$sbj}}{$mri}{'Notes'}\n";
+		}
 	}
 }
 close ODF;

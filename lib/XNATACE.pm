@@ -333,16 +333,14 @@ sub xget_pet {
 	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/projects/'.$xdata[2].'/subjects/'.$xdata[3].'/experiments?format=json&xsiType=xnat:petSessionData" 2>/dev/null';
 	#print "$crd\n";
 	my $json_res = qx/$crd/;
+	my @xlab;
 	if ($json_res){
 		my $exp_prop = decode_json $json_res;
-		my @xlab;
 		foreach my $experiment (@{$exp_prop->{'ResultSet'}{'Result'}}){
 			push @xlab, $experiment->{'ID'};
 		}
-		return @xlab;
-	}else{
-		return 0;
 	}
+	return @xlab;
 }
 
 =item xget_pet_reg
@@ -539,16 +537,18 @@ usage:
 
 sub xlist_res {
 	# Get the list of resources into a HASH
-	# usage: xget_list(host, jsession, project, experiment, resource);
+	# usage: xget_list(host, jsession, experiment, resource);
 	# output is a hash with filenames and URI of each element stored at RVR
 	my @xdata = @_;
-	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/'.$xdata[3].'/files?format=json" 2>/dev/null';
+	my $crd = 'curl -b "JSESSIONID='.$xdata[1].'" -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/'.$xdata[3].'/files?format=json" 2>/dev/null';
 	my $json_res = qx/$crd/;
-	my $rvr_prop = decode_json $json_res;
 	my %report_data;
-	foreach my $rvr_res (@{$rvr_prop->{'ResultSet'}{'Result'}}){
-		if ($rvr_res->{'Name'}){
-			$report_data{$rvr_res->{'Name'}} = $rvr_res->{'URI'};
+	if ($json_res){
+		my $rvr_prop = decode_json $json_res;
+		foreach my $rvr_res (@{$rvr_prop->{'ResultSet'}{'Result'}}){
+			if ($rvr_res->{'Name'}){
+				$report_data{$rvr_res->{'Name'}} = $rvr_res->{'URI'};
+			}
 		}
 	}
 	return %report_data;
