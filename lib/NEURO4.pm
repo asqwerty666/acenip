@@ -24,8 +24,8 @@ use File::Path qw(make_path);
 
 our @ISA                = qw(Exporter);
 our @EXPORT             = qw(print_help load_project cut_shit);
-our @EXPORT_OK  = qw(print_help escape_name trim check_or_make load_project populate get_subjects check_subj check_fs_subj get_list shit_done get_pair cut_shit check_pet centiloid_fbb inplace getLoggingTime);
-our %EXPORT_TAGS        = (all => [qw(print_help escape_name trim check_or_make load_project check_subj check_fs_subj get_lut run_dckey dclokey centiloid_fbb populate get_subjects get_list shit_done get_pair cut_shit check_pet centiloid_fbb inplace getLoggingTime)],
+our @EXPORT_OK  = qw(print_help escape_name trim check_or_make load_project populate get_subjects check_subj check_fs_subj get_list shit_done get_pair cut_shit check_pet centiloid_fbb centiloid_fbp inplace getLoggingTime);
+our %EXPORT_TAGS        = (all => [qw(print_help escape_name trim check_or_make load_project check_subj check_fs_subj get_lut run_dckey dclokey centiloid_fbb populate get_subjects get_list shit_done get_pair cut_shit check_pet centiloid_fbp inplace getLoggingTime)],
                                         usual => [qw(print_help load_project check_or_make cut_shit)],);
 our $VERSION    = 1.0;
 
@@ -359,6 +359,23 @@ usage:
 sub centiloid_fbb {
     my $suvr = shift;
     return 153.4*$suvr-154.9;
+}
+
+
+=item centiloid_fbp 
+
+Returns the proper centiloid value for a given SUVR. 
+Only valid for Florbetapir. 
+
+usage:         
+
+centiloid_fbp(suvr); 
+
+=cut 
+
+sub centiloid_fbp {     
+	my $suvr = shift;     
+	return 183*$suvr-177; 
 }
 
 =item populate

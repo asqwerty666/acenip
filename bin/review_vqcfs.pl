@@ -80,8 +80,10 @@ if ($ifile and -f $ifile){
 	close IDF;
 	open TDF, ">$efile";
 	foreach my $pollo (@pollos){
-		$epollos{$pollo} = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $pollo);
-		print TDF "$epollos{$pollo}\n";
+		$epollos{$pollo} = [ xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $pollo) ];
+		foreach my $pexp (@{$epollos{$pollo}}){
+			print TDF "$pexp\n";
+		}
 	}
 	close TDF;
 }
@@ -103,18 +105,20 @@ unless ($odir and -d $odir) {
 		# me limito a preparar esos
 		my $tsdir = tempdir(TEMPLATE => $tmp_dir.'/tars_data.XXXXX', CLEANUP => 1);
 		foreach my $pollo (@pollos){
-			my $otfile = $tsdir.'/'.$pollo.'.tar.gz';
-			my %fs_files = xlist_res($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $epollos{$pollo}, 'FS');
-			foreach my $fsfile (sort keys %fs_files){
-				if ($fsfile =~ /.*\.tar\.gz$/){
-					xget_res_file($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $epollos{$pollo}, 'FS', $fsfile, $otfile);
+			foreach my $pexp (@{$epollos{$pollo}}) {
+				my $otfile = $tsdir.'/'.$pexp.'.tar.gz';
+				my %fs_files = xlist_res($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $pexp, 'FS');
+				foreach my $fsfile (sort keys %fs_files){
+					if ($fsfile =~ /.*\.tar\.gz$/){
+						xget_res_file($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $pexp, 'FS', $fsfile, $otfile);
+					}
 				}
+				my $otdir = $odir.'/'.$pexp;
+				mkdir $otdir;
+				my $pre = 'tar xzf '.$otfile.' --strip-components=1 -C '.$otdir.' */mri/{orig,aparc+aseg}.mgz */label/*.aparc.annot */surf/*.pial* */stats/*.aparc.stats';
+				system($pre);
+				unlink $otfile;
 			}
-			my $otdir = $odir.'/'.$epollos{$pollo};
-			mkdir $otdir;
-			my $pre = 'tar xzf '.$otfile.' --strip-components=1 -C '.$otdir.' */mri/{orig,aparc+aseg}.mgz */label/*.aparc.annot */surf/*.pial* */stats/*.aparc.stats';
-			system($pre);
-			unlink $otfile;
 		}
 		unlink $tsdir;
 	}else{	
@@ -122,22 +126,24 @@ unless ($odir and -d $odir) {
 		my $tsdir = tempdir(TEMPLATE => $tmp_dir.'/tars_data.XXXXX', CLEANUP => 1);
 		my %allchicks = xget_subjects($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj);
 		foreach  my $pollo (sort keys %allchicks){
-			$epollos{$pollo} = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $pollo);
-			my $otfile = $tsdir.'/'.$pollo.'.tar.gz';
-			my %fs_files = xlist_res($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $epollos{$pollo}, 'FS');
-			foreach my $fsfile (sort keys %fs_files){
-                                if ($fsfile =~ /.*\.tar\.gz$/){
-                                        xget_res_file($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $epollos{$pollo}, 'FS', $fsfile, $otfile);
-                                }
-                        }
-			if (-e $otfile) { 
-				my $otdir = $odir.'/'.$epollos{$pollo};
-				mkdir $otdir;
-				my $pre = 'tar xzf '.$otfile.' --strip-components=1 -C '.$otdir.' */mri/{orig,aparc+aseg}.mgz */label/*.aparc.annot */surf/*.pial* */stats/*.aparc.stats';
-				system($pre);
-				unlink $otfile;
-			} else {
-				print "No FS data for $pollo!\n";
+			$epollos{$pollo} = [ xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $pollo) ];
+			foreach my $pexp (@{$epollos{$pollo}}){
+				my $otfile = $tsdir.'/'.$pexp.'.tar.gz';
+				my %fs_files = xlist_res($xconf{'HOST'}, $xconf{'JSESSION'}, $pexp, 'FS');
+				foreach my $fsfile (sort keys %fs_files){
+                                	if ($fsfile =~ /.*\.tar\.gz$/){
+                                        	xget_res_file($xconf{'HOST'}, $xconf{'JSESSION'}, $pexp, 'FS', $fsfile, $otfile);
+                                	}
+                        	}
+				if (-e $otfile) { 
+					my $otdir = $odir.'/'.$pexp;
+					mkdir $otdir;
+					my $pre = 'tar xzf '.$otfile.' --strip-components=1 -C '.$otdir.' */mri/{orig,aparc+aseg}.mgz */label/*.aparc.annot */surf/*.pial* */stats/*.aparc.stats';
+					system($pre);
+					unlink $otfile;
+				} else {
+					print "No FS data for $pexp ($pollo)!\n";
+				}
 			}
 		}
 		unlink $tsdir;
