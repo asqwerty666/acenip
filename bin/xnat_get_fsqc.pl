@@ -36,7 +36,7 @@ foreach my $sid (sort keys %subjects){
 		my %tmp_hash = xget_res_data($xconf{'HOST'}, $jid, $mri, 'fsqc', 'rating.json');
 		$subjects{$sid}{$mri}{'date'} = xget_exp_data($xconf{'HOST'}, $jid, $mri, 'date');
 		if(exists($tmp_hash{'rating'}) and $tmp_hash{'rating'}){
-			$tmp_hash{'rating'} =~ tr/ODILgR/odilGr/;
+			$tmp_hash{'rating'} =~ tr/ODILgRf/odilGrF/;
 			$subjects{$sid}{$mri}{'FSQC'} = $tmp_hash{'rating'};
 			$subjects{$sid}{$mri}{'Notes'} = $tmp_hash{'notes'};
 		}else{
