@@ -30,6 +30,7 @@ use File::Basename qw(basename);
 use Data::Dump qw(dump);
 use SLURMACE qw(send2slurm);
 use NEURO4 qw(populate check_subj load_project print_help check_or_make get_subjects get_list);
+use Cwd qw(cwd);
 
 my $cfile;
 
@@ -37,43 +38,24 @@ my $cfile;
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
-    if (/^-cut/) { $cfile = shift; chomp($cfile);}
+    if (/^-l/) { $cfile = shift; chomp($cfile);}
     if (/^-h/) { print_help $ENV{'PIPEDIR'}.'/doc/recon.hlp'; exit;}
 }
-# Hacemos lo usual, leemos el proyecto, configuramos el workspace, etc
-my $study = shift;
-unless ($study) { print_help $ENV{'PIPEDIR'}.'/doc/recon.hlp'; exit;}
 my $debug = 1;
-#my $stage = "-autorecon-all";
-
-my %std = load_project($study);
-my $data_dir=$std{'DATA'};
-my $mri_db = $std{'DATA'}.'/'.$study.'_mri.csv';
-my $bids_path = $std{'DATA'}.'/bids';
+die "Should supply input file with valid Freesurfer subjects\n" unless $cfile;
 #open debug file
-my $logfile = "$std{'DATA'}/.debug.controlled.log";
+my $logfile = cwd().'/.debug.controlled.log';
 $debug ? open DBG, ">$logfile" :0;
-#open slurm file
-#my $orderfile = "$std{'DATA'}/mri_orders.sh";
-#my $conffile = "$std{'DATA'}/mri_orders.conf";
-my $outdir = "$std{'DATA'}/slurm";
+my $outdir = cwd().'/slurm';
 check_or_make($outdir);
 
-#get subjects from database or file
+#get  freesurfer subjects from file
 my @plist;
-my @iplist = get_subjects($mri_db);
+open my $handle, "<$cfile";
+chomp (@plist = <$handle>);
+close $handle;
 
-if ($cfile){
-	my @cuts = get_list($data_dir."/".$cfile);
-	foreach my $cut (sort @cuts){
-		if(grep {/$cut/} @iplist){
-			push @plist, $cut;
-		}
-	}
-}else{
-	@plist = @iplist;
-}
-my %ptask = ( 'job_name' => 'fs_qcache_'.$study,
+my %ptask = ( 'job_name' => 'fs_qcache',
 	'time' => '48:0:0',
 	'cpus' => 4,
 	'mem_per_cpu' => '4G',
@@ -81,7 +63,7 @@ my %ptask = ( 'job_name' => 'fs_qcache_'.$study,
 	'partition' => 'fast',
 );
 foreach my $pkey (sort @plist){
-	my $subj = $study."_".$pkey;
+	my $subj = $pkey;
 	my $subj_dir = $ENV{'SUBJECTS_DIR'}.'/'.$subj;
 	if( -e $subj_dir && -d $subj_dir){
 		$ptask{'command'} = "recon-all -subjid ".$subj." -qcache";
@@ -94,7 +76,7 @@ foreach my $pkey (sort @plist){
 
 $debug ? close DBG:0;	
 my %final = ( 'filename' => $outdir.'/fs_qcache_end.sh',
-	'job_name' => 'fs_qcache_'.$study,
+	'job_name' => 'fs_qcache',
 	'output' => $outdir.'/fs_recon_end',
 	'dependency' => 'singleton',
 );
