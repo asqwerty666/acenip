@@ -396,7 +396,7 @@ sub xget_pet_data {
 	my %xresult;
 	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/experiments/'.$xdata[2].'/files/mriSessionMatch.json" 2>/dev/null';
 	my $jres = qx/$crd/;
-	if($jres) {
+	if($jres and $jres =~ '.*ResultSet.*') {
 		my $xfres = decode_json $jres;
 		foreach my $xres (@{$xfres->{'ResultSet'}{'Result'}}){
 			foreach my $xkey (sort keys %{$xres}){
