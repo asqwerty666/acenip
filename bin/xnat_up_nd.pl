@@ -51,15 +51,15 @@ while (<IDF>){
 }
 close IDF;
 # Here comes the magic ;-P
-my %xconf = xget_session();
+#my %xconf = xget_session();
 foreach my $sbj (sort keys %nass){
-	my @experiments = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
+	my @experiments = xget_mri($xprj, $sbj);
 	foreach my $experiment (@experiments){
-		my $date = xget_exp_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'date');
+		my $date = xget_exp_data($experiment, 'date');
 		if(exists($nass{$sbj}{$date})) {
 			my %ass_data = ('N' => $nass{$sbj}{$date}{'N'}, 'Nprob' => $nass{$sbj}{$date}{'Nprob'}, 'Date' => $date);
-			xcreate_res($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data');
-			xput_res_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data', 'neuroass.json', \%ass_data);
+			xcreate_res($experiment, 'data');
+			xput_res_data($experiment, 'data', 'neuroass.json', \%ass_data);
 		}
 	}
 }

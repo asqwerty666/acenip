@@ -58,13 +58,13 @@ if ($prj and not $xprj) {
 }
 die "Should supply XNAT project name or define it at local project config!\n" unless $xprj;
 # Saco los sujetos del proyecto 
-my %xconfig = xget_session();
-my $jid = $xconfig{'JSESSION'};
-my %subjects = xget_subjects($xconfig{'HOST'}, $jid, $xprj);
+#my %xconfig = xget_session();
+#my $jid = $xconfig{'JSESSION'};
+my %subjects = xget_subjects($xprj);
 my %psubjects;
 foreach my $xsbj (sort keys %subjects){
-	$psubjects{$xsbj}{'MRI'} = [ xget_mri($xconfig{'HOST'}, $jid, $xprj, $xsbj) ];
-	$psubjects{$xsbj}{'label'} = xget_sbj_data($xconfig{'HOST'}, $jid, $xsbj, 'label');
+	$psubjects{$xsbj}{'MRI'} = [ xget_mri($xprj, $xsbj) ];
+	$psubjects{$xsbj}{'label'} = xget_sbj_data($xsbj, 'label');
 }
 # Ahora voy a bajar el archivo de stats para cada imagen y dentro de un directorio
 # para cada sujeto, con la convencion IDSUJETOXNAT. 
@@ -81,12 +81,12 @@ foreach my $subject (sort keys %psubjects){
 	foreach my $experiment (@{$psubjects{$subject}{'MRI'}}){
 		my $order = 'mkdir -p '.$fsout.'/'.$subject.'/'.$experiment.'/stats';
 		system($order);
-		my $xdate = xget_exp_data($xconfig{'HOST'}, $jid, $experiment, 'date');
+		my $xdate = xget_exp_data($experiment, 'date');
 		# ahora voy a intentar sacar las estadisticas
 		if($stats eq "aseg" or $stats eq "wmparc"){
 			# y guardo el archivo de stats
 			my $tmp_out = $fsout.'/'.$subject.'/'.$experiment.'/stats/'.$stats.'.stats';
-			xget_res_file($xconfig{'HOST'}, $jid, $experiment, 'FS', $stats.'.stats' , $tmp_out);
+			xget_res_file($experiment, 'FS', $stats.'.stats' , $tmp_out);
 			# Aqui voy a sacar los volumenes porque son distintos a los demas
 			if( -f $tmp_out){
 				my @tdata = `grep -v "^#" $tmp_out | awk '{print \$5","\$4}'`;
@@ -110,7 +110,7 @@ foreach my $subject (sort keys %psubjects){
 				}
 				print ",$etiv\n";
 			}
-		}elsif($stats eq "aparc"){
+		}elsif($stats eq "aparc" or $stats eq "aparc.a2009s"){
 			# Aqui voy a sacar las aparc. Esto es la parcelacion del cortex
 			# y hay dos archivos distintos lh.aparc.stats y rh.aparc.stats
 			# asi que tengo que sacar los hemisferios por separados
@@ -123,7 +123,7 @@ foreach my $subject (sort keys %psubjects){
 			my $go=0;
 			foreach my $hemi (@hemis){
 				my $tmp_out = $fsout.'/'.$subject.'/'.$experiment.'/stats/'.$hemi.'.'.$stats.'.stats';
-				xget_res_file($xconfig{'HOST'}, $jid, $experiment, 'FS', $hemi.'.'.$stats.'.stats' , $tmp_out);
+				xget_res_file($experiment, 'FS', $hemi.'.'.$stats.'.stats' , $tmp_out);
 				if (-f $tmp_out) {
 					my @tdata = `grep -v "^#" $tmp_out | awk '{print \$1","\$3","\$4","\$5}'`;
 					chomp @tdata;

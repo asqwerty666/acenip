@@ -21,27 +21,27 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
 }
 die "Should supply XNAT project" unless $xprj;
 $oxfile = $xprj.'_fsqc_data.csv' unless $oxfile;
-my %xconf = xget_session();
+#my %xconf = xget_session();
 #get the jsessionid
-my $jid = $xconf{'JSESSION'};
+#my $jid = $xconf{'JSESSION'};
 #get the subjects list
-my %subjects = xget_subjects($xconf{'HOST'}, $jid, $xprj);
+my %subjects = xget_subjects($xprj);
 my $dhead ="Subject,Date,FSQC,Notes";
 my $dbody="";
 my %inbreed;
 foreach my $sbj (sort keys %subjects) { $inbreed{$subjects{$sbj}{'label'}} = $sbj; }
 foreach my $sid (sort keys %subjects){
-	$subjects{$sid}{'experimentIDs'} = [ xget_mri($xconf{'HOST'}, $jid, $xprj, $sid) ];
+	$subjects{$sid}{'experimentIDs'} = [ xget_mri($xprj, $sid) ];
 	foreach my $mri (@{$subjects{$sid}{'experimentIDs'}}) {
 		my %tmp_hash = xget_res_data($xconf{'HOST'}, $jid, $mri, 'fsqc', 'rating.json');
-		$subjects{$sid}{$mri}{'date'} = xget_exp_data($xconf{'HOST'}, $jid, $mri, 'date');
+		$subjects{$sid}{$mri}{'date'} = xget_exp_data($mri, 'date');
 		if(exists($tmp_hash{'rating'}) and $tmp_hash{'rating'}){
 			$tmp_hash{'rating'} =~ tr/ODILgRf/odilGrF/;
 			$subjects{$sid}{$mri}{'FSQC'} = $tmp_hash{'rating'};
 			$subjects{$sid}{$mri}{'Notes'} = $tmp_hash{'notes'};
 		}else{
 			print "$subjects{$sid}{'label'} -> $mri --no rated yet--\n";
-			$subjects{$sid}{$mri}{'FSQC'} = '0';
+			$subjects{$sid}{$mri}{'FSQC'} = 'NA';
 			$subjects{$sid}{$mri}{'Notes'} = '0';
 		}
 	}

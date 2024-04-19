@@ -27,24 +27,24 @@ die "Should supply XNAT project" unless $xprj;
 $xvar =~ s/,/_/g;
 my @avar = split '_',$xvar;
 $oxfile = $xprj.'_'.$xvar.'_data.csv' unless $oxfile;
-my %xconf = xget_session();
+#my %xconf = xget_session();
 my $jid = $xconf{'JSESSION'};
-my %subjects = xget_subjects($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj);
+my %subjects = xget_subjects($xprj);
 foreach my $sbj (sort keys %subjects){
-	$subjects{$sbj}{'experiment'} = [ xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj) ];
+	$subjects{$sbj}{'experiment'} = [ xget_mri($xprj, $sbj) ];
 	foreach my $experiment (sort @{$subjects{$sbj}{'experiment'}}){
-		my $mri_date = xget_exp_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'date');
+		my $mri_date = xget_exp_data($experiment, 'date');
 		print "$subjects{$sbj}{'label'},$mri_date";
 		$subjects{$sbj}{$experiment}{'date'} = $mri_date;
 		foreach my $axvar (@avar){
 			if ($axvar eq 'age'){
-				my $dob = xget_sbj_demog($xconf{'HOST'}, $xconf{'JSESSION'}, $sbj, 'dob');
+				my $dob = xget_sbj_demog($sbj, 'dob');
 				if ($mri_date and $dob){
 					my $ddif = Delta_Format(DateCalc(ParseDate($dob),ParseDate($mri_date)),2,"%hh")/(24*365.2425);
 					$subjects{$sbj}{$experiment}{'age'} = nearest(0.1, $ddif);
 				}
 			}else{
-				my $foo_var = xget_sbj_demog($xconf{'HOST'}, $xconf{'JSESSION'}, $sbj, $axvar);
+				my $foo_var = xget_sbj_demog($sbj, $axvar);
 				if ($foo_var){
 					$subjects{$sbj}{$experiment}{$axvar} = $foo_var;
 				}

@@ -23,14 +23,14 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
 }
 die "Should supply XNAT project" unless $xprj;
 $oxfile = $xprj.'_age_data.csv' unless $oxfile;
-my %xconf = xget_session();
+#my %xconf = xget_session();
 my $jid = $xconf{'JSESSION'};
-my %subjects = xget_subjects($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj);
+my %subjects = xget_subjects($xprj);
 foreach my $sbj (sort keys %subjects){
-	my $dob = xget_sbj_demog($xconf{'HOST'}, $xconf{'JSESSION'}, $sbj, 'dob');
-	my @experiments = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
+	my $dob = xget_sbj_demog($sbj, 'dob');
+	my @experiments = xget_mri($xprj, $sbj);
 	foreach my $experiment (@experiments){
-		my $mri_date = xget_exp_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'date');
+		my $mri_date = xget_exp_data($experiment, 'date');
 		#print "$sbj -> $mri_date -> $dob\n";
 		if ($mri_date and $dob){
 			my $ddif = Delta_Format(DateCalc(ParseDate($dob),ParseDate($mri_date)),2,"%hh")/(24*365.2425);

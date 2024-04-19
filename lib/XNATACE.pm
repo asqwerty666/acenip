@@ -25,7 +25,6 @@ our %EXPORT_TAGS =(all => qw(xget_session xget_pet xget_mri), usual => qw(xget_s
 
 our $VERSION = 0.2;
 our $default_config_path = $ENV{'HOME'}.'/.xnatapic/xnat.conf';
-
 #=item xconf
 #
 #Publish path of xnatapic configuration file
@@ -62,8 +61,10 @@ sub xget_conf {
 	while (<IDF>){
 		if (/^#.*/ or /^\s*$/) { next; }
 		my ($n, $v) = /(.*)=(.*)/;
+		$n =~ s/.*\s//;
 	        $xconf{$n} = $v;
 	}
+	#dump %xconf;
 	return %xconf;
 }
 
@@ -88,8 +89,13 @@ sub xget_session {
 	#my %xdata = %{shift()};
 	my $dpath = shift;
 	my %xdata = xget_conf($dpath);
-	my $crd = 'curl -f -u '.$xdata{'USER'}.':'.$xdata{'PASSWORD'}.' -X POST '.$xdata{'HOST'}.'/data/JSESSION 2>/dev/null';
+	my $CACERT = '';
+	if (exists($xdata{'CURL_CA_BUNDLE'}) and $xdata{'CURL_CA_BUNDLE'}){
+		$CACERT = $xdata{'CURL_CA_BUNDLE'};
+	}
+	my $crd = 'curl '.($CACERT?'--cacert '.$CACERT:'').' -f -u '.$xdata{'USER'}.':'.$xdata{'PASSWORD'}.' -X POST '.$xdata{'HOST'}.'/data/JSESSION 2>/dev/null';
 	$xdata{'JSESSION'} = qx/$crd/;
+	#dump %xdata;
 	return %xdata;
 }
 
@@ -100,7 +106,7 @@ El HASH de input, I<%sbjs>, se construye como I<{ XNAT_ID =E<gt> Label }>
 
 usage: 
 
-	%sbjs = xget_subjects(host, jsession, project);
+	%sbjs = xget_subjects(project);
 
 =cut
 
@@ -109,8 +115,9 @@ sub xget_subjects {
 	# usage: %sbjs = xget_subjects(host, jsession, project); 
 	# %sbjs se construye como { XNAT_ID => Label }
 	my %sbjs;
+	my %cdata = xget_session();
 	my @xdata = @_;
-	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/projects/'.$xdata[2].'/subjects?format=csv&columns=ID,label" 2>/dev/null';
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X GET "'.$cdata{'HOST'}.'/data/projects/'.$xdata[0].'/subjects?format=csv&columns=ID,label" 2>/dev/null';
 	my @sbj_res = split '\n', qx/$crd/;
 	foreach my $sbj_prop (@sbj_res){
 		if ($sbj_prop =~ /^XNAT/){
@@ -128,13 +135,14 @@ Sometimes I need to do this and is not difficult to implement
 
 usage:
 
-	$sbj_id = xget(host, jsession, project, subject_label);
+	$sbj_id = xget(project, subject_label);
 
 =cut
 
 sub xget_sbj_id {
 	my @xdata = @_;
-	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/projects/'.$xdata[2].'/subjects/'.$xdata[3].'?format=json" 2>/dev/null | jq \'.items[].data_fields.ID\'';
+	my %cdata = xget_session();
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -X GET -b "JSESSIONID='.$cdata{'JSESSION'}.'" "'.$cdata{'HOST'}.'/data/projects/'.$xdata[0].'/subjects/'.$xdata[1].'?format=json" 2>/dev/null | jq \'.items[].data_fields.ID\'';
 	my $jres = qx/$crd/;
         $jres =~ s/\"//g;
         chomp $jres;
@@ -148,14 +156,15 @@ the subject label.
 
 usage:
 
-	$xdata = xget_sbj_data(host, jsession, subject, field);
+	$xdata = xget_sbj_data(subject, field);
 
 =cut
 
 sub xget_sbj_data {
-	# usage $xdata = xget_sbj_data(host, jsession, subject, field);
+	# usage $xdata = xget_sbj_data(subject, field);
 	my @xdata = @_;
-	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/subjects/'.$xdata[2].'?format=json" 2>/dev/null | jq \'.items[].data_fields.'.$xdata[3].'\'';
+	my %cdata = xget_session();
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -X GET -b "JSESSIONID='.$cdata{'JSESSION'}.'" "'.$cdata{'HOST'}.'/data/subjects/'.$xdata[0].'?format=json" 2>/dev/null | jq \'.items[].data_fields.'.$xdata[1].'\'';
 	my $jres = qx/$crd/;
 	$jres =~ s/\"//g;
 	chomp $jres;
@@ -170,7 +179,7 @@ Set a parameter for given subject
 
 usage:
 
-	$xdata = xput_sbj_data(host, jsession, subject, field, value)
+	$xdata = xput_sbj_data(subject, field, value)
 
 This is the same as 
 	
@@ -184,14 +193,15 @@ Notice that I<field> could be a comma separated list but you should fill I<value
 
 sub xput_sbj_data {
 	my @xdata = @_;
-	my @svars = split /,/, $xdata[3];
-	my @svals = split /,/, $xdata[4];
+	my @svars = split /,/, $xdata[1];
+	my @svals = split /,/, $xdata[2];
+	my %cdata = xget_session();
 	my $qcad = ''; # Esto seguro que con map se puede hacer en una linea pero vamos que asi tampoco esta mal
 	for (my $i=0; $i<scalar(@svars); $i++){
 		$qcad .= $svars[$i].'='.$svals[$i].'&';
 	}
 	$qcad =~ s/\&$//;	
-	my $crd = 'curl -f -X PUT -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/subjects/'.$xdata[2].'?'.$qcad.'" 2>/dev/null';
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -X PUT -b "JSESSIONID='.$cdata{'JSESSION'}.'" "'.$cdata{'HOST'}.'/data/subjects/'.$xdata[0].'?'.$qcad.'" 2>/dev/null';
 	my $res = qx/$crd/;
 	return $res;
 }
@@ -203,13 +213,14 @@ Get demographics variable from given subject, if available
 
 usage:
 
-	$xdata = xget_sbj_demog(host, jsession, subject, field);
+	$xdata = xget_sbj_demog(subject, field);
 
 =cut 
 
 sub xget_sbj_demog {
 	my @xdata = @_;
-	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/subjects/'.$xdata[2].'?format=json&columns=label,dob" 2>/dev/null | jq \'.items[].children[] | select (.field=="demographics") | .items[].data_fields["'.$xdata[3].'"]\'';
+	my %cdata = xget_session();
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -X GET -b "JSESSIONID='.$cdata{'JSESSION'}.'" "'.$cdata{'HOST'}.'/data/subjects/'.$xdata[0].'?format=json&columns=label,dob" 2>/dev/null | jq \'.items[].children[] | select (.field=="demographics") | .items[].data_fields["'.$xdata[1].'"]\'';
         my $jres = qx/$crd/;
 	#my $xfres = decode_json $jres;
 	# This is the fucking slowest way to do this shit 
@@ -239,17 +250,18 @@ in order to know the available fields
 
 usage:
 
-	$xdata = xget_exp_data(host, jsession, experiment, field);
+	$xdata = xget_exp_data(experiment, field);
 
 =cut
 
 sub xget_exp_data {
-	# usage $xdata = xget_exp_data(host, jsession, experiment, field);	
+	# usage $xdata = xget_exp_data(experiment, field);	
 	my @xdata = @_;
-	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/experiments/'.$xdata[2].'?format=json" 2>/dev/null | jq \'.items[].data_fields.'.$xdata[3].'\'';
+	my %cdata = xget_session();
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -X GET -b "JSESSIONID='.$cdata{'JSESSION'}.'" "'.$cdata{'HOST'}.'/data/experiments/'.$xdata[0].'?format=json" 2>/dev/null | jq \'.items[].data_fields.'.$xdata[1].'\'';
 	my $jres = qx/$crd/;
 	#my $xfres = decode_json $jres;
-	#return $xfres->{items}[0]{data_fields}{$xdata[3]};
+	#return $xfres->{items}[0]{data_fields}{$xdata[1]};
 	$jres =~ s/\"//g;
 	chomp $jres;
 	return $jres;
@@ -261,15 +273,16 @@ Get the XNAT MRI experiment ID
 
 usage: 
 
-	@experiment_IDs = xget_mri(host, jsession, project, subject)
+	@experiment_IDs = xget_mri(project, subject)
 
 =cut
 
 sub xget_mri {
 	# Get the XNAT MRI experiment ID
-	# usage: xget_mri(host, jsession, project, subject)
+	# usage: xget_mri(project, subject)
 	my @xdata = @_;
-	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/projects/'.$xdata[2].'/subjects/'.$xdata[3].'/experiments?format=json&xsiType=xnat:mrSessionData" 2>/dev/null';
+	my %cdata = xget_session();
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X GET "'.$cdata{'HOST'}.'/data/projects/'.$xdata[0].'/subjects/'.$xdata[1].'/experiments?format=json&xsiType=xnat:mrSessionData" 2>/dev/null';
 	my $json_res = qx/$crd/;
 	if ($json_res){
 		my $exp_prop = decode_json $json_res;
@@ -320,7 +333,7 @@ Get the XNAT PET experiment ID
 
 usage: 
 
-	@experiment_ids = xget_pet(host, jsession, project, subject)
+	@experiment_ids = xget_pet(project, subject)
 
 Returns experiment ID.
 
@@ -328,9 +341,10 @@ Returns experiment ID.
 
 sub xget_pet {
 	# Get the XNAT PET experiment ID
-	# usage: xget_pet(host, jsession, project, subject)
+	# usage: xget_pet(project, subject)
 	my @xdata = @_;
-	my $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/projects/'.$xdata[2].'/subjects/'.$xdata[3].'/experiments?format=json&xsiType=xnat:petSessionData" 2>/dev/null';
+	my %cdata = xget_session();
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X GET "'.$cdata{'HOST'}.'/data/projects/'.$xdata[0].'/subjects/'.$xdata[1].'/experiments?format=json&xsiType=xnat:petSessionData" 2>/dev/null';
 	#print "$crd\n";
 	my $json_res = qx/$crd/;
 	my @xlab;
@@ -349,7 +363,7 @@ Download de pet registered into native space in nifti format
 
 usage: 
 
-	$result = xget_pet_reg(host, jsession, experiment, nifti_output);
+	$result = xget_pet_reg(experiment, nifti_output);
 
 Returns 1 if OK, 0 otherwise.
 
@@ -357,20 +371,21 @@ Returns 1 if OK, 0 otherwise.
 
 sub xget_pet_reg {
 	# Download de pet registered into native space in nifti format
-	# usage: xget_pet_reg(host, jsession, experiment, nifti_output);
+	# usage: xget_pet_reg(experiment, nifti_output);
 	#
 	my @xdata = @_;
-	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/experiments/'.$xdata[2].'/files?format=json" 2>/dev/null';
+	my %cdata = xget_session();
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -X GET -b "JSESSIONID='.$cdata{'JSESSION'}.'" "'.$cdata{'HOST'}.'/data/experiments/'.$xdata[0].'/files?format=json" 2>/dev/null';
 	my $jres = qx/$crd/;
 	my $xfres = decode_json $jres;
 	foreach my $xres (@{$xfres->{'ResultSet'}{'Result'}}){
 		if ($xres->{'file_content'} eq 'PET_reg'){
 			my $xuri = $xres->{'URI'};
-			my $grd = 'curl -f -b "JSESSIONID='.$xdata[1].'" -X GET "'.$xdata[0].$xuri.'" -o '.$xdata[3].' 2>/dev/null';
+			my $grd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b "JSESSIONID='.$cdata{'JSESSION'}.'" -X GET "'.$cdata{'HOST'}.$xuri.'" -o '.$xdata[1].' 2>/dev/null';
 			system($grd);
 		}
 	}
-	if (-e $xdata[3]){
+	if (-e $xdata[1]){
 		return 1;
 	}else{
 		return 0;
@@ -383,7 +398,7 @@ Get the PET FBB analysis results into a HASH
 
 usage:
 
-	%xresult = xget_pet_data(host, jsession, experiment);
+	%xresult = xget_pet_data(experiment);
 
 Returns a hash with the results of the PET analysis
 
@@ -391,10 +406,11 @@ Returns a hash with the results of the PET analysis
 
 sub xget_pet_data {
 	# Get the PET FBB analysis results into a HASH
-	# usage %xresult = xget_pet_reg(host, jsession, experiment);
+	# usage %xresult = xget_pet_reg(experiment);
 	my @xdata = @_;
+	my %cdata = xget_session();
 	my %xresult;
-	my $crd = 'curl -f -X GET -b "JSESSIONID='.$xdata[1].'" "'.$xdata[0].'/data/experiments/'.$xdata[2].'/files/mriSessionMatch.json" 2>/dev/null';
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -X GET -b "JSESSIONID='.$cdata{'JSESSION'}.'" "'.$cdata{'HOST'}.'/data/experiments/'.$xdata[0].'/files/mriSessionMatch.json" 2>/dev/null';
 	my $jres = qx/$crd/;
 	if($jres and $jres =~ '.*ResultSet.*') {
 		my $xfres = decode_json $jres;
@@ -414,13 +430,14 @@ Create an empty experiment resource
 
 usage:
 
-	xcreate_res(host, jsession, experiment, res_name)
+	xcreate_res(experiment, res_name)
 
 =cut
 
 sub xcreate_res {
 	my @xdata = @_;
-	my $crd = 'curl -f -X PUT -b JSESSIONID='.$xdata[1].' "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/'.$xdata[3].'" 2>/dev/null';
+	my %cdata = xget_session();
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -X PUT -b JSESSIONID='.$cdata{'JSESSION'}.' "'.$cdata{'HOST'}.'/data/experiments/'.$xdata[0].'/resources/'.$xdata[1].'" 2>/dev/null';
 	system($crd);
 }
 
@@ -430,13 +447,14 @@ Upload file as experiment resource
 
 usage:
 
-        xput_res(host, jsession, experiment, type, file, filename)
+        xput_res(experiment, type, file, filename)
 
 =cut
 
 sub xput_res_file {
 	my @xdata = @_;
-	my $crd = 'curl -f -X PUT -b JSESSIONID='.$xdata[1].' "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/'.$xdata[3].'/files/'.$xdata[4].'?overwrite=true" -F file="@'.$xdata[5].'"';
+	my %cdata = xget_session();
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -X PUT -b JSESSIONID='.$cdata{'JSESSION'}.' "'.$cdata{'HOST'}.'/data/experiments/'.$xdata[0].'/resources/'.$xdata[1].'/files/'.$xdata[2].'?overwrite=true" -F file="@'.$xdata[3].'"';
 	system($crd);
 }
 
@@ -446,14 +464,15 @@ Upload hash to an experiment resource as a json file
 
 usage:
 
-	xput_res_data(host, jsession, experiment, type, file, hash_ref)
+	xput_res_data(experiment, type, file, hash_ref)
 
 =cut
 
 sub xput_res_data {
 	my @xdata = @_;
+	my %cdata = xget_session();
 	# El hash se pasa como referencia en ultimo lugar
-	my %jdata = %{$xdata[5]};
+	my %jdata = %{$xdata[3]};
 	# pongo el contenido del hash en un json. Ojo que estoy siguiendo el estilo de XNAT 
 	# o seria mucho mas sencillo,
 	my $json_content = '{"ResultSet":{"Result":[{';
@@ -466,12 +485,12 @@ sub xput_res_data {
 	$json_content .= '}]}}';
 	#ahora tengo que hacer un file para pasarlo con curl
 	my $tmp_dir = tempdir(TEMPLATE => $ENV{TMPDIR}.'/wmh_data.XXXXX', CLEANUP => 1);
-	my $tmp_file = $tmp_dir.'/'.$xdata[2].'.json';
+	my $tmp_file = $tmp_dir.'/'.$xdata[0].'.json';
 	open TDF, ">$tmp_file";
 	print TDF $json_content;
 	close TDF;
 	# y a asubir
-	my $crd = 'curl -f -X PUT -b JSESSIONID='.$xdata[1].' "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/'.$xdata[3].'/files/'.$xdata[4].'?overwrite=true" -F file="@'.$tmp_file.'"';
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -X PUT -b JSESSIONID='.$cdata{'JSESSION'}.' "'.$cdata{'HOST'}.'/data/experiments/'.$xdata[0].'/resources/'.$xdata[1].'/files/'.$xdata[2].'?overwrite=true" -F file="@'.$tmp_file.'"';
 	system($crd);
 }
 
@@ -481,7 +500,7 @@ Download data from experiment resource given type and json name
 
 usage:
 
-        %xdata = xget_res_data(host, jsession, experiment, type, filename)
+        %xdata = xget_res_data(experiment, type, filename)
 
 Returns a hash with the JSON elements
 
@@ -489,7 +508,8 @@ Returns a hash with the JSON elements
 
 sub xget_res_data {
         my @xdata = @_;
-        my $crd = 'curl -f -X GET -b JSESSIONID='.$xdata[1].' "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/'.$xdata[3].'/files/'.$xdata[4].'" 2>/dev/null';
+	my %cdata = xget_session();
+        my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -X GET -b JSESSIONID='.$cdata{'JSESSION'}.' "'.$cdata{'HOST'}.'/data/experiments/'.$xdata[0].'/resources/'.$xdata[1].'/files/'.$xdata[2].'" 2>/dev/null';
 	my $json_res = qx/$crd/;
 	my %out_data;
 	if ($json_res) {
@@ -509,14 +529,15 @@ Download file from experiment resource
 
 usage:
 
-	$result = xget_res_file(host, jsession, experiment, type, filename, output, just_print)
+	$result = xget_res_file(experiment, type, filename, output, just_print)
 
 =cut
 
 sub xget_res_file {
 	my @xdata = @_;
-	my $jp = $xdata[6] if defined $xdata[6];
-	my $crd = 'curl -f -X GET -b JSESSIONID='.$xdata[1].' "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/'.$xdata[3].'/files/'.$xdata[4].'" -o '.$xdata[5].' 2>/dev/null';
+	my %cdata = xget_session();
+	my $jp = $xdata[4] if defined $xdata[4];
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -X GET -b JSESSIONID='.$cdata{'JSESSION'}.' "'.$cdata{'HOST'}.'/data/experiments/'.$xdata[0].'/resources/'.$xdata[1].'/files/'.$xdata[2].'" -o '.$xdata[3].' 2>/dev/null';
 	return $crd if $jp;
 	my $res = qx/$crd/;
 	return $res;
@@ -530,17 +551,18 @@ Output is a hash with filenames and URI of each element stored at the resource.
 
 usage:
 
-	%xdata = xlist_res(host, jsession, experiment, resource); 
+	%xdata = xlist_res(experiment, resource); 
 
 =cut
 
 
 sub xlist_res {
 	# Get the list of resources into a HASH
-	# usage: xget_list(host, jsession, experiment, resource);
+	# usage: xget_list(experiment, resource);
 	# output is a hash with filenames and URI of each element stored at RVR
 	my @xdata = @_;
-	my $crd = 'curl -b "JSESSIONID='.$xdata[1].'" -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/resources/'.$xdata[3].'/files?format=json" 2>/dev/null';
+	my %cdata = xget_session();
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b "JSESSIONID='.$cdata{'JSESSION'}.'" -X GET "'.$cdata{'HOST'}.'/data/experiments/'.$xdata[0].'/resources/'.$xdata[1].'/files?format=json" 2>/dev/null';
 	my $json_res = qx/$crd/;
 	my %report_data;
 	if ($json_res){
@@ -562,7 +584,7 @@ You can download the full experiment or just a list of series enumerated with a 
 
 usage:
 
-	xget_dicom(host, jsession, experiment, output_dir, series_description)
+	xget_dicom(experiment, output_dir, series_description)
 
 If I<series_description> is ommited then is assumed equal to 'ALL' and the full DICOM will be downloaded
 
@@ -572,19 +594,20 @@ sub xget_dicom {
 	# Get the DICOM!!!!!
 	# Only usefull if you want to go from xnat to acenip
 	my @xdata = @_;
+	my %cdata = xget_session();
 	my $a_size = scalar @xdata;
-	push @xdata, 'ALL' unless $a_size > 4;
+	push @xdata, 'ALL' unless $a_size > 2;
 	my $tmp_dir = $ENV{'TMPDIR'};
 	my $zdir = tempdir(TEMPLATE => ($tmp_dir?$tmp_dir:'.').'/zipdir.XXXXX', CLEANUP => 1);
-	my $zipfile = $zdir.'/'.$xdata[2].'.zip';
+	my $zipfile = $zdir.'/'.$xdata[0].'.zip';
 	my $crd; my $all_types = 'ALL';
-	unless ($xdata[4] ne 'ALL') {
-		$crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/scans/ALL/files?format=zip" -o '.$zipfile.' 2>/dev/null';
+	unless ($xdata[2] ne 'ALL') {
+		$crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X GET "'.$cdata{'HOST'}.'/data/experiments/'.$xdata[0].'/scans/ALL/files?format=zip" -o '.$zipfile.' 2>/dev/null';
 	}else{
-		my @series = split ',', $xdata[4];
+		my @series = split ',', $xdata[2];
 		my @types;
 		foreach my $serie (@series){
-			my $icrd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/scans?format=json" 2>/dev/null | jq \'.ResultSet.Result[] | select (.series_description == "'.$serie.'") | .ID\'';
+			my $icrd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X GET "'.$cdata{'HOST'}.'/data/experiments/'.$xdata[0].'/scans?format=json" 2>/dev/null | jq \'.ResultSet.Result[] | select (.series_description == "'.$serie.'") | .ID\'';
 			my $ires = qx/$icrd/;
 			$ires =~ s/\"//g;
 			my @ares = split /\n/, $ires;
@@ -592,10 +615,10 @@ sub xget_dicom {
 			push @types, @ares if @ares;
 		}
 		$all_types = join ',', @types;
-	       $crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X GET "'.$xdata[0].'/data/experiments/'.$xdata[2].'/scans/'.$all_types.'/files?format=zip" -o '.$zipfile.' 2>/dev/null';	
+	       $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X GET "'.$cdata{'HOST'}.'/data/experiments/'.$xdata[0].'/scans/'.$all_types.'/files?format=zip" -o '.$zipfile.' 2>/dev/null';	
 	}
 	system($crd);
-	my $zrd = '7za x -y -o'.$xdata[3].' '.$zipfile.' 1>/dev/null' ;
+	my $zrd = '7za x -y -o'.$xdata[1].' '.$zipfile.' 1>/dev/null' ;
 	system($zrd);
 	unlink $zdir;
 	return $all_types;
@@ -608,20 +631,53 @@ Upload DICOM for a subject
 
 usage:
 	
-	xput_dicom(host, jsession, project, subject, path)
+	xput_dicom(project, subject, path)
 
 =cut
 
 sub xput_dicom {
 	my @xdata = @_;
+	my %cdata = xget_session();
 	my $tmp_dir = $ENV{'TMPDIR'};
 	my $zdir = tempdir(TEMPLATE => ($tmp_dir?$tmp_dir:'.').'/zipdir.XXXXX', CLEANUP => 1);
-	my $tzfile = $zdir.'/'.$xdata[3].'.tar.gz';
-	my $crd = 'tar czf '.$tzfile.' '.$xdata[4].' 2>/dev/null';
+	my $tzfile = $zdir.'/'.$xdata[1].'.tar.gz';
+	my $crd = 'tar czf '.$tzfile.' '.$xdata[2].' 2>/dev/null';
 	system($crd);
-	$crd = 'curl -f -b JSESSIONID='.$xdata[1].' -X POST "'.$xdata[0].'/data/services/import?import-handler=SI&dest=/archive/projects/'.$xdata[2].'/subjects/'.$xdata[3].'&overwrite=delete" -F file.tar.gz="@'.$tzfile.'" 2>/dev/null';
+	$crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X POST "'.$cdata{'HOST'}.'/data/services/import?import-handler=SI&dest=/archive/projects/'.$xdata[0].'/subjects/'.$xdata[1].'&overwrite=delete" -F file.tar.gz="@'.$tzfile.'" 2>/dev/null';
 	#print "$crd\n";
 	return qx/$crd/;
+}
+
+=item xlist_iassessors
+
+Get list of image assessors
+
+usage:
+	
+	xlist_iassessors(experiment)
+
+=cut
+
+sub xlist_iassessors{
+	my @xdata = @_;
+	my %cdata = xget_session();
+}
+
+
+=item xget_iassessor
+
+Get image assessor
+
+usage:
+	
+	xget_iassessor(experiment, assessor)
+
+
+=cut 
+
+sub xget_iassessor{
+	my @xdata = @_;
+	my %cdata = xget_session();
 }
 
 =back

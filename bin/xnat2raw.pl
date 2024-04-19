@@ -39,8 +39,8 @@ if ($ifile){
 	chomp @cuts;
 	close IDF;
 }
-my %xconf = xget_session();
-my %subjects = xget_subjects($xconf{'HOST'}, $xconf{'JSESSION'}, $prj_data{'XNAME'});
+#my %xconf = xget_session();
+my %subjects = xget_subjects($prj_data{'XNAME'});
 foreach my $sbj (sort keys %subjects){
 	if ($ifile) {
 		if (grep {/$subjects{$sbj}{'label'}/} @cuts){
@@ -53,9 +53,9 @@ foreach my $sbj (sort keys %subjects){
 		$subjects{$sbj}{'download'} = 1;
 	}
 	if ($mode eq 'MRI'){
-		$subjects{$sbj}{'experiment'} = [xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $prj_data{'XNAME'}, $sbj)];
+		$subjects{$sbj}{'experiment'} = [xget_mri($prj_data{'XNAME'}, $sbj)];
 	}elsif ($mode eq 'PET') {
-		$subjects{$sbj}{'experiment'} = [xget_pet($xconf{'HOST'}, $xconf{'JSESSION'}, $prj_data{'XNAME'}, $sbj)];
+		$subjects{$sbj}{'experiment'} = [xget_pet($prj_data{'XNAME'}, $sbj)];
 	}else{
 		print "Only MRI and PET type are allowed\n";
 		exit;
@@ -68,7 +68,7 @@ foreach my $sbj (sort keys %subjects){
 		foreach my $experiment (sort @{$subjects{$sbj}{'experiment'}}){
 			my $src_dir = $prj_data{'SRC'}.'/'.$subjects{$sbj}{'label'}.($exp_idx?'_'.$exp_idx:'');
 			mkdir $src_dir;
-			xget_dicom($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, $src_dir);
+			xget_dicom($experiment, $src_dir);
 			$count_id++;
 			$subjects{$sbj}{$experiment}{'strID'} = sprintf '%04d', $count_id;
 			$exp_idx++;

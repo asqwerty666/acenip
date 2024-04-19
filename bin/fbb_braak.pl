@@ -64,13 +64,13 @@ my @rois = tau_rois($style);
 my @r_jobs;
 my @p_jobs;
 print "Running shit\n";
-my %xconf_data = xget_session();
-my $jsession = $xconf_data{'JSESSION'};
+#my %xconf_data = xget_session();
+#my $jsession = $xconf_data{'JSESSION'};
 foreach my $subject (@pets){ 
 	my $psubject = $pet_data{$subject};
 	my $fake_tau = $w_dir.'/'.$subject.'_tau.nii.gz';
 	#print "$fake_tau\n";
-	my $xrd = xget_pet($xconf_data{'HOST'}, $jsession, $xprj, $psubject);
+	my $xrd = xget_pet($xprj, $psubject);
 #	if ($xrd){
 #		my $xld = 'curl -f -X GET -b "JSESSIONID='.$jsession.'" "'.$xconf_data{'HOST'}.'/data/experiments/'.$xrd.'/files?format=json" 2>/dev/null';
 		#print "$xld\n";
@@ -84,7 +84,7 @@ foreach my $subject (@pets){
 #			}
 #		}
 #	}
-	xget_pet_reg($xconf_data{'HOST'}, $jsession, $xprj, $fake_tau);
+	xget_pet_reg($xprj, $fake_tau);
 	my %smri = check_subj($std{'DATA'},$subject);
 	if(-e $fake_tau && $smri{'T1w'}){
 		push @ok_pets, $subject;

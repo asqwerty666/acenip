@@ -30,7 +30,7 @@ my %vrdata;
 my %rdata;
 my %matchexps;
 # get the session ID
-my %xconf = xget_session();
+#my %xconf = xget_session();
 if ($vrfile) {
 	my $ref_vr = csv(in => $vrfile, headers => "auto");
 	my $subject;
@@ -43,9 +43,9 @@ if ($vrfile) {
 			$subject = ${$mrdata}{$rk} if $rk eq 'Subject';
 			$edate = ${$mrdata}{$rk} if $rk eq 'Date';
 		}
-		my @experiments = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $subject);
+		my @experiments = xget_mri($xprj, $subject);
 		foreach my $experiment (@experiments){
-			my $xdate = xget_exp_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'date');
+			my $xdate = xget_exp_data($experiment, 'date');
 			if ($xdate eq $edate) {
 				$matchexps{$subject} = $experiment;
 				last;
@@ -59,12 +59,12 @@ if ($vrfile) {
 		close TDF;
 		if (exists($matchexps{$subject}) and $matchexps{$subject}){
 			### Just in case ###
-			xcreate_res($xconf{'HOST'}, $xconf{'JSESSION'}, $matchexps{$subject}, 'RVR');
+			xcreate_res($matchexps{$subject}, 'RVR');
 			####################
-			xput_res_file($xconf{'HOST'}, $xconf{'JSESSION'}, $matchexps{$subject}, 'RVR', 'report_data.json', $tvrf);
+			xput_res_file($matchexps{$subject}, 'RVR', 'report_data.json', $tvrf);
 			my $report = $rep_dir.'/'.$subject.'.pdf' if $rep_dir;
 			if (-e $report){
-				xput_res_file($xconf{'HOST'}, $xconf{'JSESSION'}, $matchexps{$subject}, 'RVR', 'report_'.$subject.'.pdf', $report);
+				xput_res_file($matchexps{$subject}, 'RVR', 'report_'.$subject.'.pdf', $report);
 			}
 		}else{
 			print "No data for $subject\n";

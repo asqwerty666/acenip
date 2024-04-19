@@ -68,11 +68,11 @@ if ($cfile){
 		$rguys{$guys{$guy}} = $guy;
 	}
 }
-my %xconfig = xget_session();
+#my %xconfig = xget_session();
 # Saco los sujetos del proyecto
 print "Getting XNAT subject list\n";
-my $jid = $xconfig{'JSESSION'};
-my %subjects = xget_subjects($xconfig{'HOST'}, $jid, $xprj);
+#my $jid = $xconfig{'JSESSION'};
+my %subjects = xget_subjects($xprj);
 # Lets sort the data;
 my %psubjects;
 open DDF, ">$debug";
@@ -87,8 +87,9 @@ close DDF;
 # Para cada sujeto saco el ID de experimento de la MRI
 foreach my $xsbj (sort keys %psubjects){
 	#$psubjects{$xsbj}{'MRI'} 
-	$psubjects{$xsbj}{'MRI'} = [ xget_mri($xconfig{'HOST'}, $jid, $xprj, $xsbj) ];
+	$psubjects{$xsbj}{'MRI'} = [ xget_mri($xprj, $xsbj) ];
 }
+#dump %psubjects;
 # Ya teniendo los experimentos emparejo los sujetos segun codigo de proyecto local, codigo de XNAT y experimento de XNAT
 # Y ahora voy a bajar todo el tgz para cada imagen y descomprimirla dentro del directorio
 # de sujetos de Freesurfer, con la convencion PROYECTO_IDLOCALSUJETO, tal y como hace el 
@@ -101,21 +102,22 @@ my %ptask = ('job_name' => 'fake_FS_'.$prj);
 my @jobs;
 foreach my $xsbj (sort keys %psubjects){
 	foreach my $experiment (@{$psubjects{$xsbj}{'MRI'}}){
+		#print "$experiment, ${$psubjects{$xsbj}{'MRI'}}\n";
 		my ($exp_idx) = grep {${$psubjects{$xsbj}{'MRI'}}[$_] ~~ $experiment} 0 .. $#{$psubjects{$xsbj}{'MRI'}} ;
-		print "$exp_idx\n";
+		#print "$exp_idx\n";
 		my $fsdir = $ENV{'SUBJECTS_DIR'}."/".$prj."_".$psubjects{$xsbj}{'PSubject'}.($exp_idx?'_'.$exp_idx:'');
 		unless ( -d $fsdir and not $overwrite){
 			my $tfsdir = $tmpdir."/".$prj."_".$psubjects{$xsbj}{'PSubject'}.($exp_idx?'_'.$exp_idx:'');
 			mkdir $fsdir;
 			my $tfsout = $tfsdir.'/'.$xsbj.'_'.$experiment.'.tar.gz';
-			my %fs_files = xlist_res($xconfig{'HOST'}, $jid, $experiment, 'FS');
+			my %fs_files = xlist_res($experiment, 'FS');
 			foreach my $fsfile (sort keys %fs_files){
 				if ($fsfile =~ /.*\.tar\.gz$/){
 					$ptask{'output'} = $outdir.'/'.$experiment.'.out';
 					$ptask{'filename'} = $outdir.'/'.$experiment.'.sh';
 					print "$fsfile -> $fsdir\n";
 					$ptask{'command'} = 'mkdir '.$tfsdir."\n";
-					$ptask{'command'} .= xget_res_file($xconfig{'HOST'}, $jid, $experiment, 'FS', $fsfile,  $tfsout, 1);
+					$ptask{'command'} .= xget_res_file($experiment, 'FS', $fsfile,  $tfsout, 1);
 					$ptask{'command'} .= "\n";
 					$ptask{'command'} .= "tar xzf ".$tfsout." -C ".$fsdir."/ --transform=\'s/".$xsbj."//\' --exclude=\'fsaverage\' \n";
 					$ptask{'command'} .='rm -rf '.$tfsdir."\n";

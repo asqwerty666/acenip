@@ -50,8 +50,8 @@ chomp @tags;
 my $tlist = join ',', @tags;
 #print "$tlist\n";
 
-my %xconf = xget_session();
-my %subjects = xget_subjects($xconf{'HOST'}, $xconf{'JSESSION'}, $prj_data{'XNAME'});
+#my %xconf = xget_session();
+my %subjects = xget_subjects($prj_data{'XNAME'});
 
 foreach my $sbj (sort keys %subjects){
 	if ($ifile) {
@@ -64,7 +64,7 @@ foreach my $sbj (sort keys %subjects){
 	}else{
 		$subjects{$sbj}{'download'} = 1;
 	}
-	$subjects{$sbj}{'experiment'} = [ xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $prj_data{'XNAME'}, $sbj) ];
+	$subjects{$sbj}{'experiment'} = [ xget_mri($prj_data{'XNAME'}, $sbj) ];
 }
 my $count_id = 0;
 foreach my $sbj (sort keys %subjects){
@@ -73,7 +73,7 @@ foreach my $sbj (sort keys %subjects){
 		foreach my $experiment (sort @{$subjects{$sbj}{'experiment'}}){
 			my $src_dir = $prj_data{'SRC'}.'/'.$subjects{$sbj}{'label'}.($exp_idx?'_'.$exp_idx:'');
 			mkdir $src_dir;
-			xget_dicom($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, $src_dir, $tlist);
+			xget_dicom($experiment, $src_dir, $tlist);
 			$count_id++;
 			$subjects{$sbj}{$experiment}{'strID'} = sprintf '%04d', $count_id;
 			$exp_idx++;

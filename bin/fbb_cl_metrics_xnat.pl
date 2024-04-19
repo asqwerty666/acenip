@@ -48,14 +48,14 @@ unless ($debug) {
 }
 $ofile = $study.'_fbb_cl_metrics_'.getLoggingTime().'.xls';
 # Get subject list
-my %xconfig = xget_session();
-my %guys = xget_subjects($xconfig{'HOST'}, $xconfig{'JSESSION'}, $study);
+#my %xconfig = xget_session();
+my %guys = xget_subjects($study);
 my %inbreed;
 foreach my $key (sort keys %guys) { $inbreed{$guys{$key}{'label'}} = $key; }
 foreach my $stag (sort keys %guys){
-	$guys{$stag}{'XNATEXP'} = xget_pet($xconfig{'HOST'}, $xconfig{'JSESSION'}, $study, $stag);
+	$guys{$stag}{'XNATEXP'} = xget_pet($study, $stag);
 	if($guys{$stag}{'XNATEXP'}){
-		$guys{$stag}{'DATE'} = xget_exp_data($xconfig{'HOST'}, $xconfig{'JSESSION'}, $guys{$stag}{'XNATEXP'}, 'date');
+		$guys{$stag}{'DATE'} = xget_exp_data($guys{$stag}{'XNATEXP'}, 'date');
 	}
 }
 #dump %guys; exit;
@@ -93,7 +93,7 @@ unless ($guide) {
 }
 foreach my $sbj (sort keys %guys) {
 	if(exists($guys{$sbj}{'XNATEXP'}) and $guys{$sbj}{'XNATEXP'}){
-		my %tmp_hash = xget_pet_data($xconfig{'HOST'}, $xconfig{'JSESSION'}, $guys{$sbj}{'XNATEXP'});
+		my %tmp_hash = xget_pet_data($guys{$sbj}{'XNATEXP'});
 		if(%tmp_hash){
 			foreach my $tmp_var (sort keys %tmp_hash){
 				$guys{$sbj}{$tmp_var} = $tmp_hash{$tmp_var} unless $tmp_var eq '_';

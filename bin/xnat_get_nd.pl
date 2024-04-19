@@ -40,17 +40,17 @@ if ($prj and not $xprj) {
 die "Should supply XNAT project name or define it at local project config!\n" unless $xprj;
 # tambien el input file porque si no no hago nada
 my $tmp_dir = $ENV{TMPDIR};
-my %xconf = xget_session();
+#my %xconf = xget_session();
 my %wmhs;
-my %subjects = xget_subjects($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj);
+my %subjects = xget_subjects($xprj);
 open STDOUT, ">$ofile" unless not $ofile;
 print "Subject_ID,Date,N,Nprob\n";
 foreach my $sbj (sort keys %subjects){
-	my @experiments = xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $sbj);
-	my $label = xget_sbj_data($xconf{'HOST'}, $xconf{'JSESSION'}, $sbj, 'label');
+	my @experiments = xget_mri($xprj, $sbj);
+	my $label = xget_sbj_data($sbj, 'label');
 	foreach my $experiment (@experiments){
-		my $date = xget_exp_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'date');
-		my %nass_data = xget_res_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'data', 'neuroass.json');
+		my $date = xget_exp_data($experiment, 'date');
+		my %nass_data = xget_res_data($experiment, 'data', 'neuroass.json');
 	#dump %nass_data;
 		if (exists($nass_data{'N'}) and exists($nass_data{'Nprob'})){
 			print "$label,$date,$nass_data{'N'},$nass_data{'Nprob'}\n";

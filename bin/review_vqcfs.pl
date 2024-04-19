@@ -66,7 +66,7 @@ die "Should run this under X!\n" unless $ENV{'DISPLAY'};
 # Puedes tomar la lista completa y reducirla a lo que quieres o simplemente 
 # tomar la lista as is
 my $tmp_dir = $ENV{TMPDIR};
-my %xconf = xget_session();
+#my %xconf = xget_session();
 my @pollos;
 my %epollos;
 $efile=$wdir.'/'.$xprj.'_experiment.list';
@@ -80,7 +80,7 @@ if ($ifile and -f $ifile){
 	close IDF;
 	open TDF, ">$efile";
 	foreach my $pollo (@pollos){
-		$epollos{$pollo} = [ xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $pollo) ];
+		$epollos{$pollo} = [ xget_mri($xprj, $pollo) ];
 		foreach my $pexp (@{$epollos{$pollo}}){
 			print TDF "$pexp\n";
 		}
@@ -107,10 +107,10 @@ unless ($odir and -d $odir) {
 		foreach my $pollo (@pollos){
 			foreach my $pexp (@{$epollos{$pollo}}) {
 				my $otfile = $tsdir.'/'.$pexp.'.tar.gz';
-				my %fs_files = xlist_res($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $pexp, 'FS');
+				my %fs_files = xlist_res($xprj, $pexp, 'FS');
 				foreach my $fsfile (sort keys %fs_files){
 					if ($fsfile =~ /.*\.tar\.gz$/){
-						xget_res_file($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $pexp, 'FS', $fsfile, $otfile);
+						xget_res_file($xprj, $pexp, 'FS', $fsfile, $otfile);
 					}
 				}
 				my $otdir = $odir.'/'.$pexp;
@@ -124,15 +124,15 @@ unless ($odir and -d $odir) {
 	}else{	
 		#pero si no hay lista los bajo todos
 		my $tsdir = tempdir(TEMPLATE => $tmp_dir.'/tars_data.XXXXX', CLEANUP => 1);
-		my %allchicks = xget_subjects($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj);
+		my %allchicks = xget_subjects($xprj);
 		foreach  my $pollo (sort keys %allchicks){
-			$epollos{$pollo} = [ xget_mri($xconf{'HOST'}, $xconf{'JSESSION'}, $xprj, $pollo) ];
+			$epollos{$pollo} = [ xget_mri($xprj, $pollo) ];
 			foreach my $pexp (@{$epollos{$pollo}}){
 				my $otfile = $tsdir.'/'.$pexp.'.tar.gz';
-				my %fs_files = xlist_res($xconf{'HOST'}, $xconf{'JSESSION'}, $pexp, 'FS');
+				my %fs_files = xlist_res($pexp, 'FS');
 				foreach my $fsfile (sort keys %fs_files){
                                 	if ($fsfile =~ /.*\.tar\.gz$/){
-                                        	xget_res_file($xconf{'HOST'}, $xconf{'JSESSION'}, $pexp, 'FS', $fsfile, $otfile);
+                                        	xget_res_file($pexp, 'FS', $fsfile, $otfile);
                                 	}
                         	}
 				if (-e $otfile) { 
@@ -185,12 +185,12 @@ while(<RDF>){
 	open QCF, ">$rfile" or die "Could not create temp file\n";
 	print QCF "$rqc";
 	close QCF;
-	xcreate_res($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'fsqc');
-	xput_res_file($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'fsqc', 'rating.json', $rfile);
+	xcreate_res($experiment, 'fsqc');
+	xput_res_file($experiment, 'fsqc', 'rating.json', $rfile);
 	my @tifs = find(file => 'name' => "$experiment*.tif", in => $imgdir);
 	foreach my $tifimg (@tifs){
 		my $iname = basename $tifimg;
-		xput_res_file($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'fsqc', $iname, $tifimg);
+		xput_res_file($experiment, 'fsqc', $iname, $tifimg);
 	}
 }
 close RDF;

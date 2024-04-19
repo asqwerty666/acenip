@@ -30,23 +30,23 @@ my %std = load_project($prj);
 if(exists($std{'XNAME'}) and $std{'XNAME'}){
 	$xprj = $std{'XNAME'};
 }
-my %xconfig = xget_session();
+#my %xconfig = xget_session();
 # Saco los sujetos del proyecto
 #print "Getting XNAT subject list\n";
-my $jid = $xconfig{'JSESSION'};
-my %subjects = xget_subjects($xconfig{'HOST'}, $jid, $xprj);
+#my $jid = $xconfig{'JSESSION'};
+my %subjects = xget_subjects($xprj);
 #print "Getting PET data now\n";
 my %spets;
 foreach my $subject (sort keys %subjects){
-	$spets{$subject}{'experiments'} = [ xget_pet($xconfig{'HOST'}, $jid, $xprj, $subject) ];
+	$spets{$subject}{'experiments'} = [ xget_pet($xprj, $subject) ];
 }
 my %experiments;
 foreach my $subject (sort keys %spets){
 	if(exists($spets{$subject}) and $spets{$subject}){
 		if(exists($spets{$subject}{'experiments'}) and $spets{$subject}{'experiments'}){
-			$spets{$subject}{'label'} = xget_sbj_data($xconfig{'HOST'}, $jid, $subject, 'label');
+			$spets{$subject}{'label'} = xget_sbj_data($subject, 'label');
 			foreach my $experiment (@{$spets{$subject}{'experiments'}}){
-				my %tmp_hash = xget_pet_data($xconfig{'HOST'}, $jid, $experiment);
+				my %tmp_hash = xget_pet_data($experiment);
 				if (%tmp_hash){
 					foreach my $tmp_var (sort keys %tmp_hash){
 						$experiments{$experiment}{$tmp_var} = $tmp_hash{$tmp_var} unless $tmp_var eq '_';
@@ -66,7 +66,7 @@ foreach my $subject (sort keys %spets) {
 		foreach my $experiment (@{$spets{$subject}{'experiments'}}){
 			if (exists($experiments{$experiment})) {
 				print STDERR "$subject -> $experiment\n";
-				my $date = xget_exp_data($xconfig{'HOST'}, $jid, $experiment, 'date');
+				my $date = xget_exp_data($experiment, 'date');
 				print "$spets{$subject}{'label'},$date,$experiments{$experiment}{'surv'},$experiments{$experiment}{'cl'}\n";
 			}
 		}

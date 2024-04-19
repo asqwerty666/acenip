@@ -21,23 +21,23 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
 }
 die "Should supply XNAT project" unless $xprj;
 $oxfile = $xprj.'_rvr_data.csv' unless $oxfile;
-my %xconf = xget_session();
+#my %xconf = xget_session();
 #get the jsessionid
-my $jid = $xconf{'JSESSION'};
+#my $jid = $xconf{'JSESSION'};
 #get the subjects list
-my %subjects = xget_subjects($xconf{'HOST'}, $jid, $xprj);
+my %subjects = xget_subjects($xprj);
 my $dhead ="";
 my $dbody="";
 foreach my $sid (sort keys %subjects){
 	#$subjects{$sid}{'experimentID'} = xget_mri($xconf{'HOST'}, $jid, $xprj, $sid);
-	my @experiments = xget_mri($xconf{'HOST'}, $jid, $xprj, $sid);
+	my @experiments = xget_mri($xprj, $sid);
 	foreach my $experiment (@experiments){
-		my %rvr = xlist_res($xconf{'HOST'}, $jid, $experiment, 'RVR');
+		my %rvr = xlist_res($experiment, 'RVR');
 		my %rvr_data;
 		my $date;
 		foreach my $rfile (sort keys %rvr){
 			if ($rfile =~ /.*\.json$/){
-				%rvr_data = xget_res_data($xconf{'HOST'}, $jid, $experiment,'RVR',$rfile);
+				%rvr_data = xget_res_data($experiment,'RVR',$rfile);
 			}
 		}
 		my @akeys;
