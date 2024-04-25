@@ -33,7 +33,7 @@ foreach my $sbj (sort keys %subjects) { $inbreed{$subjects{$sbj}{'label'}} = $sb
 foreach my $sid (sort keys %subjects){
 	$subjects{$sid}{'experimentIDs'} = [ xget_mri($xprj, $sid) ];
 	foreach my $mri (@{$subjects{$sid}{'experimentIDs'}}) {
-		my %tmp_hash = xget_res_data($xconf{'HOST'}, $jid, $mri, 'fsqc', 'rating.json');
+		my %tmp_hash = xget_res_data($mri, 'fsqc', 'rating.json');
 		$subjects{$sid}{$mri}{'date'} = xget_exp_data($mri, 'date');
 		if(exists($tmp_hash{'rating'}) and $tmp_hash{'rating'}){
 			$tmp_hash{'rating'} =~ tr/ODILgRf/odilGrF/;
