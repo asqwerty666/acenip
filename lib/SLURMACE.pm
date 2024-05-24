@@ -189,8 +189,9 @@ sub wait4jobs{
 	do {
 		sleep 60;
 		$status = qx/squeue -j $jlist | grep -v JOBID/;
-		#print "jobs still running\n" if $status;
+		print "." if $status;
 	} while($status);
+	print "\n";
 }
 
 =back
