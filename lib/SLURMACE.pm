@@ -168,9 +168,12 @@ sub send2slurm{
 	}else{
 		$order = 'sbatch --parsable '.$scriptfile;
 	}
-	my $code = qx/$order/;
-	chomp $code;
-	return $code;
+	unless ($task{'debug'}) {
+		my $code = qx/$order/;
+		chomp $code;
+		return $code;
+	}
+	return 0;
 }
 
 =item wait4jobs
