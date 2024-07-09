@@ -607,7 +607,7 @@ sub xget_dicom {
 		my @series = split ',', $xdata[2];
 		my @types;
 		foreach my $serie (@series){
-			my $icrd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X GET "'.$cdata{'HOST'}.'/data/experiments/'.$xdata[0].'/scans?format=json" 2>/dev/null | jq \'.ResultSet.Result[] | select (.series_description == "'.$serie.'") | .ID\'';
+			my $icrd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X GET "'.$cdata{'HOST'}.'/data/experiments/'.$xdata[0].'/scans?format=json" 2>/dev/null | jq \'.ResultSet.Result[] | select (.series_description | test("'.$serie.'")) | .ID\'';
 			my $ires = qx/$icrd/;
 			$ires =~ s/\"//g;
 			my @ares = split /\n/, $ires;
@@ -615,12 +615,14 @@ sub xget_dicom {
 			push @types, @ares if @ares;
 		}
 		$all_types = join ',', @types;
-	       $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X GET "'.$cdata{'HOST'}.'/data/experiments/'.$xdata[0].'/scans/'.$all_types.'/files?format=zip" -o '.$zipfile.' 2>/dev/null';	
+		$crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X GET "'.$cdata{'HOST'}.'/data/experiments/'.$xdata[0].'/scans/'.$all_types.'/files?format=zip" -o '.$zipfile.' 2>/dev/null' if $all_types;	
 	}
-	system($crd);
-	my $zrd = '7za x -y -o'.$xdata[1].' '.$zipfile.' 1>/dev/null' ;
-	system($zrd);
-	unlink $zdir;
+	if ($crd) {
+		system($crd);
+		my $zrd = '7za x -y -o'.$xdata[1].' '.$zipfile.' 1>/dev/null' ;
+		system($zrd);
+		unlink $zdir;
+	}
 	return $all_types;
 }
 
