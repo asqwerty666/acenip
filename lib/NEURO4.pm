@@ -189,30 +189,30 @@ sub check_subj {
 	my %mri = ('T1w' => 0, 'T2w' => 0, 'dwi' => 0, 'dwi_sbref' => 0);
 	my $subj_dir = $proj_path.'/bids/sub-'.$subj.'/anat';
 	if( -e $subj_dir && -d $subj_dir){
-		my @t1 = find(file => 'name' => "sub-$subj*_T1w.nii.gz", in =>  $subj_dir);
+		my @t1 = find(file => 'name' => "sub-*_T1w.nii.gz", in =>  $subj_dir);
 		if (@t1 && -e $t1[0] && -f $t1[0]){
 			#$mri{'T1w'} = $t1[0];
 			 $mri{'T1w'} = \@t1;
 		}
-		my @t2 = find(file => 'name' => "sub-$subj*_T2w.nii.gz", in =>  $subj_dir);
+		my @t2 = find(file => 'name' => "sub-*_T2w.nii.gz", in =>  $subj_dir);
                 if (@t2 && -e $t2[0] && -f $t2[0]){
                         $mri{'T2w'} = $t2[0];
               	}
 	}
 	$subj_dir = $proj_path.'/bids/sub-'.$subj.'/dwi';
 	if( -e $subj_dir && -d $subj_dir){
-		my @dwi_sbref = find(file => 'name' => "sub-$subj*_sbref_dwi.nii.gz", in =>  $subj_dir);
+		my @dwi_sbref = find(file => 'name' => "sub-*_sbref_dwi.nii.gz", in =>  $subj_dir);
                 if (@dwi_sbref && -e $dwi_sbref[0] && -f $dwi_sbref[0]){
                         $mri{'dwi_sbref'} = $dwi_sbref[0];
                 }
-		my @dwi = find(file => 'name' => "sub-$subj*_dwi.bval", in =>  $subj_dir);
+		my @dwi = find(file => 'name' => "sub-*_dwi.bval", in =>  $subj_dir);
 		if (@dwi && -e $dwi[0] && -f $dwi[0]){
 			($mri{'dwi'} = $dwi[0]) =~ s/bval$/nii\.gz/;
 		}
 	}
 	$subj_dir = $proj_path.'/bids/sub-'.$subj.'/func';
 	if( -e $subj_dir && -d $subj_dir){
-		my @func = find(file => 'name' => "sub-$subj*_bold.nii.gz", in =>  $subj_dir);
+		my @func = find(file => 'name' => "sub-*_bold.nii.gz", in =>  $subj_dir);
 		foreach my $task (@func){
 			if (-e $task && -f $task){
 				$mri{'func'} = $task unless $task =~ /.*sbref.*/;
