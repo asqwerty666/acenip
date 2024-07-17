@@ -249,11 +249,11 @@ sub check_pet {
 	my $subj_dir = $proj_path.'/bids/sub-'.$subj.'/pet';
 	#sub-0001_single_fbb.nii.gz
 	if( -e $subj_dir && -d $subj_dir){
-		my @spet = find(file => 'name' => "sub-$subj*_single_fbb.nii.gz", in =>  $subj_dir);
+		my @spet = find(file => 'name' => "sub-$subj*_single_*.nii.gz", in =>  $subj_dir);
 		if (@spet && -e $spet[0] && -f $spet[0]){
 			$pet{'single'} = $spet[0];
 		}
-		@spet = find(file => 'name' => "sub-$subj*_combined_fbb.nii.gz", in =>  $subj_dir);
+		@spet = find(file => 'name' => "sub-$subj*_combined_*.nii.gz", in =>  $subj_dir);
 		if (@spet && -e $spet[0] && -f $spet[0]){
                         $pet{'combined'} = $spet[0];
                 }
