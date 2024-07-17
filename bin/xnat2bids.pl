@@ -69,14 +69,15 @@ foreach my $sbj (sort keys %subjects){
 my $count_id = 0;
 foreach my $sbj (sort keys %subjects){
 	if(exists($subjects{$sbj}{'experiment'}) and $subjects{$sbj}{'experiment'} and $subjects{$sbj}{'download'}){
+		dump $subjects{$sbj}{'experiment'};
 		my $exp_idx = 0;
 		foreach my $experiment (sort @{$subjects{$sbj}{'experiment'}}){
 			my $src_dir = $prj_data{'SRC'}.'/'.$subjects{$sbj}{'label'}.($exp_idx?'_'.$exp_idx:'');
 			mkdir $src_dir;
-			xget_dicom($experiment, $src_dir, $tlist);
+			$subjects{$sbj}{$experiment}{'OK'} = xget_dicom($experiment, $src_dir, $tlist);
 			$count_id++;
-			$subjects{$sbj}{$experiment}{'strID'} = sprintf '%04d', $count_id;
-			$exp_idx++;
+			#$subjects{$sbj}{$experiment}{'strID'} = sprintf '%04d', $count_id;
+			$subjects{$sbj}{$experiment}{'strID'} = $subjects{$sbj}{'label'}.($exp_idx?'_'.$exp_idx:'');
 		}
 	}
 }
@@ -97,18 +98,20 @@ foreach my $sbj (sort keys %subjects){
 	if ($subjects{$sbj}{'download'}) {
 		my $exp_idx = 0;
 		foreach my $experiment (sort @{$subjects{$sbj}{'experiment'}}){
-			my $exp_date =  xget_exp_data($xconf{'HOST'}, $xconf{'JSESSION'}, $experiment, 'date');
-			$participants{$subjects{$sbj}{$experiment}{'strID'}}{'Date'} = $exp_date;
-			$participants{$subjects{$sbj}{$experiment}{'strID'}}{'XNAT_ID'} = $sbj;
-			$participants{$subjects{$sbj}{$experiment}{'strID'}}{'XNAT_'.$mode.'_ID'} = $experiment;
-			$participants{$subjects{$sbj}{$experiment}{'strID'}}{'XNAT_label'} = $subjects{$sbj}{'label'};
-			print ODF "$subjects{$sbj}{$experiment}{'strID'};$subjects{$sbj}{'label'}".($exp_idx?'_'.$exp_idx:'').";$exp_date\n";
-			print TDF "$subjects{$sbj}{$experiment}{'strID'}\t$subjects{$sbj}{'label'}".($exp_idx?'_'.$exp_idx:'')."\t$exp_date\n";
-			$ptask{'command'} = "mkdir -p $prj_data{'BIDS'}/tmp_dcm2bids/sub-$subjects{$sbj}{$experiment}{'strID'}; dcm2niix -i y -d 9 -b y -ba y -z y -f '%3s_%f_%p_%t' -o $prj_data{'BIDS'}/tmp_dcm2bids/sub-$subjects{$sbj}{$experiment}{'strID'} $prj_data{'SRC'}/$subjects{$sbj}{'label'}".($exp_idx?'_'.$exp_idx:'')."/; dcm2bids -d $prj_data{'SRC'}/$subjects{$sbj}{'label'}".($exp_idx?'_'.$exp_idx:'')."/ -p $subjects{$sbj}{$experiment}{'strID'} -c $jfile -o $prj_data{'BIDS'}/";
-			$ptask{'filename'} = $outdir.'/'.$subjects{$sbj}{'label'}.($exp_idx?'_'.$exp_idx:'').'_dcm2bids.sh';
-			$ptask{'output'} = $outdir.'/dcm2bids_'.$subjects{$sbj}{'label'}.($exp_idx?'_'.$exp_idx:'');
-			send2slurm(\%ptask);
-			$exp_idx++;
+			if ($subjects{$sbj}{$experiment}{OK}){
+				my $exp_date =  xget_exp_data($experiment, 'date');
+				$participants{$subjects{$sbj}{$experiment}{'strID'}}{'Date'} = $exp_date;
+				$participants{$subjects{$sbj}{$experiment}{'strID'}}{'XNAT_ID'} = $sbj;
+				$participants{$subjects{$sbj}{$experiment}{'strID'}}{'XNAT_'.$mode.'_ID'} = $experiment;
+				$participants{$subjects{$sbj}{$experiment}{'strID'}}{'XNAT_label'} = $subjects{$sbj}{'label'};
+				print ODF "$subjects{$sbj}{$experiment}{'strID'};$subjects{$sbj}{'label'}".($exp_idx?'_'.$exp_idx:'').";$exp_date\n";
+				print TDF "$subjects{$sbj}{$experiment}{'strID'}\t$subjects{$sbj}{'label'}".($exp_idx?'_'.$exp_idx:'')."\t$exp_date\n";
+				$ptask{'command'} = "mkdir -p $prj_data{'BIDS'}/tmp_dcm2bids/sub-$subjects{$sbj}{$experiment}{'strID'}; dcm2niix -i y -d 9 -b y -ba y -z y -f '%3s_%f_%p_%t' -o $prj_data{'BIDS'}/tmp_dcm2bids/sub-$subjects{$sbj}{$experiment}{'strID'} $prj_data{'SRC'}/$subjects{$sbj}{'label'}".($exp_idx?'_'.$exp_idx:'')."/; dcm2bids -d $prj_data{'SRC'}/$subjects{$sbj}{'label'}".($exp_idx?'_'.$exp_idx:'')."/ -p $subjects{$sbj}{$experiment}{'strID'} -c $jfile -o $prj_data{'BIDS'}/";
+				$ptask{'filename'} = $outdir.'/'.$subjects{$sbj}{'label'}.($exp_idx?'_'.$exp_idx:'').'_dcm2bids.sh';
+				$ptask{'output'} = $outdir.'/dcm2bids_'.$subjects{$sbj}{'label'}.($exp_idx?'_'.$exp_idx:'');
+				send2slurm(\%ptask);
+				$exp_idx++;
+			}
 		}
 	}
 }
