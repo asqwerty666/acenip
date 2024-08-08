@@ -645,7 +645,7 @@ sub xput_dicom {
 	my $tzfile = $zdir.'/'.$xdata[1].'.tar.gz';
 	my $crd = 'tar czf '.$tzfile.' '.$xdata[2].' 2>/dev/null';
 	system($crd);
-	$crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X POST "'.$cdata{'HOST'}.'/data/services/import?import-handler=SI&dest=/archive/projects/'.$xdata[0].'/subjects/'.$xdata[1].'&overwrite=delete" -F file.tar.gz="@'.$tzfile.'" 2>/dev/null';
+	$crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X POST "'.$cdata{'HOST'}.'/data/services/import?import-handler=DICOM-zip&Direct-Archive=true&Ignore-Unparsable=true&project='.$xdata[0].'&subjects='.$xdata[1].'&overwrite=delete" -F file.tar.gz="@'.$tzfile.'" 2>/dev/null';
 	#print "$crd\n";
 	return qx/$crd/;
 }
