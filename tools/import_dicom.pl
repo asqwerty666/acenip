@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use XNATACE qw(xput_dicom xnew_dicom check_status);
+use XNATACE qw(xput_dicom xnew_dicom check_status force_archive);
 use File::Basename qw(basename);
 use File::Temp qw(:mktemp tempdir);
 use File::Copy::Recursive qw(dircopy);
@@ -64,19 +64,19 @@ unless ($nhc){
 	$sdate =~ s/\s//g;
 	system("dcanon $tmpdir $anondir/$nhc/$sdate nomove $nhc $patid");
 	my $result = ( split /\n/, xput_dicom($xprj, $nhc, $anondir))[0];
-	print "\n$result\n";
-	my $status;
-	do {
-		$status = ( split /\n/, check_status($result))[0];
-		if ($status){
-			$status =~ s/\"//g;
-			print ".";
-			sleep 30;
-		} else{
-			$status = 0;
-		}
-	} while ($status eq "RECEIVING");
-	print "\n";
+	#print "\n$result\n";
+	my $status = force_archive($result);
+	#	do {
+	#		$status = ( split /\n/, check_status($result))[0];
+	#		if ($status){
+	#			$status =~ s/\"//g;
+			#print ".";
+			#			sleep 30;
+			#		} else{
+			#			$status = 0;
+			#		}
+			#	} while ($status eq "RECEIVING");
+			#	print "\n";
 	$conn = 'sqlcmd -U '.$sqlconf{'USER'}.' -P '.$sqlconf{'PASSWORD'}.' -S '.$sqlconf{'HOST'}.' -s "," -W -Q "SELECT xapellido1, xapellido2, xnombre, his_interno FROM [UNIT4_DATA].[imp].[vh_pac_gral] WHERE his_interno = \'"'.$nhc.'"\';"';
 	system($conn);
 }
