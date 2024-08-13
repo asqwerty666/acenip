@@ -76,7 +76,6 @@ unless ($nhc){
 		$subject{'ID'} = xget_sbj_id($xprj, $nhc);
 		sleep 10;
 	}
-	print "\n";
 	my ($xdob, $xgender) = $rdata =~ /$nhc\s*,\s*(\d{4}-\d{2}-\d{2}).*,(\d)$/;
 	if($xdob and $xgender){
 		$subject{'dob'} = $xdob;
