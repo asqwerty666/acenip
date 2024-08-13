@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use XNATACE qw(xput_dicom xnew_dicom check_status force_archive);
+use XNATACE qw(xput_dicom xnew_dicom check_status force_archive xget_sbj_id xput_sbj_data);
 use File::Basename qw(basename);
 use File::Temp qw(:mktemp tempdir);
 use File::Copy::Recursive qw(dircopy);
@@ -79,5 +79,24 @@ unless ($nhc){
 			#	print "\n";
 	$conn = 'sqlcmd -U '.$sqlconf{'USER'}.' -P '.$sqlconf{'PASSWORD'}.' -S '.$sqlconf{'HOST'}.' -s "," -W -Q "SELECT xapellido1, xapellido2, xnombre, his_interno FROM [UNIT4_DATA].[imp].[vh_pac_gral] WHERE his_interno = \'"'.$nhc.'"\';"';
 	system($conn);
+	my $sconn = 'sqlcmd -U '.$sqlconf{'USER'}.' -P '.$sqlconf{'PASSWORD'}.' -S '.$sqlconf{'HOST'}.' -s "," -W -Q "SELECT his_interno, xfecha_nac, xsexo_id FROM [UNIT4_DATA].[imp].[vh_pac_gral] WHERE his_interno = \'"'.$nhc.'"\';" | grep '.$nhc;
+	my $rdata = qx/$sconn/;
+	my %subject;
+	$subject{'label'} = $nhc;
+	while (not $subject{'ID'}) {
+		$subject{'ID'} = xget_sbj_id($xprj, $nhc);
+		sleep 10;
+		print ".";
+	}
+	print "\n";
+	my ($xdob, $xgender) = $rdata =~ /$nhc\s*,\s*(\d{4}-\d{2}-\d{2}).*,(\d)$/;
+	if($xdob and $xgender){
+		$subject{'dob'} = $xdob;
+		$subject{'gender'} = $xgender==1?'male':'female';
+	}
+	if (exists($subject{'dob'}) and exists($subject{'gender'})){
+		xput_sbj_data($subject{'ID'}, 'gender,dob', $subject{'gender'}.','.$subject{'dob'});
+	}
+	#dump %subject;
 }
 
