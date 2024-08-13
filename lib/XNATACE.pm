@@ -16,11 +16,11 @@ use strict; use warnings;
 package XNATACE;
 require Exporter;
 use JSON qw(decode_json); 
-use File::Temp qw(:mktemp tempdir);
+use File::Temp qw(tempfile tempdir);
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
-our @EXPORT = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_res_file_tr xget_dicom xget_sbj_demog xput_dicom);
-our @EXPORT_OK = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog xput_dicom);
+our @EXPORT = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_res_file_tr xget_dicom xget_sbj_demog xput_dicomi xnew_dicom check_status force_archive);
+our @EXPORT_OK = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog xput_dicom xnew_dicom check_status force_archive);
 our %EXPORT_TAGS =(all => qw(xget_session xget_pet xget_mri), usual => qw(xget_session));
 
 our $VERSION = 0.2;
@@ -645,10 +645,73 @@ sub xput_dicom {
 	my $tzfile = $zdir.'/'.$xdata[1].'.tar.gz';
 	my $crd = 'tar czf '.$tzfile.' '.$xdata[2].' 2>/dev/null';
 	system($crd);
-	$crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X POST "'.$cdata{'HOST'}.'/data/services/import?import-handler=DICOM-zip&Direct-Archive=true&Ignore-Unparsable=true&project='.$xdata[0].'&subjects='.$xdata[1].'&overwrite=delete" -F file.tar.gz="@'.$tzfile.'" 2>/dev/null';
+	$crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X POST "'.$cdata{'HOST'}.'/data/services/import?import-handler=DICOM-zip&Direct-Archive=true&Ignore-Unparsable=true&project='.$xdata[0].'&subject='.$xdata[1].'&overwrite=delete" -F file.tar.gz="@'.$tzfile.'" 2>/dev/null';
 	#print "$crd\n";
 	return qx/$crd/;
 }
+
+
+=item xnew_dicom
+
+Upload DICOM for and unknown subject
+
+usage:
+	
+	xnew_dicom(project, path)
+
+=cut
+
+sub xnew_dicom {
+	my @xdata = @_;
+	my %cdata = xget_session();
+	my $tmp_dir = $ENV{'TMPDIR'};
+	my ($fh, $tzfile) = tempfile(TEMPLATE => 'tmp_XXXXXXXX', SUFFIX => '.tar.gz', DIR => $tmp_dir);
+	my $crd = 'tar czf '.$tzfile.' '.$xdata[1].' 2>/dev/null';
+	system($crd);
+	$crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X POST "'.$cdata{'HOST'}.'/data/services/import?import-handler=DICOM-zip&Direct-Archive=true&Ignore-Unparsable=true&project='.$xdata[0].'&overwrite=delete" -F file.tar.gz="@'.$tzfile.'" 2>/dev/null';
+	#print "$crd\n";
+	return qx/$crd/;
+}
+
+
+=item check_status
+
+Check the status of the upload
+
+usage:
+	
+	check_status(path)
+
+=cut
+
+sub check_status {
+	my @xdata = @_;
+	$xdata[0] =~ s/\r//g;
+	my %cdata = xget_session();
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X GET "'.$cdata{'HOST'}.$xdata[0].'" 2>/dev/null | jq ".status"';
+	return qx/$crd/;
+}
+
+
+=item force_archive
+
+Force the archiving of the uploaded DICOM
+
+usage:
+	
+	force_archive(path)
+
+=cut
+
+sub force_archive {
+	my @xdata = @_;
+	$xdata[0] =~ s/\r//g;
+	my %cdata = xget_session();
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X POST "'.$cdata{'HOST'}.$xdata[0].'" 2>/dev/null';
+	#	print "$crd\n";
+	return qx/$crd/;
+}
+
 
 =item xlist_iassessors
 
