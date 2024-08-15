@@ -19,8 +19,8 @@ use JSON qw(decode_json);
 use File::Temp qw(tempfile tempdir);
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
-our @EXPORT = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_res_file_tr xget_dicom xget_sbj_demog xput_dicomi xnew_dicom check_status force_archive);
-our @EXPORT_OK = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog xput_dicom xnew_dicom check_status force_archive);
+our @EXPORT = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_res_file_tr xget_dicom xget_sbj_demog xput_dicomi xnew_dicom check_status force_archive xget_mri_pipelines xrun_mri_pipeline);
+our @EXPORT_OK = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog xput_dicom xnew_dicom check_status force_archive xget_mri_pipelines xrun_mri_pipeline);
 our %EXPORT_TAGS =(all => qw(xget_session xget_pet xget_mri), usual => qw(xget_session));
 
 our $VERSION = 0.2;
@@ -692,6 +692,52 @@ sub check_status {
 	return qx/$crd/;
 }
 
+=item xget_mri_pipelines
+
+Get the MRI project pipelines
+
+usage:
+
+	xget_mri_pipelines(project)
+
+=cut
+
+sub xget_mri_pipelines {
+	my @xdata = @_;
+	my %cdata = xget_session();
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X GET "'.$cdata{'HOST'}.'/data/projects/'.$xdata[0].'/pipelines?format=json" 2>/dev/null';
+	my $json_res = qx/$crd/;
+	if($json_res) {
+		my $exp_prop = decode_json $json_res;
+		my @xpipe;
+		foreach my $pipe (@{$exp_prop->{'ResultSet'}{'Result'}}){
+			if( $pipe->{'Datatype'} eq "xnat:mrSessionData"){
+				push @xpipe,  $pipe->{'Name'};
+			}
+		}
+		return @xpipe;
+	}else{
+		return 0;
+	}
+}
+
+
+=item xrun_mri_pipeline
+
+Run the MRI project pipeline
+
+usage:
+
+	xrun_mri_pipeline(project, pipeline, experiment, parameters)
+
+=cut
+
+sub xrun_mri_pipeline {
+	my @xdata = @_;
+	my %cdata = xget_session();
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -b JSESSIONID='.$cdata{'JSESSION'}.' -X POST "'.$cdata{'HOST'}.'/data/projects/'.$xdata[0].'/pipelines/'.$xdata[1].'/experiments/'.$xdata[2].($xdata[3]?'?'.$xdata[3]:'').'" 2>/dev/null';
+	return qx/$crd/;
+}
 
 =item force_archive
 

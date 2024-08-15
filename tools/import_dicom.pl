@@ -9,13 +9,18 @@ use File::Find::Rule;
 use Archive::Any;
 use Data::Dump qw(dump);
 my $ifile; my $nhc; my $xprj;
+my $t1tag = 'tfl3d1_16';
+my $t2tag = 'spcir_220';
 while (@ARGV and $ARGV[0] =~ /^-/) {
 	$_ = shift;
 	last if /^--$/;
 	if (/^-x/) {$xprj = shift; chomp($xprj);}
 	if (/^-s/) {$ifile = shift; chomp($ifile);} #src dir or file
 	if (/^-i/) {$nhc = shift; chomp($nhc);}
+	if (/^-t1/) {$t1tag = shift; chomp($t1tag);}
+	if (/^-t2/) {$t2tag = shift; chomp($t2tag);}
 }
+my $params = 'dcmT1tag='.$t1tag.'&dcmT2tag='.$t2tag;
 my $fname = basename $ifile;
 my $tmp_dir = $ENV{'TMPDIR'};
 #Cargo los datos de conexion a la DB 
@@ -66,6 +71,13 @@ unless ($nhc){
 	system("dcanon $tmpdir $anondir/$nhc/$sdate nomove $nhc $patid");
 	my $result = ( split /\n/, xput_dicom($xprj, $nhc, $anondir))[0];
 	my $status = force_archive($result);
+	my @pipes = xget_mri_pipelines($xprj);
+	my @mris = xget_mri($xprj, $nhc);
+	foreach my $mri (@mris){
+		foreach my $pipe (@pipes){
+			xrun_mri_pipeline($xprj, $pipe, $mri, $params);
+		}
+	}
 	$conn = 'sqlcmd -U '.$sqlconf{'USER'}.' -P '.$sqlconf{'PASSWORD'}.' -S '.$sqlconf{'HOST'}.' -s "," -W -Q "SELECT xapellido1, xapellido2, xnombre, his_interno FROM [UNIT4_DATA].[imp].[vh_pac_gral] WHERE his_interno = \'"'.$nhc.'"\';"';
 	system($conn);
 	my $sconn = 'sqlcmd -U '.$sqlconf{'USER'}.' -P '.$sqlconf{'PASSWORD'}.' -S '.$sqlconf{'HOST'}.' -s "," -W -Q "SELECT his_interno, xfecha_nac, xsexo_id FROM [UNIT4_DATA].[imp].[vh_pac_gral] WHERE his_interno = \'"'.$nhc.'"\';" | grep '.$nhc;
