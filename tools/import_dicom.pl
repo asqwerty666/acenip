@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use XNATACE qw(xput_dicom xnew_dicom check_status force_archive xget_sbj_id xput_sbj_data);
+use XNATACE qw(xput_dicom xnew_dicom check_status force_archive xget_sbj_id xput_sbj_data xget_mri xget_mri_pipelines xrun_mri_pipeline);
 use File::Basename qw(basename);
 use File::Temp qw(:mktemp tempdir);
 use File::Copy::Recursive qw(dircopy);
@@ -71,13 +71,6 @@ unless ($nhc){
 	system("dcanon $tmpdir $anondir/$nhc/$sdate nomove $nhc $patid");
 	my $result = ( split /\n/, xput_dicom($xprj, $nhc, $anondir))[0];
 	my $status = force_archive($result);
-	my @pipes = xget_mri_pipelines($xprj);
-	my @mris = xget_mri($xprj, $nhc);
-	foreach my $mri (@mris){
-		foreach my $pipe (@pipes){
-			xrun_mri_pipeline($xprj, $pipe, $mri, $params);
-		}
-	}
 	$conn = 'sqlcmd -U '.$sqlconf{'USER'}.' -P '.$sqlconf{'PASSWORD'}.' -S '.$sqlconf{'HOST'}.' -s "," -W -Q "SELECT xapellido1, xapellido2, xnombre, his_interno FROM [UNIT4_DATA].[imp].[vh_pac_gral] WHERE his_interno = \'"'.$nhc.'"\';"';
 	system($conn);
 	my $sconn = 'sqlcmd -U '.$sqlconf{'USER'}.' -P '.$sqlconf{'PASSWORD'}.' -S '.$sqlconf{'HOST'}.' -s "," -W -Q "SELECT his_interno, xfecha_nac, xsexo_id FROM [UNIT4_DATA].[imp].[vh_pac_gral] WHERE his_interno = \'"'.$nhc.'"\';" | grep '.$nhc;
@@ -87,6 +80,14 @@ unless ($nhc){
 	while (not $subject{'ID'}) {
 		$subject{'ID'} = xget_sbj_id($xprj, $nhc);
 		sleep 10;
+	}
+	my @pipes = xget_mri_pipelines($xprj);
+	my @mris = xget_mri($xprj, $subject{'ID'});
+	dump @mris; dump @pipes;
+	foreach my $mri (@mris){
+		foreach my $pipe (@pipes){
+			xrun_mri_pipeline($xprj, $pipe, $mri, $params);
+		}
 	}
 	my ($xdob, $xgender) = $rdata =~ /$nhc\s*,\s*(\d{4}-\d{2}-\d{2}).*,(\d)$/;
 	if($xdob and $xgender){
