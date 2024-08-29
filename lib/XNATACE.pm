@@ -19,8 +19,8 @@ use JSON qw(decode_json);
 use File::Temp qw(tempfile tempdir);
 use Data::Dump qw(dump);
 our @ISA = qw(Exporter);
-our @EXPORT = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_res_file_tr xget_dicom xget_sbj_demog xput_dicomi xnew_dicom check_status force_archive xget_mri_pipelines xrun_mri_pipeline);
-our @EXPORT_OK = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog xput_dicom xnew_dicom check_status force_archive xget_mri_pipelines xrun_mri_pipeline);
+our @EXPORT = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_res_file_tr xget_dicom xget_sbj_demog xput_dicom xnew_dicom check_status force_archive xget_mri_pipelines xrun_mri_pipeline xput_form_data xget_form_data);
+our @EXPORT_OK = qw(xget_pet xget_session xget_mri xlist_res xget_subjects xget_pet_reg xget_pet_data xget_exp_data xget_sbj_id xget_sbj_data xput_sbj_data xput_res_file xput_res_data xcreate_res xget_res_data xget_res_file xget_dicom xget_sbj_demog xput_dicom xnew_dicom check_status force_archive xget_mri_pipelines xrun_mri_pipeline xput_form_data xget_form_data);
 our %EXPORT_TAGS =(all => qw(xget_session xget_pet xget_mri), usual => qw(xget_session));
 
 our $VERSION = 0.2;
@@ -135,7 +135,7 @@ Sometimes I need to do this and is not difficult to implement
 
 usage:
 
-	$sbj_id = xget(project, subject_label);
+	$sbj_id = xget_sbj_id(project, subject_label);
 
 =cut
 
@@ -484,7 +484,7 @@ sub xput_res_data {
 	}
 	$json_content .= '}]}}';
 	#ahora tengo que hacer un file para pasarlo con curl
-	my $tmp_dir = tempdir(TEMPLATE => $ENV{TMPDIR}.'/wmh_data.XXXXX', CLEANUP => 1);
+	my $tmp_dir = tempdir(TEMPLATE => $ENV{TMPDIR}.'/resource_data.XXXXX', CLEANUP => 1);
 	my $tmp_file = $tmp_dir.'/'.$xdata[0].'.json';
 	open TDF, ">$tmp_file";
 	print TDF $json_content;
@@ -492,6 +492,59 @@ sub xput_res_data {
 	# y a asubir
 	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -X PUT -b JSESSIONID='.$cdata{'JSESSION'}.' "'.$cdata{'HOST'}.'/data/experiments/'.$xdata[0].'/resources/'.$xdata[1].'/files/'.$xdata[2].'?overwrite=true" -F file="@'.$tmp_file.'"';
 	system($crd);
+}
+
+=item xput_form_data
+
+Upload hash to an experiment custom form 
+(should be extend to subjects and projects but I need to think how to do it)
+
+usage:
+
+	xput_form_data(experiment, form_uuid, hash_ref)
+
+=cut
+
+sub xput_form_data {
+	my @xdata = @_;
+	my %cdata = xget_session();
+	my %jdata = %{$xdata[2]};
+	my $json_content = '{"'.$xdata[1].'": {';
+	my $size = keys %jdata;
+	foreach my $jvar (sort keys %jdata){
+		$json_content .= '"'.$jvar.'":"'.$jdata{$jvar}.'"';
+		$size--;
+		$json_content .= ',' if $size;
+	}
+	$json_content .= '}}';
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -X PUT -b JSESSIONID='.$cdata{'JSESSION'}.' "'.$cdata{'HOST'}.'/xapi/custom-fields/experiments/'.$xdata[0].'/fields" -H \'accept: application/json\' -H \'Content-Type: application/json\' -d \''.$json_content.'\' 2>/dev/null';
+	return qx/$crd/;
+
+}
+
+=item xget_form_data
+
+Download custom form for an experiment as a hash
+
+usage:
+
+	%xdata = xget_form_data(experiment, form_uuid)
+
+=cut
+
+sub xget_form_data {
+	my @xdata = @_;
+	my %cdata = xget_session();
+	my $crd = 'curl '.($cdata{'CURL_CA_BUNDLE'}?'--cacert '.$cdata{'CURL_CA_BUNDLE'}:'').' -f -X GET -b JSESSIONID='.$cdata{'JSESSION'}.' "'.$cdata{'HOST'}.'/xapi/custom-fields/experiments/'.$xdata[0].'/fields" 2>/dev/null';
+	my $json_res = qx/$crd/;
+	my %out_data;
+	if ($json_res) {
+		my $data_prop = decode_json $json_res;
+		foreach my $kdata (sort keys %{$data_prop->{$xdata[1]}}){
+			$out_data{$kdata} = ${$data_prop->{$xdata[1]}}{$kdata};
+		}
+	}
+	return %out_data;
 }
 
 =item xget_res_data
