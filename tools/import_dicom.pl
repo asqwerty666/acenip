@@ -2,15 +2,19 @@
 use strict;
 use warnings;
 use XNATACE qw(xput_dicom xnew_dicom check_status force_archive xget_sbj_id xput_sbj_data xget_mri xget_mri_pipelines xrun_mri_pipeline);
+use NEURO4 qw(escape_name);
 use File::Basename qw(basename);
 use File::Temp qw(:mktemp tempdir);
 use File::Copy::Recursive qw(dircopy);
+use File::Copy;
 use File::Find::Rule;
 use Archive::Any;
 use Data::Dump qw(dump);
-my $ifile; my $nhc; my $xprj;
-my $t1tag = 'tfl3d1_16';
+my $ifile; my $nhc; 
+my $xprj = 'unidad';
+my $t1tag = 'tfl3d1';
 my $t2tag = 'spcir_220';
+my $clobber = 0;
 while (@ARGV and $ARGV[0] =~ /^-/) {
 	$_ = shift;
 	last if /^--$/;
@@ -19,6 +23,7 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
 	if (/^-i/) {$nhc = shift; chomp($nhc);}
 	if (/^-t1/) {$t1tag = shift; chomp($t1tag);}
 	if (/^-t2/) {$t2tag = shift; chomp($t2tag);}
+	if (/^-c/) {$clobber = 1;}
 }
 my $params = 'dcmT1tag='.$t1tag.'&dcmT2tag='.$t2tag;
 my $fname = basename $ifile;
@@ -53,8 +58,16 @@ unless ($nhc){
 		}
 	}
 }else{
+	unless ($clobber) {
+		my $sbj_id = xget_sbj_id($xprj, $nhc);
+		if ($sbj_id) {
+			print "It seems that subject already exists. If you want to override or add a different experiment run again with -c switch\n";
+			exit;
+		}
+	}
 	my $tmpdir = tempdir(TEMPLATE => $tmp_dir.'/dicom.XXXXX', CLEANUP => 1);
-	if ( -f $ifile and $ifile =~ /.*\.zip/ ){
+	#$ifile = escape_name($ifile);
+	if ( -f $ifile and $ifile =~ /.*\.zip$/ ){
 		my $archive = Archive::Any->new($ifile);
 		$archive->extract($tmpdir);
 	}elsif ( -d $ifile ){
@@ -70,6 +83,7 @@ unless ($nhc){
 	$sdate =~ s/\s//g;
 	system("dcanon $tmpdir $anondir/$nhc/$sdate nomove $nhc $patid");
 	my $result = ( split /\n/, xput_dicom($xprj, $nhc, $anondir))[0];
+	die "Can not upload DICOM to XNAT\n" unless $result;
 	my $status = force_archive($result);
 	$conn = 'sqlcmd -U '.$sqlconf{'USER'}.' -P '.$sqlconf{'PASSWORD'}.' -S '.$sqlconf{'HOST'}.' -s "," -W -Q "SELECT xapellido1, xapellido2, xnombre, his_interno FROM [UNIT4_DATA].[imp].[vh_pac_gral] WHERE his_interno = \'"'.$nhc.'"\';"';
 	system($conn);
@@ -83,9 +97,9 @@ unless ($nhc){
 	}
 	my @pipes = xget_mri_pipelines($xprj);
 	my @mris = xget_mri($xprj, $subject{'ID'});
-	dump @mris; dump @pipes;
 	foreach my $mri (@mris){
 		foreach my $pipe (@pipes){
+			sleep 60;
 			xrun_mri_pipeline($xprj, $pipe, $mri, $params);
 		}
 	}
