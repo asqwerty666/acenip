@@ -73,7 +73,8 @@ The managed options for SLURM jobs are:
 	- partition: SLURM partition to be used (-p)
 	- gres: GPUs to be used (--gres)
 	- command: Command to be executed at sbatch script
-	- mailtype: Type of warning to be emailed (--mail-type)
+	- mail_user: Email address to warning about events (--mail-user) (mailuser deprecated but included for backward compatibility)
+	- mail_type: Type of warning to be emailed (--mail-type) (mailtype deprecated but included for backward compatibility)
 	- dependency: Full dependency string to be used at sbatch execution (--dependency), see more below
 
 The function returns the jobid of the queued job, so it can be used to 
@@ -143,7 +144,13 @@ sub send2slurm{
         }else{
 		print ESS '#SBATCH -o '.$dtask{'output'}.'-%j'."\n";
 	}
-	print ESS '#SBATCH --mail-user='."$ENV{'USER'}\n";
+	if(exists($task{'mail_user'}) && $task{'mail_user'}){
+		print ESS '#SBATCH --mail-user='."$task{'mail_user'}\n";
+	}elsif(exists($task{'mailuser'}) && $task{'mailuser'}){
+		print ESS '#SBATCH --mail-user='."$task{'mailuser'}\n";
+	}else{
+		print ESS '#SBATCH --mail-user='."$ENV{'USER'}\n";
+	}
 	if(exists($task{'partition'}) && $task{'partition'}){
 		print ESS '#SBATCH -p '.$task{'partition'}."\n";
 	}
@@ -153,6 +160,8 @@ sub send2slurm{
 	if(exists($task{'command'}) && $task{'command'}){
 		if(exists($task{'mailtype'}) && $task{'mailtype'}){
 			print ESS '#SBATCH --mail-type='.$task{'mailtype'}."\n";
+		}elsif(exists($task{'mail_type'}) && $task{'mail_type'}){
+			print ESS '#SBATCH --mail-type='.$task{'mail_type'}."\n";
 		}else{
 			print ESS '#SBATCH --mail-type='.$dtask{'mailtype'}."\n";
 		}
