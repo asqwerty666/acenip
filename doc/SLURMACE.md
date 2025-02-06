@@ -26,7 +26,8 @@ from the Perl scripts
             - partition: SLURM partition to be used (-p)
             - gres: GPUs to be used (--gres)
             - command: Command to be executed at sbatch script
-            - mailtype: Type of warning to be emailed (--mail-type)
+            - mail_user: Email address to warning about events (--mail-user) ( I<mailuser> deprecated but included for backward compatibility)
+            - mail_type: Type of warning to be emailed (--mail-type) (I<mailtype> deprecated but included for backward compatibility)
             - dependency: Full dependency string to be used at sbatch execution (--dependency), see more below
 
     The function returns the jobid of the queued job, so it can be used to 
