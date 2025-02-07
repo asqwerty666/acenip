@@ -12,10 +12,10 @@
 
 
 <ul id="index">
-  <li><a href="#SLURM">SLURM</a></li>
+  <li><a href="#SLURMACE">SLURMACE</a></li>
 </ul>
 
-<h1 id="SLURM">SLURM</h1>
+<h1 id="SLURMACE">SLURMACE</h1>
 
 <p>This module contains just a function to send the jobs to SLURM from the Perl scripts</p>
 
@@ -39,17 +39,19 @@
         - partition: SLURM partition to be used (-p)
         - gres: GPUs to be used (--gres)
         - command: Command to be executed at sbatch script
-        - mail_user: Email address to warning about events (--mail-user) ( I&lt;mailuser&gt; deprecated but included for backward compatibility)
-        - mail_type: Type of warning to be emailed (--mail-type) (I&lt;mailtype&gt; deprecated but included for backward compatibility)
+        - mail_user: Email address to warning about events (--mail-user) 
+        - mail_type: Type of warning to be emailed (--mail-type) 
         - dependency: Full dependency string to be used at sbatch execution (--dependency), see more below</code></pre>
 
 <p>The function returns the jobid of the queued job, so it can be used to build complex workflows.</p>
 
-<p>usage: my $job_id = send2slurm(\%job_properties);</p>
+<pre><code>        usage: my $job_id = send2slurm(\%job_properties);</code></pre>
 
-<p>Warning email: By default, if an empty HASH is passed to the function, a no command sbatch script is launched with <i>--mail-type=END</i> option. The intention is that this could be used to warn at the end of any launched swarm. Also, by changing <b>mailtype</b> but ommiting the <b>command</b> value you can force the function to execute an empty sbatch job with whatever warning behavior that you choose.</p>
+<p><b>Deprecated options:</b> <i>mailuser</i> and <i>mailtype</i> options are included for backwards compatibility, but deprecated. New options <i>mail_user</i> and <i>mail_type</i> are now recomended.</p>
 
-<p>Dependencies: If dependencies are going to be used, you need to pass to the function the full string that SLURM expects. That is, you can pass something like <i>singleton</i> or <i>after:000000</i> or even <i>afterok:000000,000001,000002</i>. This last can be build, by example, storing every previous jobid into an ARRAY and passing then as,</p>
+<p><b>Warning email:</b> By default, if an empty HASH is passed to the function, a no command sbatch script is launched with <i>--mail-type=END</i> option. The intention is that this could be used to warn at the end of any launched swarm. Also, by changing <b>mailtype</b> but ommiting the <b>command</b> value you can force the function to execute an empty sbatch job with whatever warning behavior that you choose.</p>
+
+<p><b>Dependencies:</b> If dependencies are going to be used, you need to pass to the function the full string that SLURM expects. That is, you can pass something like <i>singleton</i> or <i>after:000000</i> or even <i>afterok:000000,000001,000002</i>. This last can be build, by example, storing every previous jobid into an ARRAY and passing then as,</p>
 
 <pre><code>        ...
                 my $jobid = send2slurm(\%previous);

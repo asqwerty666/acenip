@@ -43,7 +43,7 @@ sub define_task{
 	return %task;
 }
 
-=head1 SLURM
+=head1 SLURMACE
 
 This module contains just a function to send the jobs to SLURM 
 from the Perl scripts
@@ -73,23 +73,27 @@ The managed options for SLURM jobs are:
 	- partition: SLURM partition to be used (-p)
 	- gres: GPUs to be used (--gres)
 	- command: Command to be executed at sbatch script
-	- mail_user: Email address to warning about events (--mail-user) ( I<mailuser> deprecated but included for backward compatibility)
-	- mail_type: Type of warning to be emailed (--mail-type) (I<mailtype> deprecated but included for backward compatibility)
+	- mail_user: Email address to warning about events (--mail-user) 
+	- mail_type: Type of warning to be emailed (--mail-type) 
 	- dependency: Full dependency string to be used at sbatch execution (--dependency), see more below
 
 The function returns the jobid of the queued job, so it can be used to 
 build complex workflows.
 
-usage: my $job_id = send2slurm(\%job_properties);
+	usage: my $job_id = send2slurm(\%job_properties);
 
-Warning email: By default, if an empty HASH is passed to the function, 
+B<Deprecated options:> I<mailuser> and I<mailtype> options are included for backwards
+compatibility, but deprecated. New options I<mail_user> and I<mail_type> are now 
+recomended.
+
+B<Warning email:> By default, if an empty HASH is passed to the function, 
 a no command sbatch script is launched
 with I<--mail-type=END> option. The intention is that this could be used to
 warn at the end of any launched swarm. Also, by changing B<mailtype> but 
 ommiting the B<command> value you can force the function to execute 
 an empty sbatch job with whatever warning behavior that you choose.
 
-Dependencies: If dependencies are going to be used, you need to pass to
+B<Dependencies:> If dependencies are going to be used, you need to pass to
 the function the full string that SLURM expects. That is, you can pass something 
 like I<singleton> or I<after:000000> or even I<afterok:000000,000001,000002>. 
 This last can be build, by example, storing every previous jobid into an ARRAY

@@ -1,4 +1,4 @@
-# SLURM
+# SLURMACE
 
 This module contains just a function to send the jobs to SLURM 
 from the Perl scripts
@@ -26,23 +26,27 @@ from the Perl scripts
             - partition: SLURM partition to be used (-p)
             - gres: GPUs to be used (--gres)
             - command: Command to be executed at sbatch script
-            - mail_user: Email address to warning about events (--mail-user) ( I<mailuser> deprecated but included for backward compatibility)
-            - mail_type: Type of warning to be emailed (--mail-type) (I<mailtype> deprecated but included for backward compatibility)
+            - mail_user: Email address to warning about events (--mail-user) 
+            - mail_type: Type of warning to be emailed (--mail-type) 
             - dependency: Full dependency string to be used at sbatch execution (--dependency), see more below
 
     The function returns the jobid of the queued job, so it can be used to 
     build complex workflows.
 
-    usage: my $job\_id = send2slurm(\\%job\_properties);
+            usage: my $job_id = send2slurm(\%job_properties);
 
-    Warning email: By default, if an empty HASH is passed to the function, 
+    **Deprecated options:** _mailuser_ and _mailtype_ options are included for backwards
+    compatibility, but deprecated. New options _mail\_user_ and _mail\_type_ are now 
+    recomended.
+
+    **Warning email:** By default, if an empty HASH is passed to the function, 
     a no command sbatch script is launched
     with _--mail-type=END_ option. The intention is that this could be used to
     warn at the end of any launched swarm. Also, by changing **mailtype** but 
     ommiting the **command** value you can force the function to execute 
     an empty sbatch job with whatever warning behavior that you choose.
 
-    Dependencies: If dependencies are going to be used, you need to pass to
+    **Dependencies:** If dependencies are going to be used, you need to pass to
     the function the full string that SLURM expects. That is, you can pass something 
     like _singleton_ or _after:000000_ or even _afterok:000000,000001,000002_. 
     This last can be build, by example, storing every previous jobid into an ARRAY
