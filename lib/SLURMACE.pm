@@ -70,6 +70,7 @@ The managed options for SLURM jobs are:
 	- mem_per_cpu: Amount of memory to be used for each CPU (--mem-per-cpu)
 	- time: Maximum time that the job will be allowed to run (--time)
 	- output: File where the sbatch script output will be stored (-o)
+	- chdir: Change to the specified directory before executing the script (--chdir)
 	- partition: SLURM partition to be used (-p)
 	- gres: GPUs to be used (--gres)
 	- command: Command to be executed at sbatch script
@@ -147,6 +148,9 @@ sub send2slurm{
                 print ESS '#SBATCH -o '.$task{'output'}.'-%j'."\n";
         }else{
 		print ESS '#SBATCH -o '.$dtask{'output'}.'-%j'."\n";
+	}
+	if(exists($task{'chdir'}) && $task{'chdir'}){
+		print ESS '#SBATCH --chdir='.$task{'chdir'}."\n";
 	}
 	if(exists($task{'mail_user'}) && $task{'mail_user'}){
 		print ESS '#SBATCH --mail-user='."$task{'mail_user'}\n";
