@@ -32,7 +32,7 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
 }
 die "Should supply project name" unless $prj;
 my %prj_data = load_project($prj);
-$jfile = $prj_data{'BIDS'}.'/conversion.json';
+$jfile = $prj_data{'BIDS'}.'/conversion.json' unless $jfile;
 
 #Aqui voy a leer los sujetos que voy a procesar
 #en caso de que haya una lista de input
@@ -69,12 +69,13 @@ foreach my $sbj (sort keys %subjects){
 my $count_id = 0;
 foreach my $sbj (sort keys %subjects){
 	if(exists($subjects{$sbj}{'experiment'}) and $subjects{$sbj}{'experiment'} and $subjects{$sbj}{'download'}){
-		dump $subjects{$sbj}{'experiment'};
+		#dump $subjects{$sbj}{'experiment'};
 		my $exp_idx = 0;
 		foreach my $experiment (sort @{$subjects{$sbj}{'experiment'}}){
 			my $src_dir = $prj_data{'SRC'}.'/'.$subjects{$sbj}{'label'}.($exp_idx?'_'.$exp_idx:'');
 			mkdir $src_dir;
 			$subjects{$sbj}{$experiment}{'OK'} = xget_dicom($experiment, $src_dir, $tlist);
+			#print "$sbj -> $experiment -> $subjects{$sbj}{$experiment}{'OK'}\n";
 			$count_id++;
 			#$subjects{$sbj}{$experiment}{'strID'} = sprintf '%04d', $count_id;
 			$subjects{$sbj}{$experiment}{'strID'} = $subjects{$sbj}{'label'}.($exp_idx?'_'.$exp_idx:'');
@@ -91,11 +92,12 @@ my $outdir = "$prj_data{'DATA'}/slurm";
 mkdir $outdir unless -d $outdir;
 my $ofile = $prj_data{'DATA'}.'/'.$prj.'_'.$mode.'.csv';
 my $tfile = $prj_data{'BIDS'}.'/participants.tsv';
-open ODF, ">$ofile";
-open TDF, ">$tfile";
+open ODF, ">>$ofile";
+open TDF, ">>$tfile";
 my %participants;
 foreach my $sbj (sort keys %subjects){
 	if ($subjects{$sbj}{'download'}) {
+		#print "$sbj\n";
 		my $exp_idx = 0;
 		foreach my $experiment (sort @{$subjects{$sbj}{'experiment'}}){
 			if ($subjects{$sbj}{$experiment}{OK}){
