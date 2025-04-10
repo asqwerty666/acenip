@@ -40,7 +40,7 @@ my $dbody="";
 foreach my $sid (sort keys %subjects){
 	my $go = 0;
 	if ($cfile) {
-		if (grep {/$sid/} @plist) {$go = 1;}
+		if (grep {/$subjects{$sid}{label}/} @plist) {$go = 1;}
 	}else{
 		 $go = 1;
 	}
