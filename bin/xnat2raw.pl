@@ -66,7 +66,7 @@ foreach my $sbj (sort keys %subjects){
 	if(exists($subjects{$sbj}{'experiment'}) and $subjects{$sbj}{'experiment'} and $subjects{$sbj}{'download'}){
 		my $exp_idx = 0;
 		foreach my $experiment (sort @{$subjects{$sbj}{'experiment'}}){
-			my $src_dir = $prj_data{'SRC'}.'/'.$subjects{$sbj}{'label'}.($exp_idx?'_'.$exp_idx:'');
+			my $src_dir = (($mode eq 'PET')?$prj_data{'PET'}:$prj_data{'SRC'}).'/'.$subjects{$sbj}{'label'}.($exp_idx?'_'.$exp_idx:'');
 			mkdir $src_dir;
 			xget_dicom($experiment, $src_dir);
 			$count_id++;
