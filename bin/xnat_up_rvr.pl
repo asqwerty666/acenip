@@ -16,12 +16,18 @@ use XNATACE qw(xget_session xget_mri xget_exp_data xcreate_res xput_res_file);
 my $vrfile;
 my $rep_dir;
 my $xprj;
+@ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
     if (/^-i/) {$vrfile = shift; chomp($vrfile);}
     if (/^-d/) {$rep_dir = shift; chomp($rep_dir);}
     if (/^-x/) {$xprj = shift; chomp($xprj);}
+    if (/^-h/) {
+	    print "Upload visual readings table to XNAT\n";
+	    print "usage: $0 -i <input data file> -d <reports directory> -x <XNAT project>\n";
+	    exit;
+    }
 }
 die "Should supply reports directory" unless $rep_dir;
 die "Should supply XNAT project" unless $xprj;
@@ -46,9 +52,13 @@ if ($vrfile) {
 		my @experiments = xget_mri($xprj, $subject);
 		foreach my $experiment (@experiments){
 			my $xdate = xget_exp_data($experiment, 'date');
-			if ($xdate eq $edate) {
+			if ($edate){
+				if ($xdate eq $edate) {
+					$matchexps{$subject} = $experiment;
+					last;
+				}
+			}else{
 				$matchexps{$subject} = $experiment;
-				last;
 			}
 		}
 		$rep_body .= join ',', @rep_arr;
