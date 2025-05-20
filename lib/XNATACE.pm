@@ -95,6 +95,7 @@ sub xget_session {
 	}
 	my $crd = 'curl '.($CACERT?'--cacert '.$CACERT:'').' -f -u '.$xdata{'USER'}.':'.$xdata{'PASSWORD'}.' -X POST '.$xdata{'HOST'}.'/data/JSESSION 2>/dev/null';
 	$xdata{'JSESSION'} = qx/$crd/;
+	die "Could not connect to XNAT!\n" unless $xdata{'JSESSION'};
 	#dump %xdata;
 	return %xdata;
 }
