@@ -8,6 +8,7 @@ use Spreadsheet::Write;
 my $ifile = shift;
 die "Please, give an input CSV file\n" unless $ifile;
 (my $ofile = $ifile) =~ s/.csv$/.xls/;
+#my $info = Text::CSV->new ({in => $ifile, sep_char => ","});
 my $info = csv (in => $ifile);
 my $workbook = Spreadsheet::Write->new(file => $ofile, sheet => 'DATA');
 for my $i (0 .. $#{$info}) {

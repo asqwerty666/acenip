@@ -23,9 +23,6 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
 }
 die "Should supply XNAT project" unless $xprj;
 $oxfile = $xprj.'_rvr_data.csv' unless $oxfile;
-#my %xconf = xget_session();
-#get the jsessionid
-#my $jid = $xconf{'JSESSION'};
 # Do you want to process just a subset? Read the supplied list of subjects  
 my @plist;
 if ($cfile and -f $cfile) {
@@ -45,7 +42,6 @@ foreach my $sid (sort keys %subjects){
 		 $go = 1;
 	}
 	if ($go){
-		#$subjects{$sid}{'experimentID'} = xget_mri($xconf{'HOST'}, $jid, $xprj, $sid);
 		my @experiments = xget_mri($xprj, $sid);
 		foreach my $experiment (@experiments){
 			my %rvr = xlist_res($experiment, 'RVR');

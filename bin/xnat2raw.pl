@@ -20,6 +20,7 @@ use File::Temp qw(:mktemp tempdir);
 use Data::Dump qw(dump);
 my $mode = 'MRI';
 my $ifile = '';
+my $jfile = '';
 my $prj;
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
@@ -28,6 +29,7 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
 	if (/^-p/) { $prj = shift; chomp $prj;}
 	if (/^-i/) { $ifile = shift; chomp($ifile);}
 	if (/^-m/) { $mode = shift; chomp $mode;}
+	if (/^-j/) { $jfile = shift; chomp $jfile;}
 }
 die "Should supply project name" unless $prj;
 my $tmp_dir = $ENV{'TMPDIR'};
@@ -39,12 +41,21 @@ if ($ifile){
 	chomp @cuts;
 	close IDF;
 }
+my $tlist;
+if ($jfile) {
+	my $ord = "cat $jfile | jq '.descriptions[].criteria.SeriesDescription' | sed 's/\"//g'";
+	my @tags = qx/$ord/;
+	chomp @tags;
+	$tlist = join ',', @tags;
+}
 #my %xconf = xget_session();
 my %subjects = xget_subjects($prj_data{'XNAME'});
 foreach my $sbj (sort keys %subjects){
 	if ($ifile) {
+		#print "$subjects{$sbj}{'label'}\n";
 		if (grep {/$subjects{$sbj}{'label'}/} @cuts){
 			$subjects{$sbj}{'download'} = 1;
+			#print "$subjects{$sbj}{'label'}\n";
 		}else{
 			$subjects{$sbj}{'download'} = 0;
 			next;
@@ -68,7 +79,7 @@ foreach my $sbj (sort keys %subjects){
 		foreach my $experiment (sort @{$subjects{$sbj}{'experiment'}}){
 			my $src_dir = (($mode eq 'PET')?$prj_data{'PET'}:$prj_data{'SRC'}).'/'.$subjects{$sbj}{'label'}.($exp_idx?'_'.$exp_idx:'');
 			mkdir $src_dir;
-			xget_dicom($experiment, $src_dir);
+			xget_dicom($experiment, $src_dir, $tlist);
 			$count_id++;
 			$subjects{$sbj}{$experiment}{'strID'} = sprintf '%04d', $count_id;
 			$exp_idx++;

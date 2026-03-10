@@ -15,6 +15,7 @@
 use strict; use warnings;
 use NEURO4 qw(load_project print_help populate check_or_make);
 use SLURMACE qw(send2slurm);
+use Data::Dump qw(dump);
 my $cfile = 'bids/conversion.json';
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
@@ -30,6 +31,7 @@ my %std = load_project($proj);
 my $src_dir = $std{'SRC'};
 my $proj_file = $std{'DATA'}.'/'.$proj.'_mri.csv';
 my %guys = populate('^(\d{4});(.*)$', $proj_file);
+#dump %guys; exit;
 my $outdir = "$std{'DATA'}/slurm";
 check_or_make($outdir);
 # defino las propiedades generales de la tarea en el schedule manager

@@ -29,6 +29,11 @@ while (@ARGV and $ARGV[0] =~ /^-/) {
         if (/^-o/) { $ofile = shift; chomp($ofile);}
         if (/^-x/) { $xprj = shift; chomp($xprj);} #nombre del proyecto en XNAT
         if (/^-p/) { $prj = shift; chomp($prj);} #nombre local del proyecto
+	if (/^-h/) { 
+		print "Download WMH values to a table\n";
+		print "usage: $0 [-o <output file>] -p <local project> [-x <xnat project>]\n";
+		print "you could use local or xnat project names\n";
+	}
 }
 
 # Mira, hay que meter el proyecto de XNAT con alguno de los dos switch

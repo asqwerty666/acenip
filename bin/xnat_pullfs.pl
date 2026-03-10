@@ -39,11 +39,13 @@ my $tmpdir = tempdir(TEMPLATE => $tmp_dir.'/fs.XXXXX', CLEANUP => 1);
 my $ofile;
 my $ifile;
 my $with_date = 1;
+my $cut = 'e';
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
     $_ = shift;
     last if /^--$/;
     if (/^-i/) {$ifile = shift; chomp($ifile);}
+    if (/^-c/) {$cut = shift; chomp($cut);}
     if (/^-s/) { $stats = shift;}
     #    if (/^-d/) { $with_date = 1; }
     if (/^-o/) { $ofile = shift; chomp($ofile);}
@@ -90,7 +92,15 @@ foreach my $subject (sort keys %psubjects){
 	foreach my $experiment (@{$psubjects{$subject}{'MRI'}}){
 		my $getthis = 1;
 		if ($ifile) {
-			$getthis = 0 unless grep {/$experiment/} @cuts;
+			if ($cut eq 's'){
+				$getthis = 0 unless grep {/$subject/} @cuts;
+			} elsif ($cut eq 'e') {
+				$getthis = 0 unless grep {/$experiment/} @cuts;
+			} elsif ($cut eq 'l') {
+				$getthis = 0 unless grep {/$psubjects{$subject}{'label'}/} @cuts;
+			} else {
+				$getthis = 0;
+			}
 		}	
 		if ($getthis) {
 			my $order = 'mkdir -p '.$fsout.'/'.$subject.'/'.$experiment.'/stats';
