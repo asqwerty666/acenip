@@ -22,10 +22,14 @@ use File::Temp qw(:mktemp tempdir);
 my $prj;
 my $xprj;
 my $ofile;
+my $ifile;
+my $cut ='e';
 @ARGV = ("-h") unless @ARGV;
 while (@ARGV and $ARGV[0] =~ /^-/) {
         $_ = shift;
         last if /^--$/;
+	if (/^-i/) {$ifile = shift; chomp($ifile);}
+	if (/^-c/) {$cut = shift; chomp($cut);}
         if (/^-o/) { $ofile = shift; chomp($ofile);}
         if (/^-x/) { $xprj = shift; chomp($xprj);} #nombre del proyecto en XNAT
         if (/^-p/) { $prj = shift; chomp($prj);} #nombre local del proyecto
@@ -47,6 +51,13 @@ die "Should supply XNAT project name or define it at local project config!\n" un
 my $tmp_dir = $ENV{TMPDIR};
 #my %xconf = xget_session();
 my %wmhs;
+my @cuts;
+if ($ifile){
+	open IDF, "<$ifile" or die "No such input file!\n";
+	@cuts = <IDF>;
+	chomp @cuts;
+	close IDF;
+}
 my %subjects = xget_subjects($xprj);
 open STDOUT, ">$ofile" unless not $ofile;
 print "Subject_ID,Date,WMH\n";
@@ -54,12 +65,26 @@ foreach my $sbj (sort keys %subjects){
 	my @experiments = xget_mri($xprj, $sbj);
 	my $label = xget_sbj_data($sbj, 'label');
 	foreach my $experiment (@experiments){
-		my %wmh_data = xget_res_data($experiment, 'WMH', 'wmh.json');
-		my $date = xget_exp_data($experiment, 'date');
-		if (exists($wmh_data{'WMH mm3'}) and $wmh_data{'WMH mm3'}){
-			print "$label,$date,$wmh_data{'WMH mm3'}\n";
-		}else{
-			print "$label,$date,NA\n";
+		my $getthis = 1;
+		if ($ifile) {
+			if ($cut eq 's'){
+				$getthis = 0 unless grep {/$sbj/} @cuts;
+			} elsif ($cut eq 'e') {
+				$getthis = 0 unless grep {/$experiment/} @cuts;
+			} elsif ($cut eq 'l') {
+				$getthis = 0 unless grep {/$label/} @cuts;
+			} else {
+				$getthis = 0;
+			}
+		}
+		if ($getthis) {
+			my %wmh_data = xget_res_data($experiment, 'WMH', 'wmh.json');
+			my $date = xget_exp_data($experiment, 'date');
+			if (exists($wmh_data{'WMH mm3'}) and $wmh_data{'WMH mm3'}){
+				print "$label,$date,$wmh_data{'WMH mm3'}\n";
+			}else{
+				print "$label,$date,NA\n";
+			}
 		}
 	}
 }
